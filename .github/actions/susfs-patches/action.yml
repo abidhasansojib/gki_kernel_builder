@@ -26,6 +26,11 @@ runs:
         cp "${{ github.workspace }}/susfs4ksu/kernel_patches/include/linux/"* "${{ github.workspace }}/kernel/common/include/linux/"
         cp ${{ github.workspace }}/susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ inputs.version }}.patch ./
 
+        # Fix 6.12 getname_flags argument mismatch in patch
+        if [ -f "50_add_susfs_in_gki-${{ inputs.version }}.patch" ]; then
+          sed -i 's/getname_flags(filename, lookup_flags, NULL)/getname_flags(filename, lookup_flags)/g' "50_add_susfs_in_gki-${{ inputs.version }}.patch"
+        fi
+
     - name: Apply Android 16 6.12 Fake Patches
       shell: bash
       if: inputs.version == 'android16-6.12'
@@ -46,6 +51,11 @@ runs:
       working-directory: ${{ github.workspace }}/kernel/common
       run: |
         patch -p1 < 50_add_susfs_in_gki-${{ inputs.version }}.patch
+
+        # Extra safety check for getname_flags in fs/open.c
+        if [ -f fs/open.c ]; then
+          sed -i 's/getname_flags(filename, lookup_flags, NULL)/getname_flags(filename, lookup_flags)/g' fs/open.c
+        fi
 
         # Fallback definition for VMA_PAD_START if not provided by kernel headers
         if grep -q 'VMA_PAD_START(' fs/proc/task_mmu.c && ! grep -qE '#include <linux/pgsize_migration(_inline)?\.h>|define VMA_PAD_START' fs/proc/task_mmu.c; then
