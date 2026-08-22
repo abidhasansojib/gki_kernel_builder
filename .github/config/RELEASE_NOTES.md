@@ -1,11 +1,9 @@
-# Wild Kernels for Android 16 (Kernel 6.12.30) GKI Release #
+# Android 16 (Kernel 6.12.30) GKI Release #
 
 **IMPORTANT DISCLAIMER**
 
 > [!CAUTION]
 > This software is provided for testing and educational purposes only. Use at your own risk. The developers are not responsible for any damage, data loss, or issues that may occur. Please ensure you have proper backups before installation.
-
-Join the telegram here: https://t.me/WildKernelsTG
 
 # Features
 - [KernelSU-Next](#kernelsu-next)

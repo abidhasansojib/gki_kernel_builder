@@ -1,5 +1,5 @@
 name: 'Apply Kernel Branding & Timestamp'
-description: 'Apply Wild kernel branding to kernel version string'
+description: 'Apply kernel version branding string'
 inputs:
   variant:
     description: 'Variant of kernel to apply branding to'
@@ -30,5 +30,8 @@ runs:
       working-directory: ${{ github.workspace }}/kernel/common
       run: |
         KERNEL_STRING="${{ inputs.kernel_version }}.${{ inputs.sublevel }}-${{ inputs.android_version }}"
-        sed -i '$d' scripts/setlocalversion && echo "echo \"$KERNEL_STRING-Wild\"" >> scripts/setlocalversion
+        if [ -n "${{ inputs.variant }}" ] && [ "${{ inputs.variant }}" != "Normal" ]; then
+          KERNEL_STRING="${KERNEL_STRING}-${{ inputs.variant }}"
+        fi
+        sed -i '$d' scripts/setlocalversion && echo "echo \"$KERNEL_STRING\"" >> scripts/setlocalversion
         chmod +x scripts/setlocalversion

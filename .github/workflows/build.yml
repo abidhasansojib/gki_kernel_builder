@@ -309,7 +309,7 @@ jobs:
         sublevel: ${{ steps.extract.outputs.sublevel }}
 
     - name: Initialize Config Fragment
-      run: touch "${{ github.workspace }}/wild_gki.fragment"
+      run: touch "${{ github.workspace }}/gki.fragment"
 
     - name: Build Normal Kernel
       env:

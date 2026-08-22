@@ -18,4 +18,4 @@ runs:
         # Commit changes to avoid dirty state during build
         cd ${{ github.workspace }}/kernel/common
         git add .
-        git commit -m "Wild: Clean Dirty Flag" || true
+        git commit -m "GKI: Clean Dirty Flag" || true
