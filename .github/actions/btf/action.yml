@@ -1,0 +1,24 @@
+name: 'Enable BTF'
+description: 'Enable CONFIG_DEBUG_INFO_BTF for kernel'
+inputs:
+  version:
+    description: 'Kernel config version (e.g., android16-6.12)'
+    required: false
+    default: 'android16-6.12'
+  kernel_version:
+    description: 'Kernel version (e.g., 6.12)'
+    required: false
+    default: '6.12'
+  sublevel:
+    description: 'Kernel sublevel'
+    required: false
+    default: '30'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Enable BTF Config
+      uses: ./.github/actions/set-kernel-config
+      with:
+        config_list: |
+          CONFIG_DEBUG_INFO_BTF=y

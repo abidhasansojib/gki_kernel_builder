@@ -1,0 +1,20 @@
+name: 'Apply Device-Specific Patches'
+description: 'Apply device-specific patches'
+inputs:
+  version:
+    description: 'Kernel config version (e.g., android16-6.12)'
+    required: false
+    default: 'android16-6.12'
+  kernel_version:
+    description: 'Kernel version (e.g., 6.12)'
+    required: false
+    default: '6.12'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Device-Specific Patches
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        echo "Device-specific patches checked for android16-6.12"

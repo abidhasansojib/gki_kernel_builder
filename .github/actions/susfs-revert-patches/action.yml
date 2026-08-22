@@ -1,0 +1,33 @@
+name: 'Revert SUSFS Fake Patches'
+description: 'Revert version-specific fake patches after kernel patch application'
+inputs:
+  version:
+    description: 'Kernel config version (e.g., android16-6.12)'
+    required: false
+    default: 'android16-6.12'
+  sublevel:
+    description: 'Kernel sublevel'
+    required: false
+    default: '30'
+  os_patch_level:
+    description: 'OS patch level (e.g., 2025-07)'
+    required: false
+    default: '2025-07'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Revert Android 16 6.12 Fake Patches
+      shell: bash
+      if: inputs.version == 'android16-6.12'
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        echo "Reverting 6.12 Fake Patches"
+        if [ "${{ inputs.sublevel }}" -ge "58" ]; then
+          echo "Reverting exec.c Android 16 6.12 Fake Patch"
+          sed -i '/^#include /a #include <linux/dma-buf.h>' fs/exec.c
+        fi
+        if [ "${{ inputs.sublevel }}" -ge "69" ]; then
+          echo "Reverting task_mmu.c Android 16 6.12 Fake Patch"
+          sed -i 's/vma_pages/vma_data_pages/g' fs/proc/task_mmu.c
+        fi

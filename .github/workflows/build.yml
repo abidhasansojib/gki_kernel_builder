@@ -1,0 +1,538 @@
+name: Kernel Build Process
+permissions:
+  contents: read
+  actions: write
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+        default: "android16-6.12"
+      android_version:
+        required: true
+        type: string
+        default: "android16"
+      kernel_version:
+        required: true
+        type: string
+        default: "6.12"
+      sublevel:
+        required: true
+        type: string
+        default: "30"
+      os_patch_level:
+        required: true
+        type: string
+        default: "2025-07"
+      variant:
+        required: false
+        type: string
+        default: "Normal"
+      feature_set:
+        required: true
+        type: string
+        default: "FULL"
+      ksu_branch:
+        required: false
+        type: string
+        default: ""
+      susfs_commit:
+        required: false
+        type: string
+        default: ""
+      root_flavor:
+        required: false
+        type: string
+        default: ""
+      root_commit:
+        required: false
+        type: string
+        default: ""
+      nomount_commit:
+        required: false
+        type: string
+        default: ""
+      preserve_abi:
+        required: false
+        type: boolean
+        default: false
+      build_bypass:
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  build-gki:
+    name: "${{ inputs.kernel_version }}.${{ inputs.sublevel }}-${{ inputs.android_version }}-${{ inputs.os_patch_level }} (${{ inputs.variant }})"
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v7
+
+    - name: Free Disk Space
+      if: true
+      uses: endersonmenezes/free-disk-space@v3
+      with:
+        remove_android: true
+        remove_dotnet: true
+        remove_haskell: true
+        remove_tool_cache: true
+        remove_packages: "azure-cli google-cloud-cli microsoft-edge-stable google-chrome-stable firefox postgresql* temurin-* *llvm* mysql* dotnet-sdk-*"
+        remove_packages_one_command: true
+        remove_folders: "/usr/share/swift /usr/share/miniconda /usr/share/az* /usr/local/lib/node_modules /usr/local/share/chromium /usr/local/share/powershell /usr/local/julia /usr/local/aws-cli /usr/local/aws-sam-cli /usr/share/gradle"
+        rm_cmd: "rmz"
+        rmz_version: "3.1.1"
+        testing: false
+
+    - name: Setup more Swap (for LTO)
+      uses: thejerrybao/setup-swap-space@v1
+      with:
+        swap-size-gb: 16
+
+    - name: Setup Build Environment
+      uses: ./.github/actions/setup-build-environment
+      with:
+        version: ${{ inputs.version }}
+        sublevel: ${{ inputs.sublevel }}
+      env:
+        BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
+          
+    - name: Download Kernel Repository
+      uses: ./.github/actions/download-kernel
+      with:
+        version: ${{ inputs.version }}
+        android_version: ${{ inputs.android_version }}
+        kernel_version: ${{ inputs.kernel_version }}
+        os_patch_level: ${{ inputs.os_patch_level }}
+
+    - name: Build FUSE-BPF Userspace Daemon
+      if: ${{ inputs.version == 'android16-6.12' }}
+      uses: ./.github/actions/fuse-bpf
+      with:
+        version: ${{ inputs.version }}
+        kernel_version: ${{ inputs.kernel_version }}
+        android_version: ${{ inputs.android_version }}
+
+    - name: Set Build Timestamp from Kernel Commit
+      shell: bash
+      run: |
+        set -x
+        # Hardcode the build timestamp to the 5th day of the patch level
+        # at 04:20 UTC, using the standard timestamp format.
+        OS_PATCH_LEVEL_INPUT="${{ inputs.os_patch_level }}"
+        if [[ "$OS_PATCH_LEVEL_INPUT" == lts* ]]; then
+          if [[ "$OS_PATCH_LEVEL_INPUT" =~ ^lts-([0-9]{2})$ ]]; then
+            OS_PATCH_LEVEL_YM="$(date -u +%Y)-${BASH_REMATCH[1]}"
+          else
+            OS_PATCH_LEVEL_YM="$(date -u +%Y-%m)"
+          fi
+        else
+          OS_PATCH_LEVEL_YM="$OS_PATCH_LEVEL_INPUT"
+        fi
+        FIXED_BUILD_DATE="${OS_PATCH_LEVEL_YM}-05 04:20:00 UTC"
+        SOURCE_DATE_EPOCH=$(date -u -d "$FIXED_BUILD_DATE" +%s)
+        echo "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH" >> $GITHUB_ENV
+        KBUILD_TS=$(date -u -d @${SOURCE_DATE_EPOCH} '+%a %b %d %H:%M:%S UTC %Y')
+        echo "KBUILD_BUILD_TIMESTAMP=${KBUILD_TS}" >> $GITHUB_ENV
+        GIT_DATE=$(date -u -d @${SOURCE_DATE_EPOCH} '+%Y-%m-%dT%H:%M:%SZ')
+        echo "GIT_COMMITTER_DATE=${GIT_DATE}" >> $GITHUB_ENV
+        echo "GIT_AUTHOR_DATE=${GIT_DATE}" >> $GITHUB_ENV
+        echo "Build timestamp set to: $(date -u -d @${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S UTC') (epoch: $SOURCE_DATE_EPOCH)"
+
+    - name: Extract Sublevel and Set File Name
+      id: extract
+      uses: ./.github/actions/extract-sublevel-file-name
+      with:
+        android_version: ${{ inputs.android_version }}
+        kernel_version: ${{ inputs.kernel_version }}
+        sublevel: ${{ inputs.sublevel }}
+        os_patch_level: ${{ inputs.os_patch_level }}
+        variant: ${{ inputs.variant }}
+
+    - name: Kernel Fixes
+      uses: ./.github/actions/kernel-fixes
+      with:
+        version: ${{ inputs.version }}
+        android_version: ${{ inputs.android_version }}
+        kernel_version: ${{ inputs.kernel_version }}
+        sublevel: ${{ steps.extract.outputs.sublevel }}
+        os_patch_level: ${{ inputs.os_patch_level }}
+
+    - name: Capture source ABI/KMI safeguards
+      if: ${{ inputs.preserve_abi }}
+      uses: ./.github/actions/abi-kmi-safeguards
+      with:
+        mode: capture
+
+    - name: Setup Selected Root Implementation
+      if: ${{ inputs.root_flavor != '' }}
+      uses: ./.github/actions/root-setup
+      with:
+        flavor: ${{ inputs.root_flavor }}
+        commit: ${{ inputs.root_commit }}
+
+    - name: Setup KernelSU-Next
+      if: ${{ inputs.root_flavor == '' && (contains(inputs.feature_set, 'KSUN') || inputs.feature_set == 'FULL') }}
+      uses: ./.github/actions/kernelsu
+      with:
+        ksu_branch: ${{ inputs.ksu_branch }}
+
+    - name: Verify root ABI/KMI safeguards
+      if: ${{ inputs.preserve_abi }}
+      uses: ./.github/actions/abi-kmi-safeguards
+      with:
+        mode: verify
+
+    - name: SUSFS
+      if: contains(inputs.feature_set, 'SUSFS') || inputs.feature_set == 'FULL'
+      uses: ./.github/actions/susfs
+      with:
+        susfs_commit: ${{ inputs.susfs_commit }}
+        version: ${{ inputs.version }}
+        android_version: ${{ inputs.android_version }}
+        kernel_version: ${{ inputs.kernel_version }}
+        os_patch_level: ${{ inputs.os_patch_level }}
+        sublevel: ${{ steps.extract.outputs.sublevel }}
+
+    - name: Baseband Guard
+      if: (contains(inputs.feature_set, 'BBG') || inputs.feature_set == 'FULL')
+      uses: ./.github/actions/bbg
+
+    - name: Setup Networking
+      if: contains(inputs.feature_set, 'NET') || inputs.feature_set == 'FULL'
+      uses: ./.github/actions/networking
+      with:
+        version: ${{ inputs.version }}
+        kernel_version: ${{ inputs.kernel_version }}
+        android_version: ${{ inputs.android_version }}
+        sublevel: ${{ steps.extract.outputs.sublevel }}
+
+    - name: DroidSpaces-OSS Patches
+      if: contains(inputs.feature_set, 'DS') || inputs.feature_set == 'FULL'
+      uses: ./.github/actions/droidspaces
+      with:
+        version: ${{ inputs.version }}
+        kernel_version: ${{ inputs.kernel_version }}
+
+    - name: Apply NTSync Patches
+      uses: ./.github/actions/ntsync
+      with:
+        version: ${{ inputs.version }}
+        kernel_version: ${{ inputs.kernel_version }}
+        sublevel: ${{ steps.extract.outputs.sublevel }}
+
+    - name: Apply Ptrace Patch
+      uses: ./.github/actions/ptrace
+      with:
+        kernel_version: ${{ inputs.kernel_version }}
+
+    - name: Apply Unicode Fix Patch
+      uses: ./.github/actions/unicode-fix
+      with:
+        kernel_version: ${{ inputs.kernel_version }}
+
+    - name: Setup Misc Configs
+      uses: ./.github/actions/misc
+
+    - name: Enable BTF
+      uses: ./.github/actions/btf
+      with:
+        version: ${{ inputs.version }}
+        kernel_version: ${{ inputs.kernel_version }}
+        sublevel: ${{ steps.extract.outputs.sublevel }}
+
+    - name: Apply Device-Specific Patches
+      uses: ./.github/actions/apply-device-patches
+      with:
+        version: ${{ inputs.version }}
+        kernel_version: ${{ inputs.kernel_version }}
+
+    - name: Capture approved feature ABI/KMI baseline
+      if: ${{ inputs.preserve_abi }}
+      uses: ./.github/actions/abi-kmi-safeguards
+      with:
+        mode: capture
+
+    - name: Integrate NoMount
+      if: ${{ inputs.nomount_commit != '' || contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
+      uses: ./.github/actions/nomount
+      with:
+        commit: ${{ inputs.nomount_commit }}
+        kernel_version: ${{ inputs.kernel_version }}
+
+    - name: Apply Kernel Branding
+      uses: ./.github/actions/apply-kernel-branding
+      with:
+        variant: ${{ inputs.variant }}
+        kernel_version: ${{ inputs.kernel_version }}
+        android_version: ${{ inputs.android_version }}
+        version: ${{ inputs.version }}
+        sublevel: ${{ steps.extract.outputs.sublevel }}
+
+    - name: Remove Protected Exports
+      if: ${{ !inputs.preserve_abi }}
+      uses: ./.github/actions/remove-protected-exports
+
+    - name: Verify NoMount ABI/KMI safeguards
+      if: ${{ inputs.preserve_abi }}
+      uses: ./.github/actions/abi-kmi-safeguards
+      with:
+        mode: verify
+
+    - name: Clean Kernel Flags
+      uses: ./.github/actions/clean-kernel-flags
+
+    - name: Scan and collect patch rejects
+      id: scan
+      if: ${{ always() }}
+      uses: ./.github/actions/scan-patch-rejects
+        
+    - name: Upload Rejects
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ steps.extract.outputs.file_name }}-Rejects
+        path: patch-rejects/
+        if-no-files-found: ignore
+        compression-level: 9
+
+    - name: 'Setup Cache and Build Environment'
+      uses: ./.github/actions/cache-setup
+      with:
+        version: ${{ inputs.version }}
+        android_version: ${{ inputs.android_version }}
+        kernel_version: ${{ inputs.kernel_version }}
+        sublevel: ${{ steps.extract.outputs.sublevel }}
+
+    - name: Initialize Config Fragment
+      run: touch "${{ github.workspace }}/wild_gki.fragment"
+
+    - name: Build Normal Kernel
+      env:
+        SOURCE_DATE_EPOCH: ${{ env.SOURCE_DATE_EPOCH }}
+        KBUILD_BUILD_TIMESTAMP: ${{ env.KBUILD_BUILD_TIMESTAMP }}
+      uses: ./.github/actions/build-kernel
+      with:
+        version: ${{ inputs.version }}
+        bypass: false
+
+    - name: Build Bypass Kernel
+      if: ${{ inputs.build_bypass }}
+      env:
+        SOURCE_DATE_EPOCH: ${{ env.SOURCE_DATE_EPOCH }}
+        KBUILD_BUILD_TIMESTAMP: ${{ env.KBUILD_BUILD_TIMESTAMP }}
+      uses: ./.github/actions/build-kernel
+      with:
+        bypass: true
+        version: ${{ inputs.version }}
+
+    - name: 📋 Consolidated Build Summary
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        SUMMARY_BASE="${{ steps.extract.outputs.file_name }}"
+        if [ -z "${SUMMARY_BASE}" ]; then
+          SUMMARY_BASE="${{ inputs.kernel_version }}.${{ inputs.sublevel }}-${{ inputs.android_version }}-${{ inputs.os_patch_level }}"
+          VARIANT="${{ inputs.variant }}"
+          if [ -n "${VARIANT}" ] && [ "${VARIANT}" != "Normal" ]; then
+            SUMMARY_BASE="${SUMMARY_BASE}-${VARIANT}"
+          fi
+        fi
+        SUMMARY_FILE="/tmp/build-summary-${SUMMARY_BASE}.md"
+        echo "SUMMARY_BASE=${SUMMARY_BASE}" >> "$GITHUB_ENV"
+        
+        # Determine build status
+        if [ "${{ job.status }}" = "success" ]; then
+          STATUS="✅ Success"
+        else
+          STATUS="❌ Failed"
+        fi
+        
+        # Get kernel version from Image if available
+        KERNEL_VER_STR=""
+        if [ -f "${{ github.workspace }}/AnyKernel3/Image" ]; then
+          KERNEL_VER_STR=$(strings "${{ github.workspace }}/AnyKernel3/Image" | grep -m1 "^Linux version " | sed 's/Linux version //' || echo "")
+        fi
+        
+        # Get KSU version from env (set by kernelsu action)
+        KSU_VER="${KSU_VERSION:-N/A}"
+        KSU_TAG="${KSU_GIT_TAG:-N/A}"
+        ROOT_IMPL="${ROOT_IMPLEMENTATION:-KernelSU-Next (legacy path)}"
+        ROOT_MANAGER="${ROOT_MANAGER:-KernelSU-Next Manager}"
+        ROOT_VERSION="${ROOT_VERSION:-${KSU_TAG}}"
+        ROOT_SHA="${ROOT_COMMIT:-${KSU_COMMIT:-N/A}}"
+        NOMOUNT_SHA="${NOMOUNT_COMMIT:-N/A}"
+        SUSFS_SHA="${SUSFS_COMMIT:-N/A}"
+        
+        # Get SUSFS version from susfs.h if available
+        SUSFS_VER="N/A"
+        if [ -f "${{ github.workspace }}/kernel/common/include/linux/susfs.h" ]; then
+          SUSFS_VER=$(grep '#define SUSFS_VERSION' "${{ github.workspace }}/kernel/common/include/linux/susfs.h" | awk -F'"' '{print $2}' || echo "N/A")
+        fi
+        
+        {
+          echo "## ${{ inputs.android_version }} ${{ inputs.kernel_version }}.${{ inputs.sublevel }} (${{ inputs.variant }}) — ${STATUS}"
+          echo
+          echo "| Metric | Value |"
+          echo "|--------|-------|"
+          echo "| **Status** | ${STATUS} |"
+          echo "| **Kernel** | ${{ inputs.kernel_version }}.${{ inputs.sublevel }}-${{ inputs.android_version }}-${{ inputs.os_patch_level }} |"
+          if [ -n "$KERNEL_VER_STR" ]; then
+            echo "| **Version String** | \`${KERNEL_VER_STR}\` |"
+          fi
+          echo "| **KSU Version** | ${KSU_VER} |"
+          echo "| **KSU Tag** | ${KSU_TAG} |"
+          echo "| **Root Implementation** | ${ROOT_IMPL} |"
+          echo "| **Root Manager** | ${ROOT_MANAGER} |"
+          echo "| **Root Version** | ${ROOT_VERSION} |"
+          echo "| **Root Commit** | ${ROOT_SHA} |"
+          echo "| **SUSFS Version** | ${SUSFS_VER} |"
+          echo "| **SUSFS Commit** | ${SUSFS_SHA} |"
+          echo "| **NoMount Commit** | ${NOMOUNT_SHA} |"
+          echo "| **Feature Set** | ${{ inputs.feature_set }} |"
+          echo "| **Variant** | ${{ inputs.variant }} |"
+          echo
+          
+          # Kernel Fixes
+          if [ -f /tmp/kernel-fixes-summary.md ]; then
+            echo "### 🔧 Kernel Fixes"
+            cat /tmp/kernel-fixes-summary.md
+            echo
+          fi
+        } > "$SUMMARY_FILE"
+
+    - name: Upload Build Summary Artifact
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ env.SUMMARY_BASE }}-Summary
+        path: /tmp/build-summary-${{ env.SUMMARY_BASE }}.md
+        if-no-files-found: ignore
+        compression-level: 9
+
+    - name: Upload Artifacts
+      id: kernel-artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ steps.extract.outputs.file_name }}-AnyKernel3
+        path: ${{ github.workspace }}/AnyKernel3/**
+        if-no-files-found: ignore
+        compression-level: 9
+
+    - name: Write Build-verified only artifact metadata
+      if: ${{ success() && inputs.root_flavor != '' && inputs.nomount_commit != '' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -euo pipefail
+
+        metadata_file="${{ github.workspace }}/${{ steps.extract.outputs.file_name }}-metadata.json"
+        artifacts_api="${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100"
+        artifacts_json="$(curl --fail --silent --show-error \
+          --header "Authorization: Bearer ${GH_TOKEN}" \
+          --header "X-GitHub-Api-Version: 2022-11-28" \
+          "$artifacts_api")"
+
+        resolve_artifact() {
+          local artifact_name="$1"
+          local matches
+          matches="$(jq --arg name "$artifact_name" \
+            '[.artifacts[] | select(.name == $name and .expired == false)]' \
+            <<<"$artifacts_json")"
+          if [ "$(jq 'length' <<<"$matches")" -ne 1 ]; then
+            echo "Expected exactly one available artifact named ${artifact_name}." >&2
+            exit 1
+          fi
+          jq -r '.[0] | [.archive_download_url, .digest] | @tsv' <<<"$matches"
+        }
+
+        read -r kernel_artifact_url kernel_artifact_sha256 < <(
+          resolve_artifact "${{ steps.extract.outputs.file_name }}-AnyKernel3"
+        )
+        read -r nomount_module_url nomount_module_sha256 < <(
+          resolve_artifact "NoMount-Metamodule"
+        )
+
+        jq -n \
+          --arg method "GKI source build with SHA-pinned root implementation, SUSFS, and NoMount" \
+          --arg root_implementation "${ROOT_IMPLEMENTATION:-KernelSU-Next (legacy path)}" \
+          --arg root_manager "${ROOT_MANAGER:-KernelSU-Next Manager}" \
+          --arg root_version "${ROOT_VERSION:-${KSU_GIT_TAG:-N/A}}" \
+          --arg root_commit "${ROOT_COMMIT:-${KSU_COMMIT:-N/A}}" \
+          --arg susfs_commit "${SUSFS_COMMIT:-N/A}" \
+          --arg nomount_commit "${NOMOUNT_COMMIT:-N/A}" \
+          --arg android_branch "${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}" \
+          --arg kmi "${{ inputs.android_version }}-${{ inputs.kernel_version }}" \
+          --arg kernel_source_commit "${KERNEL_SOURCE_COMMIT:-N/A}" \
+          --arg provenance_url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+          --arg artifact_url "$kernel_artifact_url" \
+          --arg sha256 "$kernel_artifact_sha256" \
+          --arg nomount_module_commit "${{ inputs.nomount_commit }}" \
+          --arg nomount_module_url "$nomount_module_url" \
+          --arg nomount_module_sha256 "$nomount_module_sha256" \
+          --arg status "Build-verified only" \
+          --arg catalog_availability "eligible-with-provenance-and-checksums" \
+          --arg device_compatibility "not-validated" \
+          --arg flashability "not-guaranteed" \
+          --arg boot "not-guaranteed" \
+          '{
+            method: $method,
+            root: {
+              implementation: $root_implementation,
+              manager: $root_manager,
+              version: $root_version,
+              commit: $root_commit
+            },
+            susfs_revision: $susfs_commit,
+            nomount_commit: $nomount_commit,
+            android_branch: $android_branch,
+            kmi: $kmi,
+            kernel_source_commit: $kernel_source_commit,
+            provenance_url: $provenance_url,
+            artifact_url: $artifact_url,
+            sha256: $sha256,
+            nomount_metamodule: {
+              commit: $nomount_module_commit,
+              artifact_url: $nomount_module_url,
+              sha256: $nomount_module_sha256
+            },
+            catalog: {
+              availability: $catalog_availability,
+              device_compatibility: $device_compatibility,
+              flashability: $flashability,
+              boot: $boot
+            },
+            status: $status
+          }' > "$metadata_file"
+
+        jq -e '
+          .status == "Build-verified only" and
+          (.root.manager | length > 0) and
+          (.root.version | length > 0) and
+          (.susfs_revision | test("^[0-9a-f]{40}$")) and
+          (.nomount_commit | test("^[0-9a-f]{40}$")) and
+          (.kernel_source_commit | test("^[0-9a-f]{40}$")) and
+          (.artifact_url | startswith("https://")) and
+          (.sha256 | test("^sha256:[0-9a-f]{64}$")) and
+          (.nomount_metamodule.commit == .nomount_commit) and
+          (.nomount_metamodule.artifact_url | startswith("https://")) and
+          (.nomount_metamodule.sha256 | test("^sha256:[0-9a-f]{64}$")) and
+          .catalog.availability == "eligible-with-provenance-and-checksums" and
+          .catalog.device_compatibility == "not-validated" and
+          .catalog.flashability == "not-guaranteed" and
+          .catalog.boot == "not-guaranteed"
+        ' "$metadata_file" > /dev/null
+
+    - name: Upload Build-verified only artifact metadata
+      if: ${{ success() && inputs.root_flavor != '' && inputs.nomount_commit != '' }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ steps.extract.outputs.file_name }}-Metadata
+        path: ${{ github.workspace }}/${{ steps.extract.outputs.file_name }}-metadata.json
+        if-no-files-found: error
+        compression-level: 9

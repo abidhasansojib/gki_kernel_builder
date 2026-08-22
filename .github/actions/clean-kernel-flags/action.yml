@@ -1,0 +1,21 @@
+name: 'Clean Kernel Flags'
+description: 'Clean dirty flags for Bazel build'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Clean Dirty Flags and ABI Exports
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        if [ -f "build/kernel/kleaf/impl/stamp.bzl" ]; then
+          sed -i "/stable_scmversion_cmd/s/-maybe-dirty//g" build/kernel/kleaf/impl/stamp.bzl || true
+        fi
+        if [ -f "common/scripts/setlocalversion" ]; then
+          sed -i 's/-dirty//' common/scripts/setlocalversion || true
+        fi
+
+        # Commit changes to avoid dirty state during build
+        cd ${{ github.workspace }}/kernel/common
+        git add .
+        git commit -m "Wild: Clean Dirty Flag" || true

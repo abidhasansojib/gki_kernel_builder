@@ -1,0 +1,67 @@
+name: Setup Droidspaces-OSS
+description: Clone and apply Droidspaces-OSS patches for android16-6.12
+inputs:
+  version:
+    description: 'Kernel config version (e.g., android16-6.12)'
+    required: false
+    default: 'android16-6.12'
+  android_version:
+    description: 'Android version (e.g., android16)'
+    required: false
+    default: 'android16'
+  kernel_version:
+    description: 'Kernel version (e.g., 6.12)'
+    required: false
+    default: '6.12'
+  os_patch_level:
+    description: 'OS patch level (e.g., 2025-07)'
+    required: false
+    default: '2025-07'
+  sublevel:
+    description: 'Kernel sublevel'
+    required: false
+    default: '30'
+
+runs:
+  using: composite
+  steps:
+    - name: Download and Apply Droidspaces-OSS Patches
+      uses: ./.github/actions/retry
+      with:
+        command: |
+          git clone --depth=1 https://github.com/ravindu644/Droidspaces-OSS.git
+        attempts: 5
+        delay: 5
+        workdir: ${{ github.workspace }}
+
+    - name: Apply the SYSVIPC kABI fix
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        if [ -f "${{ github.workspace }}/Droidspaces-OSS/Documentation/resources/kernel-patches/GKI/kernel-6.12/001.GKI-6.12-or-above-fix_sysvipc_kabi.patch" ]; then
+          cp "${{ github.workspace }}/Droidspaces-OSS/Documentation/resources/kernel-patches/GKI/kernel-6.12/001.GKI-6.12-or-above-fix_sysvipc_kabi.patch" ./
+          patch -p1 < 001.GKI-6.12-or-above-fix_sysvipc_kabi.patch || echo "Patch already applied or skipped"
+        fi
+
+    - name: Export IPC symbols for module linkage
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        echo >> "${{ github.workspace }}/kernel/common/ipc/namespace.c"
+        echo 'EXPORT_SYMBOL_GPL(put_ipc_ns);' >> "${{ github.workspace }}/kernel/common/ipc/namespace.c"
+        echo >> "${{ github.workspace }}/kernel/common/ipc/msgutil.c"
+        echo 'EXPORT_SYMBOL_GPL(init_ipc_ns);' >> "${{ github.workspace }}/kernel/common/ipc/msgutil.c"
+
+    - name: Enable Kernel Configs
+      uses: ./.github/actions/set-kernel-config
+      with:
+        config_list: |
+          CONFIG_PID_NS=y
+          CONFIG_SYSVIPC=y
+          CONFIG_POSIX_MQUEUE=y
+          CONFIG_IPC_NS=y
+          CONFIG_DEVTMPFS=y
+          CONFIG_BINFMT_MISC=y
+          CONFIG_BINFMT_SCRIPT=y
+          CONFIG_BINFMT_ELF=y
+          CONFIG_USER_NS=y

@@ -1,0 +1,42 @@
+name: 'Apply NTSync Patches'
+description: 'Apply ntsync compatibility patches and enable CONFIG_NTSYNC in defconfig'
+inputs:
+  version:
+    description: 'Kernel config version (e.g., android16-6.12)'
+    required: false
+    default: 'android16-6.12'
+  kernel_version:
+    description: 'Kernel version (e.g., 6.12)'
+    required: false
+    default: '6.12'
+  sublevel:
+    description: 'Kernel sublevel'
+    required: false
+    default: '30'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Apply NTSync Patch
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        set -euo pipefail
+
+        echo "Removing pre-existing ntsync files for android16-6.12"
+        rm -f include/uapi/linux/ntsync.h
+        rm -f drivers/misc/ntsync.c
+
+        if [ -f "${{ github.workspace }}/kernel_patches/common/ntsync/ntsync_compat_android16-6.12.patch" ]; then
+          patch -p1 < "${{ github.workspace }}/kernel_patches/common/ntsync/ntsync_compat_android16-6.12.patch" || echo "ntsync_compat patch already applied or skipped"
+        fi
+
+        if [ -f "${{ github.workspace }}/kernel_patches/common/ntsync/ntsync_base.patch" ]; then
+          patch -p1 < "${{ github.workspace }}/kernel_patches/common/ntsync/ntsync_base.patch" || echo "ntsync_base patch already applied or skipped"
+        fi
+
+    - name: Enable NTSync
+      uses: ./.github/actions/set-kernel-config
+      with:
+        config_list: |
+          CONFIG_NTSYNC=y

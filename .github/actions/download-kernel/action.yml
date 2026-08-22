@@ -1,0 +1,115 @@
+name: 'Download Kernel Repository'
+description: 'Initialize and sync Android kernel source repository'
+
+inputs:
+  android_version:
+    description: 'Android version (e.g., android16)'
+    required: false
+    default: 'android16'
+  kernel_version:
+    description: 'Kernel version (e.g., 6.12)'
+    required: false
+    default: '6.12'
+  version:
+    description: 'Combined version (e.g., android16-6.12)'
+    required: false
+    default: 'android16-6.12'
+  os_patch_level:
+    description: 'OS patch level (e.g., 2025-07)'
+    required: false
+    default: '2025-07'
+
+outputs:
+  deprecated_branch:
+    description: 'Whether the branch is deprecated'
+    value: ${{ steps.sync.outputs.deprecated }}
+
+runs:
+  using: composite
+  steps:
+    - name: Initialize and Sync Kernel Repository
+      id: sync
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        set -euo pipefail
+
+        VERSION="${{ inputs.version }}"
+        ANDROID_PART=$(echo "$VERSION" | cut -d- -f1)
+        KERNEL_PART=$(echo "$VERSION" | cut -d- -f2)
+        FORMATTED_BRANCH="${ANDROID_PART}-${KERNEL_PART}-${{ inputs.os_patch_level }}"
+
+        init_repo() {
+          repo init -u https://android.googlesource.com/kernel/manifest -b common-${FORMATTED_BRANCH} --depth=1 || { echo "ERROR: repo init failed" >&2; return 1; }
+          REMOTE_BRANCH=$(git ls-remote https://android.googlesource.com/kernel/common ${FORMATTED_BRANCH}) || { echo "ERROR: git ls-remote failed" >&2; return 1; }
+          DEFAULT_MANIFEST_PATH=.repo/manifests/default.xml
+          DEPRECATED=false
+          if grep -q deprecated <<< "$REMOTE_BRANCH"; then
+            sed -i "s/\"${FORMATTED_BRANCH}\"/\"deprecated\/${FORMATTED_BRANCH}\"/g" "$DEFAULT_MANIFEST_PATH"
+            echo "⚠ Note: Branch ${FORMATTED_BRANCH} is considered deprecated."
+            DEPRECATED=true
+          fi
+          echo "deprecated=$DEPRECATED" >> $GITHUB_OUTPUT
+        }
+
+        MAX_RETRIES=3
+        RETRY_DELAY_SHORT=15
+        SYNC_TIMEOUT="15m"
+        attempt=1
+
+        while [ $attempt -le $MAX_RETRIES ]; do
+          echo "Attempt $attempt/$MAX_RETRIES: initialize and sync kernel repository (sync timeout $SYNC_TIMEOUT)..."
+          if init_repo; then
+            if timeout $SYNC_TIMEOUT repo sync -c --current-branch --no-clone-bundle --no-tags --jobs-checkout=4 -j4; then
+              echo "Kernel repository initialization and sync succeeded on attempt $attempt."
+              break
+            else
+              rc=$?
+              if [ $rc -eq 124 ]; then
+                echo "repo sync timed out after $SYNC_TIMEOUT."
+              else
+                echo "repo sync failed with exit code $rc."
+              fi
+            fi
+          else
+            rc=$?
+            echo "repo init or branch preflight failed with exit code $rc."
+          fi
+
+          if [ $attempt -lt $MAX_RETRIES ]; then
+            echo "Cleaning workspace and retrying after ${RETRY_DELAY_SHORT}s..."
+            rm -rf .repo || true
+            sleep $RETRY_DELAY_SHORT
+          else
+            echo "All $MAX_RETRIES attempts failed." >&2
+            exit $rc
+          fi
+          attempt=$((attempt+1))
+        done
+
+    - name: Capture Kernel Common Commit Metadata
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        set -euo pipefail
+
+        if [[ ! -d common ]]; then
+          echo "WARNING: common folder not found; skipping commit metadata capture."
+          exit 0
+        fi
+
+        cd common
+
+        if [[ ! -d .git ]]; then
+          echo "WARNING: common is not a git checkout; skipping commit metadata capture."
+          exit 0
+        fi
+
+        COMMIT_DATE=$(git log -1 --format=%cI)
+        COMMIT_MSG=$(git log -1 --format=%s)
+        COMMIT_SHA=$(git rev-parse HEAD)
+
+        echo "KERNEL_SOURCE_COMMIT=$COMMIT_SHA" >> "$GITHUB_ENV"
+        echo "Kernel common commit date: $COMMIT_DATE"
+        echo "Kernel common commit msg: $COMMIT_MSG"
+        echo "Kernel common commit SHA: $COMMIT_SHA"

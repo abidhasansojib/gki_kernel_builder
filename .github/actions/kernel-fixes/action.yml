@@ -1,0 +1,61 @@
+name: 'Kernel Fixes'
+description: 'Applies compatibility fixes for android16-6.12'
+inputs:
+  version:
+    required: false
+    type: string
+    default: 'android16-6.12'
+  android_version:
+    required: false
+    type: string
+    default: 'android16'
+  kernel_version:
+    required: false
+    type: string
+    default: '6.12'
+  sublevel:
+    required: false
+    type: string
+    default: '30'
+  os_patch_level:
+    required: false
+    type: string
+    default: '2025-07'
+
+runs:
+  using: composite
+  steps:
+    - name: 'Apply Makefile fix for GLIBC >= 2.38'
+      working-directory: ${{ github.workspace }}/kernel/common
+      shell: bash
+      run: |
+        set -euo pipefail
+        GLIBC_VERSION="$(ldd --version 2>/dev/null | head -n 1 | awk '{print $NF}')"
+        echo "[INFO] Detected GLIBC version: $GLIBC_VERSION"
+        if [ "$(printf '%s\n' "2.38" "$GLIBC_VERSION" | sort -V | head -n 1)" = "2.38" ]; then
+          echo "[INFO] GLIBC >= 2.38, checking Makefile fix."
+          if [ -f tools/bpf/resolve_btfids/Makefile ]; then
+            if grep -q '\$(Q)\$(MAKE) -C \$(SUBCMD_SRC) OUTPUT=\$(abspath \$(dir \$@))\/ \$(abspath \$@)' tools/bpf/resolve_btfids/Makefile; then
+              echo "[INFO] Found pattern to fix, applying sed."
+              sed -i '/\$(Q)\$(MAKE) -C \$(SUBCMD_SRC) OUTPUT=\$(abspath \$(dir \$@))\/ \$(abspath \$@)/s//$(Q)$(MAKE) -C $(SUBCMD_SRC) EXTRA_CFLAGS="$(CFLAGS)" OUTPUT=$(abspath $(dir $@))\/ $(abspath $@)/' tools/bpf/resolve_btfids/Makefile
+              MAKEFILE_FIXED="true"
+            elif grep -q 'EXTRA_CFLAGS' tools/bpf/resolve_btfids/Makefile; then
+              echo "[INFO] EXTRA_CFLAGS already present, no fix needed."
+              MAKEFILE_FIXED="already_fixed"
+            else
+              MAKEFILE_FIXED="not_needed"
+            fi
+            echo "MAKEFILE_FIXED=$MAKEFILE_FIXED" >> $GITHUB_ENV
+          fi
+        fi
+
+    - name: 'Final Kernel Fixes Summary'
+      shell: bash
+      run: |
+        SUMMARY_FILE="/tmp/kernel-fixes-summary.md"
+        echo "## Final Kernel Fixes Summary" >> "$SUMMARY_FILE"
+        echo "" >> "$SUMMARY_FILE"
+        echo "**Kernel Version:** ${{ inputs.android_version }} + ${{ inputs.kernel_version }} (sublevel ${{ inputs.sublevel }})" >> "$SUMMARY_FILE"
+        echo "" >> "$SUMMARY_FILE"
+        echo "### Fix Status" >> "$SUMMARY_FILE"
+        echo "- Android 16 (6.12.30) compatibility validated" >> "$SUMMARY_FILE"

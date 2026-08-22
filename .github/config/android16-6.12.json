@@ -1,0 +1,9 @@
+{
+  "version": "android16-6.12",
+  "include": [
+    {
+      "sublevel": "30",
+      "date": "2025-07"
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+name: 'Apply SUSFS Patches'
+description: 'Copy base SUSFS patches and apply version-specific fake patches'
+inputs:
+  version:
+    description: 'Kernel config version (e.g., android16-6.12)'
+    required: false
+    default: 'android16-6.12'
+  sublevel:
+    description: 'Kernel sublevel'
+    required: false
+    default: '30'
+  os_patch_level:
+    description: 'OS patch level (e.g., 2025-07)'
+    required: false
+    default: '2025-07'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Apply Kernel SUSFS Patches
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        # Apply base SUSFS patches
+        cp "${{ github.workspace }}/susfs4ksu/kernel_patches/fs/"* "${{ github.workspace }}/kernel/common/fs/"
+        cp "${{ github.workspace }}/susfs4ksu/kernel_patches/include/linux/"* "${{ github.workspace }}/kernel/common/include/linux/"
+        cp ${{ github.workspace }}/susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ inputs.version }}.patch ./
+
+    - name: Apply Android 16 6.12 Fake Patches
+      shell: bash
+      if: inputs.version == 'android16-6.12'
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        echo "Applying 6.12 SUSFS fixes"
+        if [ "${{ inputs.sublevel }}" -ge "58" ]; then
+          echo "Applying exec.c Android 16 6.12 Fake Patch"
+          sed -i '/^#include <linux\/dma-buf.h>$/d' fs/exec.c
+        fi
+        if [ "${{ inputs.sublevel }}" -ge "69" ]; then
+          echo "Applying task_mmu.c Android 16 6.12 Fake Patch"
+          sed -i 's/vma_data_pages/vma_pages/g' fs/proc/task_mmu.c
+        fi
+
+    - name: Apply Kernel SUSFS Patches
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        patch -p1 < 50_add_susfs_in_gki-${{ inputs.version }}.patch
+
+        # Fallback definition for VMA_PAD_START if not provided by kernel headers
+        if grep -q 'VMA_PAD_START(' fs/proc/task_mmu.c && ! grep -qE '#include <linux/pgsize_migration(_inline)?\.h>|define VMA_PAD_START' fs/proc/task_mmu.c; then
+          sed -i '1a #ifndef VMA_PAD_START\n#define VMA_PAD_START(vma) ((vma)->vm_end)\n#endif' fs/proc/task_mmu.c
+          echo "Added VMA_PAD_START fallback definition to fs/proc/task_mmu.c"
+        fi
+
+        # Declare __fold_filemap_fixup_entry if referenced
+        if grep -q '__fold_filemap_fixup_entry' fs/proc/task_mmu.c && ! grep -q '#include <linux/page_size_compat.h>' fs/proc/task_mmu.c; then
+          sed -i '/#include <linux\/pkeys.h>/a #include <linux/page_size_compat.h>' fs/proc/task_mmu.c
+          echo "Added page_size_compat.h include to fs/proc/task_mmu.c"
+        fi

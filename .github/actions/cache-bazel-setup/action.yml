@@ -1,0 +1,19 @@
+name: 'Setup Bazel Cache'
+description: 'Create Bazel cache directory for kernel build'
+inputs:
+  version:
+    description: 'Kernel config version'
+    required: false
+    default: 'android16-6.12'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Bazel Cache
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        set -euo pipefail
+        export BAZEL_CACHE_DIR="/home/runner/.cache/bazel"
+        mkdir -p "$BAZEL_CACHE_DIR"
+        echo "BAZEL_CACHE_DIR: $BAZEL_CACHE_DIR"

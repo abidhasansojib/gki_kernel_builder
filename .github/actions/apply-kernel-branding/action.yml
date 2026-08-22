@@ -1,0 +1,34 @@
+name: 'Apply Kernel Branding & Timestamp'
+description: 'Apply Wild kernel branding to kernel version string'
+inputs:
+  variant:
+    description: 'Variant of kernel to apply branding to'
+    required: false
+    default: 'Normal'
+  kernel_version:
+    description: 'Kernel version (e.g., 6.12)'
+    required: false
+    default: '6.12'
+  android_version:
+    description: 'Android version (e.g., android16)'
+    required: false
+    default: 'android16'
+  version:
+    description: 'Combined version (e.g., android16-6.12)'
+    required: false
+    default: 'android16-6.12'
+  sublevel:
+    description: 'Sublevel of kernel version (e.g., 30)'
+    required: false
+    default: '30'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Apply Kernel Name Branding
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        KERNEL_STRING="${{ inputs.kernel_version }}.${{ inputs.sublevel }}-${{ inputs.android_version }}"
+        sed -i '$d' scripts/setlocalversion && echo "echo \"$KERNEL_STRING-Wild\"" >> scripts/setlocalversion
+        chmod +x scripts/setlocalversion

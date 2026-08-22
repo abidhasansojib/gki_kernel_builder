@@ -1,0 +1,37 @@
+name: 'Setup Networking'
+description: 'Set up all networking options (IP Set, TCP CC, Qdisc, BBRv3, CIFS, Wireguard)'
+inputs:
+  version:
+    description: 'Kernel config version (e.g., android16-6.12)'
+    required: false
+    default: 'android16-6.12'
+  kernel_version:
+    description: 'Kernel version (e.g., 6.12)'
+    required: false
+    default: '6.12'
+  android_version:
+    description: 'Android version (e.g., android16)'
+    required: false
+    default: 'android16'
+  sublevel:
+    description: 'Kernel sublevel'
+    required: false
+    default: '30'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Networking Configs
+      uses: ./.github/actions/networking-config
+
+    - name: Apply BBRv3 Patches
+      uses: ./.github/actions/bbrv3
+      with:
+        version: ${{ inputs.version }}
+        kernel_version: ${{ inputs.kernel_version }}
+        sublevel: ${{ inputs.sublevel }}
+
+    - name: Setup CIFS Configs
+      uses: ./.github/actions/cifs
+      with:
+        version: ${{ inputs.version }}

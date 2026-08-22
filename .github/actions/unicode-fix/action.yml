@@ -1,0 +1,20 @@
+name: 'Apply Unicode Fix Patch'
+description: 'Apply unicode bypass fix patch'
+inputs:
+  kernel_version:
+    description: 'Kernel version (e.g., 6.12)'
+    required: false
+    default: '6.12'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Apply Unicode Fix Patch
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        set -euo pipefail
+        echo "Patching unicode for 6.12!"
+        if [ -f "${{ github.workspace }}/kernel_patches/common/unicode_bypass_fix_6.1+.patch" ]; then
+          patch -p1 --forward < "${{ github.workspace }}/kernel_patches/common/unicode_bypass_fix_6.1+.patch" || echo "Unicode patch already applied or skipped"
+        fi

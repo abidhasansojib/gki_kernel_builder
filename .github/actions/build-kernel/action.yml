@@ -1,0 +1,80 @@
+name: 'Build Kernel'
+description: 'Builds kernel using Bazel (kleaf)'
+inputs:
+  bypass:
+    description: 'Whether to add the bypass hack or not'
+    required: true
+  version:
+    description: 'Kernel config version (e.g., android16-6.12)'
+    required: false
+    default: 'android16-6.12'
+
+runs:
+  using: composite
+  steps:
+  - name: 'Activate Bypass'
+    shell: bash
+    working-directory: ${{ github.workspace }}/kernel
+    run: |
+      set -euo pipefail
+      if [ "${{ inputs.bypass }}" = "true" ]; then
+        TARGET_FILE="${{ github.workspace }}/kernel/common/kernel/module/version.c"
+
+        sed -i '/bad_version:/{:a;n;/return 0;/{s/return 0;/return 1;/;b};ba}' "$TARGET_FILE"
+
+        if ! grep -A 5 "bad_version:" "$TARGET_FILE" | grep -q "return 1;"; then
+          echo "Patch failed! 'return 1;' not found at bad_version:"
+          grep -A 10 "bad_version:" "$TARGET_FILE" || true
+          exit 1
+        fi
+      else
+        echo "Bypass hack not applied as per input parameter."
+      fi
+
+  - name: 'Build Kernel'
+    shell: bash
+    working-directory: ${{ github.workspace }}/kernel
+    run: |
+      if [ "${{ inputs.bypass }}" = "false" ]; then
+        sed -i '/name = "kernel_aarch64",/a\    check_defconfig = "disabled",' common/BUILD.bazel
+      fi
+      tools/bazel build \
+        --config=fast \
+        --config=stamp \
+        --disk_cache=/home/runner/.cache/bazel \
+        //common:kernel_aarch64/Image
+
+  - name: 'Gather Build Artifacts'
+    shell: bash
+    working-directory: ${{ github.workspace }}/kernel
+    run: |
+      set -euo pipefail
+      if [ -f "bazel-bin/common/kernel_aarch64/Image" ]; then
+        echo "Found Image at bazel-bin/common/kernel_aarch64/Image"
+        if [[ "${{ inputs.bypass }}" == "true" ]]; then
+          cp "bazel-bin/common/kernel_aarch64/Image" "${{ github.workspace }}/AnyKernel3/Bypass-Image"
+        else
+          cp "bazel-bin/common/kernel_aarch64/Image" "${{ github.workspace }}/AnyKernel3/Image"
+        fi
+        exit 0
+      fi
+      if [ -f "/home/runner/out/dist/Image" ]; then
+        echo "Found Image at /home/runner/out/dist/Image"
+        if [[ "${{ inputs.bypass }}" == "true" ]]; then
+          cp "/home/runner/out/dist/Image" "${{ github.workspace }}/AnyKernel3/Bypass-Image"
+        else
+          cp "/home/runner/out/dist/Image" "${{ github.workspace }}/AnyKernel3/Image"
+        fi
+        exit 0
+      fi
+
+      exit 1
+
+  - name: 'Patch AnyKernel3 for Bypass Hack'
+    shell: bash
+    if: ${{ inputs.bypass == 'true' }}
+    working-directory: ${{ github.workspace }}/AnyKernel3
+    run: |
+      set -euo pipefail
+      cp ${{ github.action_path }}/patches/bypass.patch "${{ github.workspace }}/AnyKernel3/bypass.patch"
+      patch -p1 < bypass.patch

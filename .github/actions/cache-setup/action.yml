@@ -1,0 +1,27 @@
+name: 'Setup Cache'
+description: 'Sets up Bazel cache configuration for the build environment'
+inputs:
+  version:
+    description: 'Kernel config version'
+    required: false
+    default: 'android16-6.12'
+  kernel_version:
+    description: 'Kernel version'
+    required: false
+    default: '6.12'
+  android_version:
+    description: 'Android version'
+    required: false
+    default: 'android16'
+  sublevel:
+    description: 'Sublevel of kernel version'
+    required: false
+    default: '30'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Bazel Cache
+      uses: ./.github/actions/cache-bazel-setup
+      with:
+        version: ${{ inputs.version }}
