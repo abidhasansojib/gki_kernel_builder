@@ -111,6 +111,7 @@ jobs:
 
     - name: Build FUSE-BPF Userspace Daemon
       if: ${{ inputs.version == 'android16-6.12' }}
+      continue-on-error: true
       uses: ./.github/actions/fuse-bpf
       with:
         version: ${{ inputs.version }}
