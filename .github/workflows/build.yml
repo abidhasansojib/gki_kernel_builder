@@ -489,14 +489,24 @@ jobs:
           if-no-files-found: ignore
           compression-level: 9
 
-      - name: Upload Artifacts
+      - name: 📦 Package AnyKernel3 Flashable ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP_NAME="${{ steps.extract.outputs.file_name }}-AnyKernel3.zip"
+          cd "${{ github.workspace }}/AnyKernel3"
+          zip -r -q -9 "${{ github.workspace }}/${ZIP_NAME}" .
+          echo "Successfully created flashable ZIP: ${ZIP_NAME}"
+          ls -lh "${{ github.workspace }}/${ZIP_NAME}"
+
+      - name: Upload AnyKernel3 ZIP Artifact
         id: kernel-artifact
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.extract.outputs.file_name }}-AnyKernel3
-          path: ${{ github.workspace }}/AnyKernel3/**
-          if-no-files-found: ignore
-          compression-level: 9
+          path: ${{ github.workspace }}/${{ steps.extract.outputs.file_name }}-AnyKernel3.zip
+          if-no-files-found: error
+          compression-level: 0
 
   summary:
     runs-on: ubuntu-latest
@@ -685,35 +695,26 @@ jobs:
             cat release_body.md
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Download AnyKernel3 Artifacts
+      - name: 📥 Download All Release Artifacts
         uses: actions/download-artifact@v7
         with:
           path: release-assets
-          pattern: '*-AnyKernel3'
-          merge-multiple: false
+          merge-multiple: true
 
-      - name: Download NoMount metamodule
-        uses: actions/download-artifact@v7
-        with:
-          path: release-assets
-          pattern: '*NoMount-Metamodule'
-          merge-multiple: false
-          if-no-files-found: ignore
-
-      - name: Zip AnyKernel3 for Release
+      - name: 🔍 Inspect and Organize Release Assets
+        shell: bash
         run: |
-          set -e
-          shopt -s nullglob
+          set -euo pipefail
+          echo "=== Downloaded Artifacts in release-assets ==="
+          ls -laR release-assets/
 
-          for dir in release-assets/*-AnyKernel3; do
-            zip_name="${dir}.zip"
-            rm -f "$zip_name"
-            cd "$dir"
-            zip -r -q -9 "../$(basename "$zip_name")" .
-            cd - >/dev/null
-          done
+          # Move any nested zip or img files from subdirectories to release-assets root
+          find release-assets/ -mindepth 2 -type f \( -name "*.zip" -o -name "*.img" \) -exec mv -fv {} release-assets/ \;
 
-      - name: Create Release
+          echo "=== Final Assets to Upload to Release ==="
+          ls -la release-assets/
+
+      - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.new_tag }}
@@ -724,5 +725,6 @@ jobs:
           files: |
             release-assets/*.zip
             release-assets/**/*.zip
-            release-assets/*-boot*.img
-            release-assets/**/*-boot*.img
+            release-assets/*.img
+            release-assets/**/*.img
+
