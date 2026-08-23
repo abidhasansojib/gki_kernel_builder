@@ -50,6 +50,7 @@ Please do thorough research and understand the features included before flashing
 
 ## 🏆 Credits
 
+- 🏗️ **GKI KernelSU SUSFS**: Based on work by [WildKernels](https://github.com/WildKernels/GKI_KernelSU_SUSFS)
 - 🔐 **KernelSU**: Developed by [tiann](https://github.com/tiann/KernelSU)
 - 🚀 **KernelSU-Next**: Developed by [rifsxd](https://github.com/KernelSU-Next/KernelSU-Next) and [pershoot](https://github.com/pershoot/KernelSU-Next)
 - 🛡️ **SUSFS**: Developed by [simonpunk](https://gitlab.com/simonpunk/susfs4ksu.git)
