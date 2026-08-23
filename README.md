@@ -1,13 +1,13 @@
 <div align="center">
 
-# ⚡ Android 16 (6.12.30) GKI Kernel Builder
+# GKI Kernel Builder
 
 [![KernelSU](https://img.shields.io/badge/KernelSU--Next-Supported-green)](https://github.com/pershoot/KernelSU-Next)
 [![SUSFS](https://img.shields.io/badge/SUSFS-Integrated-orange)](https://gitlab.com/simonpunk/susfs4ksu)
 [![Android](https://img.shields.io/badge/Android-16-blue)](https://android.googlesource.com/)
 [![Linux](https://img.shields.io/badge/Kernel-6.12.30-red)](https://kernel.org/)
 
-An automated GitHub Actions builder for building Android 16 (Kernel 6.12.30, 2025-07) Generic Kernel Images (GKI) with KernelSU-Next, SUSFS v2.2.0, NoMount VFS hooks, Baseband Guard, DroidSpaces-OSS, BBRv3, and NTSync.
+An automated GitHub Actions builder for building Android 16 (Kernel 6.12.30, 2025-07) Generic Kernel Images (GKI) with KernelSU-Next, SUSFS, NoMount VFS hooks, Baseband Guard, DroidSpaces-OSS, BBRv3, and NTSync.
 
 </div>
 
@@ -23,7 +23,7 @@ Please do thorough research and understand the features included before flashing
 ## ✨ Features
 
 - 🔐 **KernelSU-Next**: Next-generation kernel-based root solution for Android GKI devices.
-- 🛡️ **SUSFS v2.2.0**: Advanced root-hiding kernel patches and userspace integration.
+- 🛡️ **SUSFS**: Advanced root-hiding kernel patches and userspace integration.
 - 🪝 **NoMount VFS Hooks**: Advanced VFS mounting hiding and stealth capabilities.
 - 🛡️ **Baseband Guard (BBG)**: Security module for critical partition write protection.
 - 📦 **DroidSpaces-OSS**: Lightweight container runtime support.
