@@ -37,11 +37,11 @@ Please do thorough research and understand the features included before flashing
 
 1. **Prerequisites**:
    - Unlocked bootloader.
-   - Backup of your current boot/init_boot image.
+   - Backup of your current boot image.
    - Flashing utility (e.g. [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher)).
 
 2. **Flashing**:
-   - Download the generated `AnyKernel3.zip` artifact from the GitHub Actions run.
+   - Download the generated `AnyKernel3.zip` artifact from the GitHub Actions run or Github Release.
    - Flash the ZIP using Kernel Flasher or custom recovery.
    - Install the matching KernelSU-Next Manager application.
    - Reboot device.
