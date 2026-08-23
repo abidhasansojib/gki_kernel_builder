@@ -41,4 +41,4 @@ runs:
         retry git clone https://github.com/WildKernels/kernel_patches.git "${{ github.workspace }}/kernel_patches"
 
         if [ -d "${{ github.workspace }}/AnyKernel3" ]; then rm -rf "${{ github.workspace }}/AnyKernel3"; fi
-        retry git clone https://github.com/WildKernels/AnyKernel3.git -b gki-2.0 "${{ github.workspace }}/AnyKernel3"
+        retry git clone https://github.com/abidhasansojib/AnyKernel3.git -b gki-2.0 "${{ github.workspace }}/AnyKernel3"
