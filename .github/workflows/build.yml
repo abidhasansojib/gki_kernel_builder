@@ -695,26 +695,51 @@ jobs:
             cat release_body.md
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: 📥 Download All Release Artifacts
+      - name: 📥 Download All Build Artifacts
         uses: actions/download-artifact@v7
         with:
-          path: release-assets
-          merge-multiple: true
+          path: raw-artifacts
 
-      - name: 🔍 Inspect and Organize Release Assets
+      - name: 📦 Prepare and Package All Artifacts for Release
         shell: bash
         run: |
           set -euo pipefail
-          echo "=== Downloaded Artifacts in release-assets ==="
-          ls -laR release-assets/
+          mkdir -p release-assets
 
-          # Move any nested zip or img files from subdirectories to release-assets root
-          find release-assets/ -mindepth 2 -type f \( -name "*.zip" -o -name "*.img" \) -exec mv -fv {} release-assets/ \;
+          echo "=== Processing all downloaded artifacts ==="
+          for item in raw-artifacts/*; do
+            [ -e "$item" ] || continue
+            base_name="$(basename "$item")"
 
-          echo "=== Final Assets to Upload to Release ==="
-          ls -la release-assets/
+            # Skip internal summaries if any remain
+            if [[ "$base_name" == *"-Summary" ]]; then
+              continue
+            fi
 
-      - name: 🚀 Create GitHub Release
+            if [ -d "$item" ]; then
+              # Check if directory contains exactly one zip file
+              zip_count=$(find "$item" -maxdepth 1 -type f -name "*.zip" | wc -l)
+              file_count=$(find "$item" -maxdepth 1 -type f | wc -l)
+              dir_count=$(find "$item" -mindepth 1 -maxdepth 1 -type d | wc -l)
+
+              if [ "$zip_count" -eq 1 ] && [ "$file_count" -eq 1 ] && [ "$dir_count" -eq 0 ]; then
+                # Move the single zip out directly
+                single_zip=$(find "$item" -maxdepth 1 -type f -name "*.zip")
+                mv -fv "$single_zip" release-assets/
+              else
+                # Directory contains multiple files/subdirs or non-zip files -> zip the whole directory
+                echo "Zipping folder: $base_name into release-assets/${base_name}.zip"
+                (cd "$item" && zip -r -q -9 "${GITHUB_WORKSPACE}/release-assets/${base_name}.zip" .)
+              fi
+            elif [ -f "$item" ]; then
+              mv -fv "$item" release-assets/
+            fi
+          done
+
+          echo "=== All Assets Ready for Release ==="
+          ls -lh release-assets/
+
+      - name: 🚀 Publish to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.new_tag }}
@@ -722,9 +747,6 @@ jobs:
           body_path: release_body.md
           draft: false
           prerelease: ${{ inputs.release_type == 'Pre-Release' }}
-          files: |
-            release-assets/*.zip
-            release-assets/**/*.zip
-            release-assets/*.img
-            release-assets/**/*.img
+          files: release-assets/*
+
 
