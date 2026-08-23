@@ -495,7 +495,8 @@ jobs:
           set -euo pipefail
           ZIP_NAME="${{ steps.extract.outputs.file_name }}-AnyKernel3.zip"
           cd "${{ github.workspace }}/AnyKernel3"
-          zip -r -q -9 "${{ github.workspace }}/${ZIP_NAME}" .
+          rm -rf .git .github .gitignore
+          zip -r -q -9 "${{ github.workspace }}/${ZIP_NAME}" . -x ".git*" -x "*/.git*"
           echo "Successfully created flashable ZIP: ${ZIP_NAME}"
           ls -lh "${{ github.workspace }}/${ZIP_NAME}"
 
