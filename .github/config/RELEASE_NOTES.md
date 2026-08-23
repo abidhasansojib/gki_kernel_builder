@@ -1,4 +1,4 @@
-# Android 16 (Kernel 6.12.30) GKI Release #
+# GKI Kernel Release #
 
 **IMPORTANT DISCLAIMER**
 
