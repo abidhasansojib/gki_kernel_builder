@@ -418,7 +418,7 @@ jobs:
 
           KSU_GIT_TAG=$(git describe --tags --abbrev=0 "$STOCK_COMMIT" 2>/dev/null || echo "no-tag")
 
-          MANAGER_RUN_ID=$(curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors "https://api.github.com/repos/KernelSU-Next/KernelSU-Next/actions/workflows/build-manager-ci.yml/runs?head_sha=${STOCK_COMMIT}" | jq -r '.workflow_runs[0].id // empty')
+          MANAGER_RUN_ID=$(curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors -H "Authorization: Bearer ${GH_TOKEN}" "https://api.github.com/repos/KernelSU-Next/KernelSU-Next/actions/workflows/build-manager-ci.yml/runs?head_sha=${STOCK_COMMIT}" | jq -r '.workflow_runs[0].id // empty')
           if [[ -n "${MANAGER_RUN_ID:-}" ]]; then
             KSU_MANAGER="https://github.com/KernelSU-Next/KernelSU-Next/actions/runs/${MANAGER_RUN_ID}"
           else
@@ -483,7 +483,7 @@ jobs:
           done
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.new_tag }}
           name: ${{ steps.release_meta.outputs.release_title }}
@@ -491,5 +491,7 @@ jobs:
           draft: false
           prerelease: ${{ inputs.release_type == 'Pre-Release' }}
           files: |
+            release-assets/*.zip
             release-assets/**/*.zip
+            release-assets/*-boot*.img
             release-assets/**/*-boot*.img
