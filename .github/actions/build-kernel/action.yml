@@ -41,6 +41,7 @@ runs:
       tools/bazel build \
         --config=fast \
         --config=stamp \
+        --allow_undeclared_modules \
         --disk_cache=/home/runner/.cache/bazel \
         //common:kernel_aarch64/Image
 
@@ -48,6 +49,7 @@ runs:
       tools/bazel build \
         --config=fast \
         --config=stamp \
+        --allow_undeclared_modules \
         --disk_cache=/home/runner/.cache/bazel \
         //common:kernel_aarch64/modules 2>/dev/null || true
 
