@@ -26,11 +26,29 @@ on:
         type: string
         required: false
         default: "2025-07"
+      root_flavor:
+        description: "Root Flavor"
+        type: choice
+        options:
+          - KernelSU-Next
+          - KernelSU
+          - ReSukiSU
+        default: KernelSU-Next
       feature_set:
         description: "Feature Set"
         type: choice
         options:
           - FULL
+          - ROOT+SUSFS+NOMOUNT
+          - ROOT+SUSFS+BBG+NET+DS
+          - ROOT+SUSFS+BBG
+          - ROOT+SUSFS+NET
+          - ROOT+SUSFS+DS
+          - ROOT+SUSFS
+          - ROOT+BBG
+          - ROOT+NET
+          - ROOT+DS
+          - ROOT
           - KSUN+SUSFS+NOMOUNT
           - KSUN+SUSFS+BBG+NET+DS
           - KSUN+SUSFS+BBG
@@ -45,7 +63,7 @@ on:
           - NONE
         default: FULL
       ksu_branch:
-        description: "KernelSU branch or commit (empty = latest dev-susfs branch tip)"
+        description: "KernelSU branch or commit (empty = default for selected flavor)"
         type: string
         required: false
         default: ""
@@ -203,7 +221,7 @@ jobs:
           testing: false
 
       - name: Setup more Swap (for LTO)
-        uses: thejerrybao/setup-swap-space@v1
+        uses: pierotofy/set-swap-space@master
         with:
           swap-size-gb: 16
 
@@ -275,10 +293,11 @@ jobs:
           sublevel: ${{ steps.extract.outputs.sublevel }}
           os_patch_level: ${{ matrix.os_patch_level }}
 
-      - name: Setup KernelSU-Next
-        if: ${{ contains(inputs.feature_set, 'KSUN') || inputs.feature_set == 'FULL' }}
+      - name: Setup Root Implementation
+        if: ${{ contains(inputs.feature_set, 'KSUN') || contains(inputs.feature_set, 'ROOT') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/kernelsu
         with:
+          flavor: ${{ inputs.root_flavor }}
           ksu_branch: ${{ inputs.ksu_branch }}
 
       - name: SUSFS
@@ -291,6 +310,27 @@ jobs:
           kernel_version: ${{ matrix.kernel_version }}
           os_patch_level: ${{ matrix.os_patch_level }}
           sublevel: ${{ steps.extract.outputs.sublevel }}
+          root_flavor: ${{ inputs.root_flavor }}
+          nomount_enabled: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
+
+      - name: Fix selinux_hide pointer-bool-conversion on 6.12
+        if: ${{ contains(inputs.feature_set, 'KSUN') || contains(inputs.feature_set, 'ROOT') || inputs.feature_set == 'FULL' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in $(find "${{ github.workspace }}/kernel" -name selinux_hide.c 2>/dev/null); do
+            if grep -q "extern void security_dump_masked_av_fn" "$f"; then
+              echo "[INFO] $f is extern-function form, patching with &"
+              sed -i 's/if (security_dump_masked_av_fn)/if (\&security_dump_masked_av_fn)/g' "$f"
+              sed -i 's/if (security_dump_masked_av_fn != NULL)/if (\&security_dump_masked_av_fn != NULL)/g' "$f"
+              sed -i 's/if (context_struct_compute_av_fn)/if (\&context_struct_compute_av_fn)/g' "$f"
+              sed -i 's/if (context_struct_compute_av_fn != NULL)/if (\&context_struct_compute_av_fn != NULL)/g' "$f"
+            elif grep -q "if (security_dump_masked_av_fn" "$f"; then
+              echo "[INFO] $f is pointer form, patching with != NULL"
+              sed -i 's/if (security_dump_masked_av_fn)/if (security_dump_masked_av_fn != NULL)/g' "$f"
+              sed -i 's/if (context_struct_compute_av_fn)/if (context_struct_compute_av_fn != NULL)/g' "$f"
+            fi
+          done
 
       - name: Baseband Guard
         if: ${{ contains(inputs.feature_set, 'BBG') || inputs.feature_set == 'FULL' }}

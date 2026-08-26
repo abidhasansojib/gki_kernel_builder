@@ -25,6 +25,14 @@ inputs:
     description: 'Kernel sublevel'
     required: false
     default: "30"
+  root_flavor:
+    description: 'Selected root implementation (next / kernelsu / resukisu). KernelSU (tiann main) needs the 10_enable_susfs_for_ksu patch.'
+    required: false
+    default: "next"
+  nomount_enabled:
+    description: 'Set true when NoMount is integrated (disables SUSFS OPEN_REDIRECT to avoid overlapping hook overhead)'
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -35,8 +43,38 @@ runs:
         susfs_commit: ${{ inputs.susfs_commit }}
         version: ${{ inputs.version }}
 
+    - name: Enable SUSFS for KernelSU (tiann)
+      if: inputs.root_flavor == 'kernelsu' || inputs.root_flavor == 'classic' || inputs.root_flavor == 'KernelSU'
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        set -euo pipefail
+        PATCH="${{ github.workspace }}/susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch"
+        if [ ! -f "$PATCH" ]; then
+          echo "Missing 10_enable_susfs_for_ksu.patch at $PATCH" >&2
+          exit 1
+        fi
+        TARGET_DIR=""
+        if [ -d "KernelSU" ]; then
+          TARGET_DIR="KernelSU"
+        elif [ -d "common/drivers/kernelsu" ]; then
+          TARGET_DIR="common/drivers/kernelsu"
+        elif [ -d "drivers/kernelsu" ]; then
+          TARGET_DIR="drivers/kernelsu"
+        fi
+
+        if [ -n "$TARGET_DIR" ]; then
+          echo "Applying SUSFS enable patch to KernelSU checkout at $TARGET_DIR"
+          cd "$TARGET_DIR"
+          patch -p1 < "$PATCH" || true
+        else
+          echo "WARNING: KernelSU checkout directory not found, skipping 10_enable_susfs_for_ksu.patch"
+        fi
+
     - name: Enable SUSFS Kernel Configs
       uses: ./.github/actions/susfs-config
+      with:
+        nomount_enabled: ${{ inputs.nomount_enabled }}
 
     - name: Apply SUSFS Patches
       uses: ./.github/actions/susfs-patches
