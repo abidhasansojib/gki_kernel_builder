@@ -40,6 +40,7 @@ on:
         options:
           - FULL
           - ROOT+SUSFS+NOMOUNT
+          - ROOT+SUSFS+NH+BBG+NET+DS
           - ROOT+SUSFS+BBG+NET+DS
           - ROOT+SUSFS+BBG
           - ROOT+SUSFS+NET
@@ -59,6 +60,7 @@ on:
           - KSUN+NET
           - KSUN+DS
           - KSUN
+          - NETHUNTER
           - NOMOUNT
           - NONE
         default: FULL
@@ -345,6 +347,12 @@ jobs:
           android_version: ${{ matrix.android_version }}
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
+      - name: Setup NetHunter & Wireless Drivers
+        if: ${{ contains(inputs.feature_set, 'NETHUNTER') || contains(inputs.feature_set, 'NH') || inputs.feature_set == 'FULL' }}
+        uses: ./.github/actions/nethunter
+        with:
+          version: ${{ matrix.version }}
+
       - name: DroidSpaces-OSS Patches
         if: ${{ contains(inputs.feature_set, 'DS') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/droidspaces
@@ -449,6 +457,12 @@ jobs:
         with:
           bypass: true
           version: ${{ matrix.version }}
+
+      - name: 📦 Build NetHunter Wireless Module
+        if: ${{ contains(inputs.feature_set, 'NETHUNTER') || contains(inputs.feature_set, 'NH') || inputs.feature_set == 'FULL' }}
+        uses: ./.github/actions/nethunter-module
+        with:
+          file_name: ${{ steps.extract.outputs.file_name }}
 
       - name: 📋 Consolidated Build Summary
         if: ${{ always() }}

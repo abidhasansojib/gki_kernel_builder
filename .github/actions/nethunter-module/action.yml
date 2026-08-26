@@ -1,0 +1,102 @@
+name: 'Build NetHunter Wireless Module'
+description: 'Packages compiled wireless DLKM modules and firmware into a flashable KernelSU/Magisk module'
+inputs:
+  file_name:
+    description: 'Output filename prefix'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Package NetHunter Wireless Module
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        set -euo pipefail
+
+        STAGING_DIR="${{ github.workspace }}/nethunter-module-staging"
+        rm -rf "$STAGING_DIR"
+        mkdir -p "$STAGING_DIR/system/lib/modules"
+        mkdir -p "$STAGING_DIR/system/etc/firmware"
+
+        echo "=== Collecting compiled .ko modules ==="
+        KO_COUNT=0
+        for ko in $(find kernel/bazel-bin -name "*.ko" 2>/dev/null || true); do
+          echo "Found module: $ko"
+          cp -v "$ko" "$STAGING_DIR/system/lib/modules/"
+          KO_COUNT=$((KO_COUNT+1))
+        done
+
+        for ko in $(find /home/runner/out -name "*.ko" 2>/dev/null || true); do
+          echo "Found out module: $ko"
+          cp -v "$ko" "$STAGING_DIR/system/lib/modules/"
+          KO_COUNT=$((KO_COUNT+1))
+        done
+
+        echo "Total modules collected: $KO_COUNT"
+
+        echo "=== Fetching Wireless Firmware ==="
+        FIRMWARE_DIR="/tmp/linux-firmware-dl"
+        rm -rf "$FIRMWARE_DIR"
+        mkdir -p "$FIRMWARE_DIR"
+
+        # Download standard Realtek, Atheros, MediaTek, and Ralink firmware
+        curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/rt2870.bin" \
+          "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rt2870.bin" 2>/dev/null || true
+        curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/mt7601u.bin" \
+          "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/mt7601u.bin" 2>/dev/null || true
+
+        mkdir -p "$STAGING_DIR/system/etc/firmware/rtw88"
+        for fw in rtw8822c_fw.bin rtw8822b_fw.bin rtw8821c_fw.bin rtw8723d_fw.bin; do
+          curl -LSs --retry 5 --retry-delay 5 -o "$STAGING_DIR/system/etc/firmware/rtw88/$fw" \
+            "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtw88/$fw" 2>/dev/null || true
+        done
+
+        mkdir -p "$STAGING_DIR/system/etc/firmware/ath9k_htc"
+        for fw in htc_9271.fw htc_7010.fw; do
+          curl -LSs --retry 5 --retry-delay 5 -o "$STAGING_DIR/system/etc/firmware/ath9k_htc/$fw" \
+            "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/ath9k_htc/$fw" 2>/dev/null || true
+        done
+
+        cp -v "$FIRMWARE_DIR"/*.bin "$STAGING_DIR/system/etc/firmware/" 2>/dev/null || true
+
+        echo "=== Creating Module Metadata & Scripts ==="
+        cat << 'PROP_EOF' > "$STAGING_DIR/module.prop"
+id=gki_nethunter_wireless
+name=GKI NetHunter Wireless & Driver Modules
+version=v1.0
+versionCode=100
+author=Abid Hasan Sojib
+description=External USB WiFi (RTW88, RTL8xxxu, ATH9K-HTC, RT2800, MT76), HID Gadgets, and NetHunter drivers for Android 16 (6.12) GKI
+PROP_EOF
+
+        cat << 'SVC_EOF' > "$STAGING_DIR/service.sh"
+#!/system/bin/sh
+MODDIR=${0%/*}
+# Load core 802.11 modules first if present
+for core_ko in cfg80211.ko mac80211.ko; do
+  if [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
+    insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
+  fi
+done
+
+# Load all remaining wireless drivers
+for ko in $(ls $MODDIR/system/lib/modules/*.ko 2>/dev/null); do
+  insmod "$ko" 2>/dev/null || true
+done
+SVC_EOF
+        chmod +x "$STAGING_DIR/service.sh"
+
+        OUT_ZIP="${{ github.workspace }}/${{ inputs.file_name }}-NetHunter-Wireless.zip"
+        echo "Creating flashable module zip at: $OUT_ZIP"
+        (cd "$STAGING_DIR" && zip -r -q -9 "$OUT_ZIP" .)
+
+        mkdir -p "${{ github.workspace }}/artifacts/nethunter-module"
+        cp -v "$OUT_ZIP" "${{ github.workspace }}/artifacts/nethunter-module/"
+
+    - name: Upload NetHunter Wireless Module Artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ inputs.file_name }}-NetHunter-Wireless
+        path: ${{ github.workspace }}/artifacts/nethunter-module/
+        if-no-files-found: warn

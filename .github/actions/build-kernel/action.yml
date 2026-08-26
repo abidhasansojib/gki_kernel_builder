@@ -44,6 +44,13 @@ runs:
         --disk_cache=/home/runner/.cache/bazel \
         //common:kernel_aarch64/Image
 
+      # Also build module targets if defined
+      tools/bazel build \
+        --config=fast \
+        --config=stamp \
+        --disk_cache=/home/runner/.cache/bazel \
+        //common:kernel_aarch64/modules 2>/dev/null || true
+
   - name: 'Gather Build Artifacts'
     shell: bash
     working-directory: ${{ github.workspace }}/kernel
