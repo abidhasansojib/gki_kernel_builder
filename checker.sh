@@ -174,7 +174,7 @@ check_config "CONFIG_USB_F_HID" "USB HID gadget driver logic" "dev_node" "/dev/h
 # 2. USB ARSENAL & HARDWARE HACKING GADGETS
 # ==============================================================================
 section_header "2. USB Arsenal & Hardware Hacking Gadgets"
-check_config "CONFIG_USB_ACM" "CDC-ACM host (Proxmark3 / Flipper Zero)" "dev_node" "/dev/ttyACM*"
+check_config "CONFIG_USB_ACM" "CDC-ACM host (Proxmark3 / Flipper Zero)" "module_file" "cdc-acm.ko"
 check_config "CONFIG_USB_CONFIGFS_ACM" "CDC-ACM serial gadget" "dev_node" "/dev/ttyGS*"
 check_config "CONFIG_USB_CONFIGFS_SERIAL" "USB Serial gadget support" "dev_node" "/dev/ttyGS*"
 check_config "CONFIG_USB_CONFIGFS_OBEX" "Object Exchange (OBEX) protocol" "dev_node" "/config/usb_gadget"
@@ -190,7 +190,7 @@ check_config "CONFIG_USB_CONFIGFS_EEM" "CDC-EEM Ethernet gadget" "dev_node" "/co
 # 3. USB-TO-UART SERIAL ADAPTERS
 # ==============================================================================
 section_header "3. USB-to-UART Adapters (Hardware Hacking / Router Serial)"
-check_config "CONFIG_USB_SERIAL" "USB Serial core converter stack" "dev_node" "/dev/ttyUSB*"
+check_config "CONFIG_USB_SERIAL" "USB Serial core converter stack" "module_file" "usbserial.ko"
 check_config "CONFIG_USB_SERIAL_CONSOLE" "USB Serial console debugging" "dev_node" "/dev/ttyUSB*"
 check_config "CONFIG_USB_SERIAL_GENERIC" "Generic USB Serial driver" "dev_node" "/dev/ttyUSB*"
 check_config "CONFIG_USB_SERIAL_CH341" "WCH CH340 / CH341 (Arduino/NodeMCU)" "module_file" "ch341.ko"
@@ -211,7 +211,7 @@ check_config "CONFIG_MAC80211" "mac80211 IEEE 802.11 Stack & Injection" "module_
 check_config "CONFIG_MAC80211_MESH" "mac80211 802.11s Mesh Networking" "module_file" "mac80211.ko"
 check_config "CONFIG_MAC80211_LEDS" "mac80211 LED Activity Triggers" "module_file" "mac80211.ko"
 check_config "CONFIG_MAC80211_MESSAGE_TRACING" "mac80211 Frame Tracing" "module_file" "mac80211.ko"
-check_config "CONFIG_RFKILL" "RFKill Wireless Radio Control" "dev_node" "/dev/rfkill"
+check_config "CONFIG_RFKILL" "RFKill Wireless Radio Control" "module_file" "rfkill.ko"
 
 # ==============================================================================
 # 5. USB WI-FI ADAPTER DRIVERS
@@ -295,7 +295,7 @@ check_config "CONFIG_USB_NET_RTL8150" "Realtek RTL8150 Driver Interface" "module
 # 7. BLUETOOTH & BLUETOOTH ARSENAL
 # ==============================================================================
 section_header "7. Bluetooth & Bluetooth Arsenal"
-check_config "CONFIG_BT" "Core Bluetooth Subsystem" "dev_node" "/sys/class/bluetooth"
+check_config "CONFIG_BT" "Core Bluetooth Subsystem" "module_file" "bluetooth.ko"
 check_config "CONFIG_BT_RFCOMM" "Bluetooth RFCOMM Protocol (TTY Emulation)" "module_file" "rfcomm.ko"
 check_config "CONFIG_BT_RFCOMM_TTY" "RFCOMM TTY devices (/dev/rfcomm*)" "dev_node" "/dev/rfcomm*"
 check_config "CONFIG_BT_BNEP" "Bluetooth BNEP (PAN / Network Pivoting)" "module_file" "bnep.ko"

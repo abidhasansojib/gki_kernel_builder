@@ -13,17 +13,17 @@ runs:
       uses: ./.github/actions/set-kernel-config
       with:
         config_list: |
-          # --- Core Wireless & Packet Injection ---
+          # --- Core Wireless & Packet Injection (=m for GKI module compatibility) ---
           CONFIG_NET_CORE=y
           CONFIG_WIRELESS=y
-          CONFIG_CFG80211=y
+          CONFIG_CFG80211=m
           CONFIG_NL80211_TESTMODE=y
           CONFIG_CFG80211_WEXT=y
-          CONFIG_MAC80211=y
+          CONFIG_MAC80211=m
           CONFIG_MAC80211_MESH=y
           CONFIG_MAC80211_LEDS=y
           CONFIG_MAC80211_MESSAGE_TRACING=y
-          CONFIG_RFKILL=y
+          CONFIG_RFKILL=m
 
           # --- USB HID Gadgets (BadUSB / Rubber Ducky / Keystroke Injection) ---
           CONFIG_HID=y
@@ -36,7 +36,7 @@ runs:
           CONFIG_USB_F_HID=y
 
           # --- USB Arsenal Gadgets (Mass Storage, Serial, CDC-ACM, USB Ethernet) ---
-          CONFIG_USB_ACM=y
+          CONFIG_USB_ACM=m
           CONFIG_USB_CONFIGFS_ACM=y
           CONFIG_USB_CONFIGFS_SERIAL=y
           CONFIG_USB_CONFIGFS_OBEX=y
@@ -49,7 +49,7 @@ runs:
           CONFIG_USB_CONFIGFS_EEM=y
 
           # --- USB Serial Adapters (Hardware Hacking / Router UART / JTAG) ---
-          CONFIG_USB_SERIAL=y
+          CONFIG_USB_SERIAL=m
           CONFIG_USB_SERIAL_CONSOLE=y
           CONFIG_USB_SERIAL_GENERIC=y
           CONFIG_USB_SERIAL_CH341=m
@@ -125,7 +125,7 @@ runs:
           CONFIG_USB_NET_RTL8150=m
 
           # --- Bluetooth & Bluetooth Arsenal (=m) ---
-          CONFIG_BT=y
+          CONFIG_BT=m
           CONFIG_BT_RFCOMM=m
           CONFIG_BT_RFCOMM_TTY=y
           CONFIG_BT_BNEP=m
@@ -189,5 +189,18 @@ runs:
 
           # --- General IPC & Chroot Enhancements ---
           CONFIG_SYSVIPC=y
+
+    - name: Fix modules.bzl for built-in or modular overrides
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        echo "=== Synchronizing modules.bzl with kernel config ==="
+        for bzl in $(find . -name "modules.bzl" 2>/dev/null); do
+          echo "Sanitizing $bzl..."
+          sed -i '/"fs\/netfs\/netfs\.ko",/d' "$bzl" 2>/dev/null || true
+          sed -i '/"fs\/cifs\/cifs\.ko",/d' "$bzl" 2>/dev/null || true
+          sed -i '/"fs\/nfsd\/nfsd\.ko",/d' "$bzl" 2>/dev/null || true
+          sed -i '/"lib\/crypto\/libarc4\.ko",/d' "$bzl" 2>/dev/null || true
+        done
 
 
