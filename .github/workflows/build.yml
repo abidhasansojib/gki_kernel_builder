@@ -35,7 +35,7 @@ on:
           - ReSukiSU
         default: KernelSU-Next
       include_all:
-        description: "FULL (Include all features below)"
+        description: "FULL (Enable all features below)"
         type: boolean
         default: true
       include_root:
@@ -58,12 +58,40 @@ on:
         description: "Baseband Guard (BBG)"
         type: boolean
         default: true
-      include_networking:
-        description: "Networking (BBRv3, WireGuard, IP Set, Qdisc)"
+      include_bbrv3:
+        description: "TCP BBRv3 Congestion Control"
+        type: boolean
+        default: true
+      include_wireguard:
+        description: "WireGuard VPN"
+        type: boolean
+        default: true
+      include_ip_set:
+        description: "IP Set & Advanced Firewall"
+        type: boolean
+        default: true
+      include_qdisc:
+        description: "Traffic Shaping (CAKE & FQ-CoDel)"
+        type: boolean
+        default: true
+      include_cifs:
+        description: "CIFS / SMB Network Filesystem"
+        type: boolean
+        default: true
+      include_ntsync:
+        description: "NTSync (Windows NT Sync Primitives)"
         type: boolean
         default: true
       include_droidspaces:
         description: "DroidSpaces-OSS Containers"
+        type: boolean
+        default: true
+      include_btf:
+        description: "BTF & eBPF Tooling"
+        type: boolean
+        default: true
+      include_unicode_fix:
+        description: "Unicode Path Traversal Fix"
         type: boolean
         default: true
       ksu_branch:
@@ -341,7 +369,7 @@ jobs:
         uses: ./.github/actions/bbg
 
       - name: Setup Networking
-        if: ${{ inputs.include_all || inputs.include_networking }}
+        if: ${{ inputs.include_all || inputs.include_bbrv3 || inputs.include_wireguard || inputs.include_ip_set || inputs.include_qdisc || inputs.include_cifs }}
         uses: ./.github/actions/networking
         with:
           version: ${{ matrix.version }}
@@ -363,6 +391,7 @@ jobs:
           kernel_version: ${{ matrix.kernel_version }}
 
       - name: Apply NTSync Patches
+        if: ${{ inputs.include_all || inputs.include_ntsync }}
         uses: ./.github/actions/ntsync
         with:
           version: ${{ matrix.version }}
@@ -375,6 +404,7 @@ jobs:
           kernel_version: ${{ matrix.kernel_version }}
 
       - name: Apply Unicode Fix Patch
+        if: ${{ inputs.include_all || inputs.include_unicode_fix }}
         uses: ./.github/actions/unicode-fix
         with:
           kernel_version: ${{ matrix.kernel_version }}
@@ -383,6 +413,7 @@ jobs:
         uses: ./.github/actions/misc
 
       - name: Enable BTF
+        if: ${{ inputs.include_all || inputs.include_btf }}
         uses: ./.github/actions/btf
         with:
           version: ${{ matrix.version }}
@@ -515,8 +546,15 @@ jobs:
             [ "${{ inputs.include_nomount }}" = "true" ] && FEATURES+=("NOMOUNT")
             [ "${{ inputs.include_nethunter }}" = "true" ] && FEATURES+=("NETHUNTER")
             [ "${{ inputs.include_bbg }}" = "true" ] && FEATURES+=("BBG")
-            [ "${{ inputs.include_networking }}" = "true" ] && FEATURES+=("NET")
+            [ "${{ inputs.include_bbrv3 }}" = "true" ] && FEATURES+=("BBRv3")
+            [ "${{ inputs.include_wireguard }}" = "true" ] && FEATURES+=("WIREGUARD")
+            [ "${{ inputs.include_ip_set }}" = "true" ] && FEATURES+=("IPSET")
+            [ "${{ inputs.include_qdisc }}" = "true" ] && FEATURES+=("QDISC")
+            [ "${{ inputs.include_cifs }}" = "true" ] && FEATURES+=("CIFS")
+            [ "${{ inputs.include_ntsync }}" = "true" ] && FEATURES+=("NTSYNC")
             [ "${{ inputs.include_droidspaces }}" = "true" ] && FEATURES+=("DS")
+            [ "${{ inputs.include_btf }}" = "true" ] && FEATURES+=("BTF")
+            [ "${{ inputs.include_unicode_fix }}" = "true" ] && FEATURES+=("UNICODE_FIX")
             FEATURE_STR=$(IFS=+; echo "${FEATURES[*]}")
             FEATURE_STR="${FEATURE_STR:-NONE}"
           fi
