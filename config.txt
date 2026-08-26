@@ -242,11 +242,11 @@ CONFIG_NETWORK_FILESYSTEMS=y
 CONFIG_NFS_FS=y / CONFIG_NFS_V2=y / CONFIG_NFS_V3=y / CONFIG_NFS_V4=y
   -> Enables NFS client to mount remote Linux/Unix storage pools (huge wordlists, rainbow tables).
 
-CONFIG_NFSD=m / CONFIG_NFSD_V3=y / CONFIG_NFSD_V4=y
-  -> Enables kernel NFS server to host shares directly from Android for rapid data exfiltration.
+CONFIG_NFSD=y / CONFIG_NFSD_V3=y / CONFIG_NFSD_V4=y
+  -> Enables in-kernel NFS server to host shares directly from Android for rapid data exfiltration.
 
-CONFIG_CIFS=m
-  -> Enables CIFS / SMB client to mount Windows shared folders and Samba servers.
+CONFIG_CIFS=y / CONFIG_NETFS_SUPPORT=y / CONFIG_KEYS=y / CONFIG_CIFS_XATTR=y / CONFIG_CIFS_POSIX=y
+  -> Enables CIFS / SMB client built into kernel to mount Windows shared folders and Samba servers.
 
 --------------------------------------------------------------------------------
 11. SYSTEM IPC & CHROOT ENHANCEMENTS

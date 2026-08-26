@@ -178,10 +178,14 @@ runs:
           CONFIG_NFS_V2=y
           CONFIG_NFS_V3=y
           CONFIG_NFS_V4=y
-          CONFIG_NFSD=m
+          CONFIG_NFSD=y
           CONFIG_NFSD_V3=y
           CONFIG_NFSD_V4=y
-          CONFIG_CIFS=m
+          CONFIG_CIFS=y
+          CONFIG_NETFS_SUPPORT=y
+          CONFIG_KEYS=y
+          CONFIG_CIFS_XATTR=y
+          CONFIG_CIFS_POSIX=y
 
           # --- General IPC & Chroot Enhancements ---
           CONFIG_SYSVIPC=y

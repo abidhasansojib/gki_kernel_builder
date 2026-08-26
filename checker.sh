@@ -357,10 +357,10 @@ check_config "CONFIG_NFS_FS" "NFS Client (Remote Storage & Wordlists)" "fs" "nfs
 check_config "CONFIG_NFS_V2" "NFS Protocol v2 Support" "fs" "nfs"
 check_config "CONFIG_NFS_V3" "NFS Protocol v3 Support" "fs" "nfs"
 check_config "CONFIG_NFS_V4" "NFS Protocol v4 Support" "fs" "nfs4"
-check_config "CONFIG_NFSD" "In-Kernel NFS Server (Android Exfiltration)" "module_file" "nfsd.ko"
-check_config "CONFIG_NFSD_V3" "NFS Server v3 Support" "module_file" "nfsd.ko"
-check_config "CONFIG_NFSD_V4" "NFS Server v4 Support" "module_file" "nfsd.ko"
-check_config "CONFIG_CIFS" "CIFS / SMB Client (Windows Network Shares)" "module_file" "cifs.ko"
+check_config "CONFIG_NFSD" "In-Kernel NFS Server (Android Exfiltration)" "fs" "nfsd"
+check_config "CONFIG_NFSD_V3" "NFS Server v3 Support" "fs" "nfsd"
+check_config "CONFIG_NFSD_V4" "NFS Server v4 Support" "fs" "nfsd"
+check_config "CONFIG_CIFS" "CIFS / SMB Client (Windows Network Shares)" "fs" "cifs"
 
 # ==============================================================================
 # 11. SYSTEM IPC & CHROOT ENHANCEMENTS
