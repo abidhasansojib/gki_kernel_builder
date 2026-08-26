@@ -101,35 +101,65 @@ runs:
       run: |
         set -euo pipefail
         if [ -f "modules.bzl" ]; then
-          echo "Updating modules.bzl with NetHunter wireless drivers..."
-          printf '\n# NetHunter Wireless Drivers\n_NETHUNTER_MODULES = [\n' >> modules.bzl
-          printf '    "drivers/net/wireless/realtek/rtw88/rtw88_core.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/realtek/rtw88/rtw88_usb.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/realtek/rtw88/rtw88_8822b.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/realtek/rtw88/rtw88_8822c.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/realtek/rtw88/rtw88_8822bu.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/realtek/rtw88/rtw88_8822cu.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/realtek/rtw88/rtw88_8723d.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/realtek/rtw88/rtw88_8723du.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/realtek/rtw88/rtw88_8821c.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/realtek/rtw88/rtw88_8821cu.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/realtek/rtl8xxxu/rtl8xxxu.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/realtek/rtl818x/rtl8187/rtl8187.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/ath/ath9k/ath9k_htc.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/ath/carl9170/carl9170.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/ralink/rt2x00/rt2x00lib.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/ralink/rt2x00/rt2x00usb.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/ralink/rt2x00/rt2800lib.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/ralink/rt2x00/rt2800usb.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/mediatek/mt76/mt76.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/mediatek/mt76/mt76-usb.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/mediatek/mt76/mt7601u.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/mediatek/mt76/mt76x02-lib.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/mediatek/mt76/mt76x02-usb.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/mediatek/mt76/mt76x0-common.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/mediatek/mt76/mt76x0u.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/mediatek/mt76/mt76x2-common.ko",\n' >> modules.bzl
-          printf '    "drivers/net/wireless/mediatek/mt76/mt76x2u.ko",\n' >> modules.bzl
-          printf '    "drivers/bluetooth/btusb.ko",\n' >> modules.bzl
-          printf ']\n' >> modules.bzl
+          echo "Injecting NetHunter wireless modules into Bazel modules.bzl manifest..."
+          python3 -c '
+modules_to_add = [
+    "drivers/bluetooth/btintel.ko",
+    "drivers/bluetooth/btrtl.ko",
+    "drivers/bluetooth/btusb.ko",
+    "drivers/misc/eeprom/eeprom_93cx6.ko",
+    "drivers/net/wireless/ath/ath.ko",
+    "drivers/net/wireless/ath/ath9k/ath9k_common.ko",
+    "drivers/net/wireless/ath/ath9k/ath9k_htc.ko",
+    "drivers/net/wireless/ath/ath9k/ath9k_hw.ko",
+    "drivers/net/wireless/ath/carl9170/carl9170.ko",
+    "drivers/net/wireless/mediatek/mt76/mt76.ko",
+    "drivers/net/wireless/mediatek/mt76/mt76-usb.ko",
+    "drivers/net/wireless/mediatek/mt76/mt76x0/mt76x0-common.ko",
+    "drivers/net/wireless/mediatek/mt76/mt76x0/mt76x0u.ko",
+    "drivers/net/wireless/mediatek/mt76/mt76x02-lib.ko",
+    "drivers/net/wireless/mediatek/mt76/mt76x02-usb.ko",
+    "drivers/net/wireless/mediatek/mt76/mt76x2/mt76x2-common.ko",
+    "drivers/net/wireless/mediatek/mt76/mt76x2/mt76x2u.ko",
+    "drivers/net/wireless/mediatek/mt7601u/mt7601u.ko",
+    "drivers/net/wireless/ralink/rt2x00/rt2800lib.ko",
+    "drivers/net/wireless/ralink/rt2x00/rt2800usb.ko",
+    "drivers/net/wireless/ralink/rt2x00/rt2x00lib.ko",
+    "drivers/net/wireless/ralink/rt2x00/rt2x00usb.ko",
+    "drivers/net/wireless/realtek/rtl818x/rtl8187/rtl8187.ko",
+    "drivers/net/wireless/realtek/rtl8xxxu/rtl8xxxu.ko",
+    "drivers/net/wireless/realtek/rtw88/rtw88_8723d.ko",
+    "drivers/net/wireless/realtek/rtw88/rtw88_8723du.ko",
+    "drivers/net/wireless/realtek/rtw88/rtw88_8723x.ko",
+    "drivers/net/wireless/realtek/rtw88/rtw88_8821c.ko",
+    "drivers/net/wireless/realtek/rtw88/rtw88_8821cu.ko",
+    "drivers/net/wireless/realtek/rtw88/rtw88_8822b.ko",
+    "drivers/net/wireless/realtek/rtw88/rtw88_8822bu.ko",
+    "drivers/net/wireless/realtek/rtw88/rtw88_8822c.ko",
+    "drivers/net/wireless/realtek/rtw88/rtw88_8822cu.ko",
+    "drivers/net/wireless/realtek/rtw88/rtw88_core.ko",
+    "drivers/net/wireless/realtek/rtw88/rtw88_usb.ko",
+    "net/bluetooth/bnep/bnep.ko",
+    "net/mac80211/mac80211.ko",
+    "net/wireless/cfg80211.ko",
+]
+
+with open("modules.bzl", "r") as f:
+    lines = f.readlines()
+
+formatted = ["    \"" + m + "\",\n" for m in modules_to_add]
+
+target_found = False
+for i, line in enumerate(lines):
+    if "_COMMON_MODULES = [" in line or "_GKI_AARCH64_MODULES = [" in line or "COMMON_MODULES = [" in line:
+        lines = lines[:i+1] + formatted + lines[i+1:]
+        target_found = True
+        break
+
+if not target_found:
+    lines += ["\n_EXTRA_MODULES = [\n"] + formatted + ["]\n"]
+
+with open("modules.bzl", "w") as f:
+    f.writelines(lines)
+'
         fi
