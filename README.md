@@ -41,7 +41,10 @@ Please do thorough research and understand the features included before flashing
 
 ---
 
-## 📱 Tested Devices
+## 📱 Tested Devices & Compatibility
+
+> [!TIP]
+> **Universal GKI Compatibility**: Because this is a Generic Kernel Image (GKI), you can flash it on **any Android device running on kernel `6.12.30-android16`** (sublevel 30 / 2025-07 patch level).
 
 | Device | Codename | Tested OS Version | Stock Kernel Version | Flashing Mode | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |

@@ -132,6 +132,9 @@ Reboot the device if you performed any cleanup in step 2
 
 ## 📱 Tested Devices & Compatibility
 
+> [!TIP]
+> **Universal GKI Compatibility**: Because this is a Generic Kernel Image (GKI), you can flash it on **any Android device running on a kernel based on `6.12.30-android16`** (sublevel 30 / 2025-07 patch level).
+
 | Device | Codename | Tested OS Version | Stock Kernel Version | Flashing Mode | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Redmi Note 14 4G** | `tanzanite` | **Xiaomi HyperOS 3.0.302** (Android 16) | `6.12.30-android16-5-g6e872b4863d6-ab13847919-4k` | **Bypass Image** (`do.flash_bypass=1`) | ✅ Fully Working |
