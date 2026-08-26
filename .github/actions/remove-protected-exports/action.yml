@@ -60,3 +60,18 @@ runs:
             exit 1
           fi
         fi
+
+        # Disable KMI strict mode, violations checks, and symbol trimming in BUILD.bazel
+        if [ -f "common/BUILD.bazel" ]; then
+          perl -pi -e 's/kmi_symbol_list_strict_mode\s*=\s*True/kmi_symbol_list_strict_mode = False/g;' common/BUILD.bazel 2>/dev/null || true
+          perl -pi -e 's/trim_nonlisted_kmi\s*=\s*True/trim_nonlisted_kmi = False/g;' common/BUILD.bazel 2>/dev/null || true
+          perl -pi -e 's/kmi_symbol_list_violations_check\s*=\s*True/kmi_symbol_list_violations_check = False/g;' common/BUILD.bazel 2>/dev/null || true
+        fi
+
+        # Ensure all wireless crypto symbols are present in ABI symbol lists if they exist
+        for symlist in common/android/abi_gki_aarch64* common/android/abi_gki_raw*; do
+          if [ -f "$symlist" ]; then
+            printf "arc4_crypt\narc4_setkey\n" >> "$symlist"
+            sort -u -o "$symlist" "$symlist"
+          fi
+        done

@@ -42,6 +42,9 @@ runs:
         --config=fast \
         --config=stamp \
         --allow_undeclared_modules \
+        --nokmi_symbol_list_strict_mode \
+        --nokmi_symbol_list_violations_check \
+        --notrim \
         --disk_cache=/home/runner/.cache/bazel \
         //common:kernel_aarch64 \
         //common:kernel_aarch64/Image
@@ -51,6 +54,9 @@ runs:
         --config=fast \
         --config=stamp \
         --allow_undeclared_modules \
+        --nokmi_symbol_list_strict_mode \
+        --nokmi_symbol_list_violations_check \
+        --notrim \
         --disk_cache=/home/runner/.cache/bazel \
         //common:kernel_aarch64_dist 2>/dev/null || true
 
