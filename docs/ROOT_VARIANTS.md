@@ -1,76 +1,80 @@
-# Pinned GKI Root Variants
+# GKI Root, Stealth, & NetHunter Variants (Android 16 - 6.12.30)
 
-`Build pinned root variants` is a manual, artifact-only workflow. It produces
-three separate source trees and never combines root implementations:
+This document details the root implementations, stealth modules, coexistence strategies, and penetration testing integrations supported by **`gki_kernel_builder`** for the **Android 16 GKI (Kernel 6.12.30 / 2025-07)** target.
 
-| Variant | Upstream | Pinned commit |
-| --- | --- | --- |
-| Classic KernelSU | `tiann/KernelSU` | `da9abf498a77d438989fea0f5f4e348b9a540c07` |
-| KernelSU Next | `KernelSU-Next/KernelSU-Next` `dev` | `234f6e040fcbca18b16d2398e1aa225712ec99ad` |
-| ReSukiSU | `ReSukiSU/ReSukiSU` | `3ef06b0fcb0960dc9563256fe26a58e892663387` |
-| NoMount | `maxsteeel/nomount` `dev` | `c52936b229c25a4b0e41b6627f7d3bc5eaaaf2b5` |
+---
 
-The workflow resolves the selected target to its immutable SUSFS pin:
+## 1. Supported Root Implementations
 
-| GKI target | SUSFS branch tip pinned for this workflow |
-| --- | --- |
-| android12-5.10 | `3c14ad549f826b1f53878ec8c12253efebeed75a` |
-| android13-5.10 | `f81aaf10e9560282052bb61dd931315c2ca3e617` |
-| android13-5.15 | `ccb1918684b27644d17a6c842f57b60ae5966025` |
-| android14-5.15 | `0463ac089308014e8c22cc6a4558e0d6d2a53e08` |
-| android14-6.1 | `e287d59066380bf6de4396532d4a42edf4408701` |
-| android15-6.6 | `be7b7ef49a1e1b189c3abf00eacaa7ebdb4168c1` |
-| android16-6.12 | `f37930f374ef88de990d6abea0c67d0ea28c1edc` |
+The build system supports three distinct root flavors selectable via the `root_flavor` workflow input. Each flavor is isolated and cleanly integrated during build time:
 
-All pins were resolved on 2026-08-13 from the named upstream branches. A pin
-is re-verified after checkout; a mismatch, missing upstream `fs/nomount`
-integration, or existing root integration fails the build.
+| Root Flavor | Upstream Repository | Default Branch / Target | Integration Mechanism |
+| :--- | :--- | :--- | :--- |
+| **KernelSU-Next** *(Default)* | [pershoot/KernelSU-Next](https://github.com/pershoot/KernelSU-Next) | `dev-susfs` | Native SUSFS support; driver symlinked to `common/drivers/kernelsu`. |
+| **KernelSU (Official)** | [tiann/KernelSU](https://github.com/tiann/KernelSU) | `main` | Automated application of `10_enable_susfs_for_ksu.patch` onto the checkout. |
+| **ReSukiSU** | [ReSukiSU/ReSukiSU](https://github.com/ReSukiSU/ReSukiSU) | `main` | Alternative hooking integration; compatible with SUSFS and NoMount. |
 
-The workflow snapshots ABI/KMI controls before root integration and verifies
-them immediately afterward. It then snapshots the approved, target-specific
-SUSFS and device-patch ABI updates before NoMount integration and requires
-NoMount to leave that baseline unchanged. The guard covers legacy ABI symbol
-lists and the Android 16 Bazel ABI/staging/symbol definitions. It does not
-remove protected exports, bypass ABI checks, build a bypass image, create
-releases, or claim device compatibility.
+---
 
-## Build-verified only artifact metadata
+## 2. Stealth & Hook Coexistence Architecture
 
-Successful builds upload a `<target>-Metadata` artifact containing
-machine-readable JSON. Its `status` is **`Build-verified only`** only after the
-corresponding AnyKernel3 and NoMount metamodule artifacts are uploaded and their
-GitHub Actions API URLs and GitHub-issued `sha256` digests are recorded. Each
-record also includes the build method, root implementation/manager/version and
-commit, SUSFS and NoMount revisions, Android branch/KMI, kernel source commit,
-and provenance run URL.
+To achieve root hiding while avoiding kernel overhead and VFS hook collisions, the build implements dynamic coexistence rules:
 
-NoMount integration invokes the upstream `kernel/setup.sh` by its full immutable
-commit URL and passes that same SHA as the script argument. Each kernel artifact
-also receives a separately uploaded NoMount metamodule archive built from the
-same SHA; its artifact URL and SHA-256 digest are included in the metadata
-record. Kernel and metamodule revisions must match exactly.
+```mermaid
+flowchart TD
+    A[Feature Selection] --> B{NoMount Active?}
+    B -->|Yes| C[Set CONFIG_KSU_SUSFS_OPEN_REDIRECT=n]
+    B -->|No| D[Set CONFIG_KSU_SUSFS_OPEN_REDIRECT=y]
+    C --> E[NoMount Handles VFS Stealth Hooks]
+    D --> F[SUSFS Handles File Redirection Hooks]
+    E --> G[Clean VFS Layer - Zero Overhead Collision]
+    F --> G
+```
 
-The metadata `catalog` object makes publication eligibility explicit:
+### Key Stealth Components:
+1. **SUSFS v2.2.0** (`simonpunk/susfs4ksu`):
+   * Target branch: `gki-android16-6.12`
+   * Provides suspicious path hiding, fake mount IDs (`mnt_id`), kstat spoofing, `uname` spoofing, and symbol hiding from `/proc/kallsyms`.
+2. **NoMount VFS Hooks** (`maxsteeel/nomount`):
+   * Injects low-level VFS mounting stealth hooks directly into kernel filesystem structures.
+3. **Automated Coexistence Toggle**:
+   * When NoMount is enabled (`nomount_enabled: "true"`), `CONFIG_KSU_SUSFS_OPEN_REDIRECT` is automatically disabled (`=n`).
+   * When NoMount is absent, `CONFIG_KSU_SUSFS_OPEN_REDIRECT` is enabled (`=y`).
 
-| Field | Required value |
-| --- | --- |
-| `availability` | `eligible-with-provenance-and-checksums` |
-| `device_compatibility` | `not-validated` |
-| `flashability` | `not-guaranteed` |
-| `boot` | `not-guaranteed` |
+---
 
-This status means that CI completed the source build and artifact integrity
-metadata is available. It is not device validation and does not claim device
-compatibility, flashability, or a successful boot. A catalog or release
-publisher may expose a successful build artifact only with its provenance URL
-and both kernel and matching NoMount metamodule checksums. It must mark an
-unbuilt, failed, or metadata-incomplete entry unavailable and provide no
-download.
+## 3. Toolchain & Clang 6.12 Compatibility Fixes
 
-This workflow remains artifact-only: it does not create releases or publish a
-catalog. Any separate publisher must enforce this metadata contract.
+Android 16 GKI kernels are built with Google's modern Clang toolchain under strict `-Werror` flags. The builder applies automated fixes during preparation:
 
-Runs dispatched before this metadata contract was added cannot retroactively
-contain these metadata artifacts. Their artifact digests remain available from
-the GitHub Actions artifact API, but they must not be represented as complete
-metadata-contract records.
+* **`selinux_hide.c` Pointer-Bool Conversion**:
+  Modern Clang flags `if (security_dump_masked_av_fn)` as `-Wpointer-bool-conversion` or `-Wtautological-pointer-compare` when turned into an extern function by SUSFS.
+  The build workflow automatically scans and patches `selinux_hide.c` across all root flavors to use proper `&func != NULL` or `func != NULL` pointer comparisons.
+* **Module Versioning Bypass**:
+  Includes an optional Bazel module versioning bypass in `common/kernel/module/version.c` to generate both standard and `Bypass-Image` variants for maximum device compatibility.
+
+---
+
+## 4. Kali NetHunter & Wireless Driver Stack
+
+The kernel integrates full Kali NetHunter capabilities natively into the 6.12 GKI tree:
+
+* **Monitor Mode & Packet Injection**: Enabled in-tree via `CONFIG_CFG80211=y` and `CONFIG_MAC80211=y`.
+* **BadUSB / Rubber Ducky**: Emulates USB HID keyboard and mouse devices via `CONFIG_USB_CONFIGFS_F_HID=y` (`/dev/hidg0`).
+* **Modular USB WiFi Drivers (`=m`)**:
+  * Realtek: `rtw88` (802.11ac), `rtl8xxxu` (802.11n), `rtl8187`
+  * Atheros: `ath9k_htc` (AR9271), `carl9170`
+  * MediaTek / Ralink: `mt7601u`, `mt76x0u`, `mt76x2u`, `rt2800usb` (RT3070/RT5370)
+* **Flashable Wireless Module**:
+  All compiled `.ko` driver modules and official Linux firmware blobs are packaged into a standalone KernelSU/Magisk module (`NetHunter-Wireless.zip`) with an automated boot-time `service.sh` driver loader.
+
+---
+
+## 5. Generated Build Artifacts
+
+Every completed build workflow produces structured release and testing assets:
+
+1. **`AnyKernel3.zip`**: Flashable kernel installer containing both `Image` and `Bypass-Image`.
+2. **`NetHunter-Wireless.zip`**: Flashable KernelSU/Magisk module for external USB WiFi dongles and firmware.
+3. **`NoMount-Metamodule.zip`**: Standalone NoMount companion module matching the kernel's exact commit SHA.
+4. **`Build-Summary.md`**: Detailed provenance metadata containing compiler strings, KSU tag, commit SHAs, and active feature flags.
