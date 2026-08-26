@@ -95,11 +95,9 @@ runs:
           CONFIG_MEDIA_USB_SUPPORT=y
           CONFIG_DVB_USB_RTL28XXU=m
 
-    - name: Register Wireless Modules in Bazel modules.bzl
+    - name: Register Wireless Modules in Bazel manifests
       shell: bash
-      working-directory: ${{ github.workspace }}/kernel/common
+      working-directory: ${{ github.workspace }}/kernel
       run: |
         set -euo pipefail
-        if [ -f "modules.bzl" ]; then
-          python3 "${{ github.workspace }}/.github/actions/nethunter/inject_modules.py" modules.bzl
-        fi
+        python3 "${{ github.workspace }}/.github/actions/nethunter/inject_modules.py" common
