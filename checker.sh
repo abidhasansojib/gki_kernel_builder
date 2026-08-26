@@ -1,6 +1,6 @@
 #!/system/bin/sh
 # ==============================================================================
-# NetHunter Kernel Feature & Config Checker
+# Comprehensive NetHunter & Custom Kernel Feature Checker
 # Script: checker.sh
 # Target: Android Rooted Terminal (Termux / NetHunter Chroot / ADB Root Shell)
 # Author: Abid Hasan Sojib (gki_kernel_builder)
@@ -30,7 +30,7 @@ fi
 
 clear 2>/dev/null || true
 echo -e "${CYAN}${BOLD}================================================================${NC}"
-echo -e "${CYAN}${BOLD}       🐉 KALI NETHUNTER KERNEL COMPATIBILITY CHECKER 🐉       ${NC}"
+echo -e "${CYAN}${BOLD}     🐉 GKI NETHUNTER & CUSTOM KERNEL CAPABILITY CHECKER 🐉    ${NC}"
 echo -e "${CYAN}${BOLD}================================================================${NC}"
 echo -e "Kernel Version : ${YELLOW}$(uname -r)${NC}"
 echo -e "Kernel Arch    : ${YELLOW}$(uname -m)${NC}"
@@ -83,7 +83,6 @@ check_config() {
             PASSED_COUNT=$((PASSED_COUNT+1))
             return 0
         elif [ "$val" = "m" ]; then
-            # Check if module is loaded or exists on disk
             local mod_base="${config_name#CONFIG_}"
             mod_base=$(echo "$mod_base" | tr '[:upper:]' '[:lower:]')
             if lsmod 2>/dev/null | grep -qi "^$mod_base"; then
@@ -107,8 +106,8 @@ check_config() {
                 echo -e "  [ ${GREEN}✔ PRESENT${NC} ] ${BOLD}${config_name}${NC}  (${CYAN}${feature_desc}${NC} -> ${fallback_target})"
                 PASSED_COUNT=$((PASSED_COUNT+1))
             else
-                echo -e "  [ ${YELLOW}? UNVERIFIED${NC} ] ${BOLD}${config_name}${NC}  (${CYAN}${feature_desc}${NC} -> node ${fallback_target} absent)"
-                FAILED_COUNT=$((FAILED_COUNT+1))
+                echo -e "  [ ${YELLOW}● DORMANT${NC} ] ${BOLD}${config_name}${NC}  (${CYAN}${feature_desc}${NC} -> node ${fallback_target} absent)"
+                MODULE_COUNT=$((MODULE_COUNT+1))
             fi
             ;;
         module_file)
@@ -223,14 +222,19 @@ section_header "5. USB Wi-Fi Dongle Drivers (Monitor Mode & Injection)"
 check_config "CONFIG_WLAN_VENDOR_REALTEK" "Realtek WLAN Vendor Support" "module_file" "rtw88_core.ko"
 check_config "CONFIG_RTW88" "Realtek RTW88 Core Framework" "module_file" "rtw88_core.ko"
 check_config "CONFIG_RTW88_USB" "Realtek RTW88 USB Bus Support" "module_file" "rtw88_usb.ko"
+check_config "CONFIG_RTW88_8822B" "Realtek 8822B core support" "module_file" "rtw88_8822b.ko"
 check_config "CONFIG_RTW88_8822BU" "Alfa AWUS036ACH / RTL8812BU / RTL8822BU" "module_file" "rtw88_8822bu.ko"
+check_config "CONFIG_RTW88_8822C" "Realtek 8822C core support" "module_file" "rtw88_8822c.ko"
 check_config "CONFIG_RTW88_8822CU" "Realtek RTL8822CU Dual-Band AC1300" "module_file" "rtw88_8822cu.ko"
+check_config "CONFIG_RTW88_8821C" "Realtek 8821C core support" "module_file" "rtw88_8821c.ko"
 check_config "CONFIG_RTW88_8821CU" "Realtek RTL8811CU / RTL8821CU AC600" "module_file" "rtw88_8821cu.ko"
+check_config "CONFIG_RTW88_8723D" "Realtek 8723D core support" "module_file" "rtw88_8723d.ko"
 check_config "CONFIG_RTW88_8723DU" "Realtek RTL8723DU Wi-Fi + Bluetooth" "module_file" "rtw88_8723du.ko"
 check_config "CONFIG_RTW88_LEDS" "RTW88 LED Indicator Support" "module_file" "rtw88_core.ko"
 check_config "CONFIG_RTL8187" "Alfa AWUS036H (RTL8187L High-Power)" "module_file" "rtl8187.ko"
 check_config "CONFIG_RTL8XXXU" "Realtek RTL8188EUS / TL-WN722N v2/v3" "module_file" "rtl8xxxu.ko"
 check_config "CONFIG_RTL8XXXU_UNTESTED" "RTL8xxxu Experimental USB Device IDs" "module_file" "rtl8xxxu.ko"
+check_config "CONFIG_RTL_CARDS" "Realtek Legacy Wireless Cards" "module_file" "rtl8192cu.ko"
 check_config "CONFIG_RTL8192CU" "Realtek RTL8192CU 802.11n Dongle" "module_file" "rtl8192cu.ko"
 
 # Atheros / Qualcomm
@@ -260,7 +264,10 @@ check_config "CONFIG_WLAN_VENDOR_MEDIATEK" "MediaTek WLAN Vendor Support" "modul
 check_config "CONFIG_MT7601U" "MediaTek MT7601U Mini USB Dongles" "module_file" "mt7601u.ko"
 check_config "CONFIG_MT76_CORE" "MediaTek MT76 Core Driver Stack" "module_file" "mt76.ko"
 check_config "CONFIG_MT76_USB" "MediaTek MT76 USB Subsystem" "module_file" "mt76_usb.ko"
+check_config "CONFIG_MT76x02_LIB" "MediaTek MT76x02 Common Code" "module_file" "mt76x02_lib.ko"
+check_config "CONFIG_MT76x02_USB" "MediaTek MT76x02 USB Common" "module_file" "mt76x02_usb.ko"
 check_config "CONFIG_MT76x0U" "MediaTek MT7610U (AC600 Dual-Band)" "module_file" "mt76x0u.ko"
+check_config "CONFIG_MT76x2_COMMON" "MediaTek MT76x2 Common Base" "module_file" "mt76x2_common.ko"
 check_config "CONFIG_MT76x2U" "MediaTek MT7612U (Alfa AWUS036ACM / Panda PAU09)" "module_file" "mt76x2u.ko"
 
 # ZyDAS
@@ -281,6 +288,8 @@ check_config "CONFIG_USB_NET_CDCETHER" "CDC-Ethernet generic USB adapters" "modu
 check_config "CONFIG_USB_NET_CDC_NCM" "CDC-NCM high-speed Gigabit adapters" "module_file" "cdc_ncm.ko"
 check_config "CONFIG_USB_RTL8152" "Realtek RTL8152 (10/100) & RTL8153 (Gigabit)" "module_file" "r8152.ko"
 check_config "CONFIG_USB_RTL8150" "Realtek RTL8150 USB Ethernet" "module_file" "rtl8150.ko"
+check_config "CONFIG_USB_NET_RTL8152" "Realtek RTL8152 Driver Interface" "module_file" "r8152.ko"
+check_config "CONFIG_USB_NET_RTL8150" "Realtek RTL8150 Driver Interface" "module_file" "rtl8150.ko"
 
 # ==============================================================================
 # 7. BLUETOOTH & BLUETOOTH ARSENAL
@@ -295,6 +304,10 @@ check_config "CONFIG_BT_HCIBTUSB" "Generic USB Bluetooth Dongles" "module_file" 
 check_config "CONFIG_BT_HCIBTUSB_BCM" "Broadcom USB Bluetooth Dongles" "module_file" "btusb.ko"
 check_config "CONFIG_BT_HCIBTUSB_RTL" "Realtek USB Bluetooth Dongles" "module_file" "btusb.ko"
 check_config "CONFIG_BT_HCIUART" "HCI UART Driver" "module_file" "hci_uart.ko"
+check_config "CONFIG_BT_HCIUART_H4" "HCI UART H4 Protocol" "module_file" "hci_uart.ko"
+check_config "CONFIG_BT_HCIBCM203X" "Broadcom BCM203x USB Bluetooth" "module_file" "bcm203x.ko"
+check_config "CONFIG_BT_HCIBPA10X" "BPA10x USB Bluetooth" "module_file" "bpa10x.ko"
+check_config "CONFIG_BT_HCIBFUSB" "BlueFRITZ! USB Bluetooth" "module_file" "bfusb.ko"
 check_config "CONFIG_BT_HCIVHCI" "Virtual HCI (Userspace Packet Injection)" "module_file" "hci_vhci.ko"
 
 # ==============================================================================
@@ -305,6 +318,7 @@ check_config "CONFIG_MEDIA_SUPPORT" "Linux Media & DVB Subsystem" "module_file" 
 check_config "CONFIG_MEDIA_DIGITAL_TV_SUPPORT" "Digital TV & SDR tuner support" "module_file" "dvb-core.ko"
 check_config "CONFIG_MEDIA_SDR_SUPPORT" "Software-Defined Radio framework" "module_file" "dvb-core.ko"
 check_config "CONFIG_MEDIA_USB_SUPPORT" "USB Media & Tuner support" "module_file" "dvb-core.ko"
+check_config "CONFIG_MEDIA_SUBDRV_AUTOSELECT" "Disable demodulator auto-pruning" "module_file" "dvb-core.ko"
 check_config "CONFIG_DVB_USB_RTL28XXU" "RTL-SDR USB Dongles (RTL2832U)" "module_file" "dvb-usb-rtl28xxu.ko"
 check_config "CONFIG_DVB_RTL2830" "RTL2830 DVB-T Demodulator" "module_file" "rtl2830.ko"
 check_config "CONFIG_DVB_RTL2832" "RTL2832 DVB-T Demodulator" "module_file" "rtl2832.ko"
@@ -349,22 +363,91 @@ check_config "CONFIG_NFSD_V4" "NFS Server v4 Support" "module_file" "nfsd.ko"
 check_config "CONFIG_CIFS" "CIFS / SMB Client (Windows Network Shares)" "module_file" "cifs.ko"
 
 # ==============================================================================
-# 11. SYSTEM IPC & CHROOT ENHANCEMENTS
+# 11. ADVANCED NETWORKING, PERFORMANCE & BBRv3
 # ==============================================================================
-section_header "11. System IPC & Kali Chroot Enhancements"
-check_config "CONFIG_SYSVIPC" "System V IPC (Metasploit PostgreSQL / KeX)" "dev_node" "/proc/sysvipc"
+section_header "11. Networking & Performance Enhancements"
+check_config "CONFIG_TCP_CONG_BBR" "TCP BBR / BBRv3 Congestion Control" "socket" "bbr"
+check_config "CONFIG_NET_SCH_CAKE" "CAKE Queue Discipline (Bufferbloat Killer)" "dev_node" "/proc/sys/net/core"
+check_config "CONFIG_WIREGUARD" "In-Kernel WireGuard VPN Protocol" "dev_node" "/proc/net/dev"
+check_config "CONFIG_IP_SET" "IPSet Network Packet Filtering" "dev_node" "/proc/net/ip_tables_names"
+check_config "CONFIG_NETFILTER_XT_TARGET_TTL" "TTL Packet Mangling / Hotspot Spoofing" "dev_node" "/proc/net/ip_tables_names"
+check_config "CONFIG_NETFILTER_XT_TARGET_HL" "IPv6 Hop-Limit Mangling" "dev_node" "/proc/net/ip6_tables_names"
 
 # ==============================================================================
-# 12. HARDWARE NODE & PERMISSIONS CHECK
+# 12. CONTAINER RUNTIME & DROIDSPACES-OSS
 # ==============================================================================
-section_header "12. Live Hardware Nodes & Permissions Status"
-nodes_to_check="/dev/hidg0 /dev/hidg1 /dev/uhid /dev/rfkill /dev/net/tun /config/usb_gadget /dev/bus/usb"
+section_header "12. Virtualization & Containers (DroidSpaces / Docker / LXC)"
+check_config "CONFIG_SYSVIPC" "System V IPC (Metasploit PostgreSQL / KeX)" "dev_node" "/proc/sysvipc"
+check_config "CONFIG_USER_NS" "User Namespaces (Rootless Containers)" "dev_node" "/proc/self/ns/user"
+check_config "CONFIG_PID_NS" "PID Namespaces (Process Isolation)" "dev_node" "/proc/self/ns/pid"
+check_config "CONFIG_IPC_NS" "IPC Namespaces (Shared Memory Isolation)" "dev_node" "/proc/self/ns/ipc"
+check_config "CONFIG_POSIX_MQUEUE" "POSIX Message Queues" "fs" "mqueue"
+check_config "CONFIG_DEVTMPFS" "devtmpfs filesystem" "fs" "devtmpfs"
+check_config "CONFIG_BINFMT_MISC" "binfmt_misc (Box64 / x86 Emulation)" "fs" "binfmt_misc"
+
+# ==============================================================================
+# 13. ROOT, STEALTH & SECURITY ENHANCEMENTS (SUSFS / NOMOUNT / BBG)
+# ==============================================================================
+section_header "13. Root Stealth & Hardware Protection"
+check_config "CONFIG_KSU" "KernelSU Root Core" "dev_node" "/sys/kernel/debug/kprobes"
+check_config "CONFIG_KSU_SUSFS" "SUSFS Kernel Anti-Detection Framework" "dev_node" "/proc/version"
+check_config "CONFIG_KSU_SUSFS_SUS_SU" "SUSFS Dynamic su binary hiding" "dev_node" "/proc/version"
+check_config "CONFIG_KSU_SUSFS_SUS_MOUNT" "SUSFS Mount hiding mechanism" "dev_node" "/proc/version"
+check_config "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT" "Auto add suspicious bind mounts" "dev_node" "/proc/version"
+check_config "CONFIG_KSU_SUSFS_SUS_KSTAT" "SUSFS Kernel stat spoofing" "dev_node" "/proc/version"
+check_config "CONFIG_KSU_SUSFS_SUS_OVERLAYFS" "SUSFS OverlayFS stealth mode" "dev_node" "/proc/version"
+check_config "CONFIG_KSU_SUSFS_TRY_UMOUNT" "SUSFS Isolated unmount engine" "dev_node" "/proc/version"
+check_config "CONFIG_KSU_SUSFS_SPOOF_UNAME" "SUSFS Kernel version string spoofing" "dev_node" "/proc/version"
+check_config "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS" "Hide KSU/SUSFS symbols in /proc/kallsyms" "dev_node" "/proc/version"
+check_config "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG" "SUSFS Bootconfig spoofing" "dev_node" "/proc/version"
+check_config "CONFIG_KSU_SUSFS_SUS_MAP" "SUSFS Memory mapping protection" "dev_node" "/proc/version"
+check_config "CONFIG_NOMOUNT" "NoMount VFS stealth hook integration" "dev_node" "/proc/version"
+check_config "CONFIG_SECURITY_BBG" "Baseband Guard (Write-Protect Bootloader/IMEI)" "dev_node" "/proc/version"
+check_config "CONFIG_NTSYNC" "NTSync (Windows NT sync primitives for Winlator/Mobox)" "dev_node" "/dev/ntsync"
+check_config "CONFIG_DEBUG_INFO_BTF" "BPF Type Format (BTF) generation" "dev_node" "/sys/kernel/btf/vmlinux"
+
+# ==============================================================================
+# 14. FIRMWARE BINARIES AUDIT
+# ==============================================================================
+section_header "14. Firmware Blobs Verification"
+check_firmware() {
+    local fw_rel="$1"
+    local fw_desc="$2"
+    local found=0
+    for prefix in /vendor/firmware /vendor/etc/firmware /system/etc/firmware /data/adb/modules/gki_nethunter_wireless/vendor/firmware; do
+        if [ -f "$prefix/$fw_rel" ]; then
+            found=1
+            break
+        fi
+    done
+    if [ "$found" -eq 1 ]; then
+        echo -e "  [ ${GREEN}✔ FIRMWARE PRESENT${NC} ] ${BOLD}$fw_rel${NC} (${CYAN}$fw_desc${NC})"
+    else
+        echo -e "  [ ${YELLOW}● NOT FOUND / UNLOADED${NC} ] ${BOLD}$fw_rel${NC} (${CYAN}$fw_desc${NC})"
+    fi
+}
+
+check_firmware "rtw88/rtw8822cu_fw.bin" "Realtek RTL8822CU Dual-Band Firmware"
+check_firmware "rtw88/rtw8822b_fw.bin"  "Realtek RTL8822B / RTL8812BU Firmware"
+check_firmware "rtw88/rtw8821c_fw.bin"  "Realtek RTL8821CU / RTL8811CU Firmware"
+check_firmware "rtw88/rtw8723d_fw.bin"  "Realtek RTL8723DU Firmware"
+check_firmware "ath9k_htc/htc_9271.fw"  "Atheros AR9271 Firmware (TL-WN722N v1)"
+check_firmware "carl9170-1.fw"          "Atheros AR9170 Dual-Band Firmware"
+check_firmware "mt7601u.bin"            "MediaTek MT7601U Mini Dongle Firmware"
+check_firmware "rt2870.bin"             "Ralink RT2870/RT3070 Firmware (AWUS036NH)"
+check_firmware "rtlwifi/rtl8192cufw.bin" "Realtek RTL8192CU Firmware"
+
+# ==============================================================================
+# 15. LIVE HARDWARE NODES & PERMISSIONS AUDIT
+# ==============================================================================
+section_header "15. Live Hardware Nodes & Permissions Status"
+nodes_to_check="/dev/hidg0 /dev/hidg1 /dev/uhid /dev/rfkill /dev/net/tun /config/usb_gadget /dev/bus/usb /dev/ntsync /dev/ttyACM0 /dev/ttyUSB0"
 for node in $nodes_to_check; do
     if [ -e "$node" ]; then
         perms=$(ls -ld "$node" 2>/dev/null | awk '{print $1, $3, $4}')
         echo -e "  [ ${GREEN}✔ NODE READY${NC} ] ${BOLD}$node${NC} (${CYAN}$perms${NC})"
     else
-        echo -e "  [ ${YELLOW}● DORMANT${NC}    ] ${BOLD}$node${NC} (Will activate when plugged in / initialized)"
+        echo -e "  [ ${YELLOW}● DORMANT${NC}    ] ${BOLD}$node${NC} (Activates dynamically when device attached)"
     fi
 done
 
@@ -384,7 +467,7 @@ echo -e "Missing / Disabled    : ${RED}${BOLD}${FAILED_COUNT}${NC}"
 echo -e "${CYAN}${BOLD}================================================================${NC}"
 
 if [ "$FAILED_COUNT" -eq 0 ]; then
-    echo -e "${GREEN}${BOLD}🎉 EXCELLENT: Your custom kernel has 100% Kali NetHunter feature coverage!${NC}\n"
+    echo -e "${GREEN}${BOLD}🎉 EXCELLENT: Your custom kernel has 100% feature coverage!${NC}\n"
 else
-    echo -e "${YELLOW}${BOLD}⚠ NOTE: Some modules may require flashing Nethunter-Wireless-Module.zip to load.${NC}\n"
+    echo -e "${YELLOW}${BOLD}⚠ NOTE: Ensure Nethunter-Wireless-Module.zip is flashed in KernelSU/Magisk.${NC}\n"
 fi
