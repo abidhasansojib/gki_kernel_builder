@@ -61,30 +61,23 @@ runs:
         cp -v "$FIRMWARE_DIR"/*.bin "$STAGING_DIR/system/etc/firmware/" 2>/dev/null || true
 
         echo "=== Creating Module Metadata & Scripts ==="
-        cat << 'PROP_EOF' > "$STAGING_DIR/module.prop"
-id=gki_nethunter_wireless
-name=GKI NetHunter Wireless & Driver Modules
-version=v1.0
-versionCode=100
-author=Abid Hasan Sojib
-description=External USB WiFi (RTW88, RTL8xxxu, ATH9K-HTC, RT2800, MT76), HID Gadgets, and NetHunter drivers for Android 16 (6.12) GKI
-PROP_EOF
+        printf 'id=gki_nethunter_wireless\n' > "$STAGING_DIR/module.prop"
+        printf 'name=GKI NetHunter Wireless & Driver Modules\n' >> "$STAGING_DIR/module.prop"
+        printf 'version=v1.0\n' >> "$STAGING_DIR/module.prop"
+        printf 'versionCode=100\n' >> "$STAGING_DIR/module.prop"
+        printf 'author=Abid Hasan Sojib\n' >> "$STAGING_DIR/module.prop"
+        printf 'description=External USB WiFi (RTW88, RTL8xxxu, ATH9K-HTC, RT2800, MT76), HID Gadgets, and NetHunter drivers for Android 16 (6.12) GKI\n' >> "$STAGING_DIR/module.prop"
 
-        cat << 'SVC_EOF' > "$STAGING_DIR/service.sh"
-#!/system/bin/sh
-MODDIR=${0%/*}
-# Load core 802.11 modules first if present
-for core_ko in cfg80211.ko mac80211.ko; do
-  if [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
-    insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
-  fi
-done
-
-# Load all remaining wireless drivers
-for ko in $(ls $MODDIR/system/lib/modules/*.ko 2>/dev/null); do
-  insmod "$ko" 2>/dev/null || true
-done
-SVC_EOF
+        printf '#!/system/bin/sh\n' > "$STAGING_DIR/service.sh"
+        printf 'MODDIR=${0%%/*}\n' >> "$STAGING_DIR/service.sh"
+        printf 'for core_ko in cfg80211.ko mac80211.ko; do\n' >> "$STAGING_DIR/service.sh"
+        printf '  if [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then\n' >> "$STAGING_DIR/service.sh"
+        printf '    insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true\n' >> "$STAGING_DIR/service.sh"
+        printf '  fi\n' >> "$STAGING_DIR/service.sh"
+        printf 'done\n' >> "$STAGING_DIR/service.sh"
+        printf 'for ko in $(ls $MODDIR/system/lib/modules/*.ko 2>/dev/null); do\n' >> "$STAGING_DIR/service.sh"
+        printf '  insmod "$ko" 2>/dev/null || true\n' >> "$STAGING_DIR/service.sh"
+        printf 'done\n' >> "$STAGING_DIR/service.sh"
         chmod +x "$STAGING_DIR/service.sh"
 
         OUT_ZIP="${{ github.workspace }}/${{ inputs.file_name }}-NetHunter-Wireless.zip"
