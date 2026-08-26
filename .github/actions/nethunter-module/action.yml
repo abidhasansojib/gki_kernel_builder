@@ -2,8 +2,9 @@ name: 'Build NetHunter Wireless Module'
 description: 'Packages compiled wireless DLKM modules and firmware into a flashable KernelSU/Magisk module'
 inputs:
   file_name:
-    description: 'Output filename prefix'
-    required: true
+    description: 'Output filename prefix (optional)'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
@@ -16,71 +17,193 @@ runs:
 
         STAGING_DIR="${{ github.workspace }}/nethunter-module-staging"
         rm -rf "$STAGING_DIR"
+        mkdir -p "$STAGING_DIR/lkm"
         mkdir -p "$STAGING_DIR/system/lib/modules"
+        mkdir -p "$STAGING_DIR/vendor/lib/modules"
+        mkdir -p "$STAGING_DIR/vendor_dlkm/lib/modules"
         mkdir -p "$STAGING_DIR/system/etc/firmware"
+        mkdir -p "$STAGING_DIR/vendor/etc/firmware"
+        mkdir -p "$STAGING_DIR/vendor/firmware"
 
         echo "=== Collecting compiled .ko modules ==="
         KO_COUNT=0
-        for ko in $(find kernel/bazel-bin -name "*.ko" 2>/dev/null || true); do
-          echo "Found module: $ko"
-          cp -v "$ko" "$STAGING_DIR/system/lib/modules/"
-          KO_COUNT=$((KO_COUNT+1))
-        done
-
-        for ko in $(find /home/runner/out -name "*.ko" 2>/dev/null || true); do
-          echo "Found out module: $ko"
-          cp -v "$ko" "$STAGING_DIR/system/lib/modules/"
-          KO_COUNT=$((KO_COUNT+1))
+        for search_path in "${{ github.workspace }}/kernel" "/home/runner/.cache/bazel" "/home/runner/out"; do
+          if [ -d "$search_path" ]; then
+            echo "Scanning $search_path for compiled .ko modules..."
+            while IFS= read -r ko; do
+              if [ -f "$ko" ]; then
+                modname=$(basename "$ko")
+                echo "Found module: $modname ($ko)"
+                cp -vf "$ko" "$STAGING_DIR/system/lib/modules/" 2>/dev/null || true
+                cp -vf "$ko" "$STAGING_DIR/vendor/lib/modules/" 2>/dev/null || true
+                cp -vf "$ko" "$STAGING_DIR/vendor_dlkm/lib/modules/" 2>/dev/null || true
+                cp -vf "$ko" "$STAGING_DIR/lkm/" 2>/dev/null || true
+                KO_COUNT=$((KO_COUNT+1))
+              fi
+            done < <(find -L "$search_path" -type f -name "*.ko" 2>/dev/null || true)
+          fi
         done
 
         echo "Total modules collected: $KO_COUNT"
 
-        echo "=== Fetching Wireless Firmware ==="
+        echo "=== Fetching Wireless & SDR Firmware ==="
         FIRMWARE_DIR="/tmp/linux-firmware-dl"
         rm -rf "$FIRMWARE_DIR"
         mkdir -p "$FIRMWARE_DIR"
 
-        # Download standard Realtek, Atheros, MediaTek, and Ralink firmware
+        # Download standard Realtek, Atheros, MediaTek, Ralink, and ZyDAS firmware
         curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/rt2870.bin" \
           "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rt2870.bin" 2>/dev/null || true
         curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/mt7601u.bin" \
           "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/mt7601u.bin" 2>/dev/null || true
+        curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/carl9170-1.fw" \
+          "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/carl9170-1.fw" 2>/dev/null || true
 
-        mkdir -p "$STAGING_DIR/system/etc/firmware/rtw88"
+        mkdir -p "$STAGING_DIR/system/etc/firmware/rtw88" "$STAGING_DIR/vendor/etc/firmware/rtw88" "$STAGING_DIR/vendor/firmware/rtw88"
         for fw in rtw8822c_fw.bin rtw8822b_fw.bin rtw8821c_fw.bin rtw8723d_fw.bin; do
           curl -LSs --retry 5 --retry-delay 5 -o "$STAGING_DIR/system/etc/firmware/rtw88/$fw" \
             "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtw88/$fw" 2>/dev/null || true
+          cp -vf "$STAGING_DIR/system/etc/firmware/rtw88/$fw" "$STAGING_DIR/vendor/etc/firmware/rtw88/" 2>/dev/null || true
+          cp -vf "$STAGING_DIR/system/etc/firmware/rtw88/$fw" "$STAGING_DIR/vendor/firmware/rtw88/" 2>/dev/null || true
         done
 
-        mkdir -p "$STAGING_DIR/system/etc/firmware/ath9k_htc"
+        mkdir -p "$STAGING_DIR/system/etc/firmware/rtlwifi" "$STAGING_DIR/vendor/etc/firmware/rtlwifi" "$STAGING_DIR/vendor/firmware/rtlwifi"
+        for fw in rtl8192cufw.bin rtl8188eufw.bin rtl8723aufw_B.bin; do
+          curl -LSs --retry 5 --retry-delay 5 -o "$STAGING_DIR/system/etc/firmware/rtlwifi/$fw" \
+            "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtlwifi/$fw" 2>/dev/null || true
+          cp -vf "$STAGING_DIR/system/etc/firmware/rtlwifi/$fw" "$STAGING_DIR/vendor/etc/firmware/rtlwifi/" 2>/dev/null || true
+          cp -vf "$STAGING_DIR/system/etc/firmware/rtlwifi/$fw" "$STAGING_DIR/vendor/firmware/rtlwifi/" 2>/dev/null || true
+        done
+
+        mkdir -p "$STAGING_DIR/system/etc/firmware/ath9k_htc" "$STAGING_DIR/vendor/etc/firmware/ath9k_htc" "$STAGING_DIR/vendor/firmware/ath9k_htc"
         for fw in htc_9271.fw htc_7010.fw; do
           curl -LSs --retry 5 --retry-delay 5 -o "$STAGING_DIR/system/etc/firmware/ath9k_htc/$fw" \
             "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/ath9k_htc/$fw" 2>/dev/null || true
+          cp -vf "$STAGING_DIR/system/etc/firmware/ath9k_htc/$fw" "$STAGING_DIR/vendor/etc/firmware/ath9k_htc/" 2>/dev/null || true
+          cp -vf "$STAGING_DIR/system/etc/firmware/ath9k_htc/$fw" "$STAGING_DIR/vendor/firmware/ath9k_htc/" 2>/dev/null || true
         done
 
-        cp -v "$FIRMWARE_DIR"/*.bin "$STAGING_DIR/system/etc/firmware/" 2>/dev/null || true
+        mkdir -p "$STAGING_DIR/system/etc/firmware/zd1211" "$STAGING_DIR/vendor/etc/firmware/zd1211" "$STAGING_DIR/vendor/firmware/zd1211"
+        for fw in zd1211_ub zd1211_uphr zd1211_ur zd1211b_ub zd1211b_uphr zd1211b_ur; do
+          curl -LSs --retry 5 --retry-delay 5 -o "$STAGING_DIR/system/etc/firmware/zd1211/$fw" \
+            "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/zd1211/$fw" 2>/dev/null || true
+          cp -vf "$STAGING_DIR/system/etc/firmware/zd1211/$fw" "$STAGING_DIR/vendor/etc/firmware/zd1211/" 2>/dev/null || true
+          cp -vf "$STAGING_DIR/system/etc/firmware/zd1211/$fw" "$STAGING_DIR/vendor/firmware/zd1211/" 2>/dev/null || true
+        done
+
+        cp -v "$FIRMWARE_DIR"/* "$STAGING_DIR/system/etc/firmware/" 2>/dev/null || true
+        cp -v "$FIRMWARE_DIR"/* "$STAGING_DIR/vendor/etc/firmware/" 2>/dev/null || true
+        cp -v "$FIRMWARE_DIR"/* "$STAGING_DIR/vendor/firmware/" 2>/dev/null || true
 
         echo "=== Creating Module Metadata & Scripts ==="
         printf 'id=gki_nethunter_wireless\n' > "$STAGING_DIR/module.prop"
-        printf 'name=GKI NetHunter Wireless & Driver Modules\n' >> "$STAGING_DIR/module.prop"
-        printf 'version=v1.0\n' >> "$STAGING_DIR/module.prop"
-        printf 'versionCode=100\n' >> "$STAGING_DIR/module.prop"
+        printf 'name=GKI NetHunter Wireless, HID & Driver Modules\n' >> "$STAGING_DIR/module.prop"
+        printf 'version=v1.1\n' >> "$STAGING_DIR/module.prop"
+        printf 'versionCode=110\n' >> "$STAGING_DIR/module.prop"
         printf 'author=Abid Hasan Sojib\n' >> "$STAGING_DIR/module.prop"
-        printf 'description=External USB WiFi (RTW88, RTL8xxxu, ATH9K-HTC, RT2800, MT76), HID Gadgets, and NetHunter drivers for Android 16 (6.12) GKI\n' >> "$STAGING_DIR/module.prop"
+        printf 'description=External USB WiFi (RTW88, RTL8xxxu, ATH9K-HTC, CARL9170, RT2800, MT76, ZD1211), BadUSB HID Gadget permissions, SDR, CAN-Bus, and NetHunter drivers for Android 16 (6.12) GKI\n' >> "$STAGING_DIR/module.prop"
 
-        printf '#!/system/bin/sh\n' > "$STAGING_DIR/service.sh"
-        printf 'MODDIR=${0%%/*}\n' >> "$STAGING_DIR/service.sh"
-        printf 'for core_ko in cfg80211.ko mac80211.ko; do\n' >> "$STAGING_DIR/service.sh"
-        printf '  if [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then\n' >> "$STAGING_DIR/service.sh"
-        printf '    insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true\n' >> "$STAGING_DIR/service.sh"
-        printf '  fi\n' >> "$STAGING_DIR/service.sh"
-        printf 'done\n' >> "$STAGING_DIR/service.sh"
-        printf 'for ko in $(ls $MODDIR/system/lib/modules/*.ko 2>/dev/null); do\n' >> "$STAGING_DIR/service.sh"
-        printf '  insmod "$ko" 2>/dev/null || true\n' >> "$STAGING_DIR/service.sh"
-        printf 'done\n' >> "$STAGING_DIR/service.sh"
+        # --- SELinux Policy Rules (sepolicy.rule) ---
+        # Allows NetHunter, Termux, and shell to access HID, USB, TUN, and serial devices without SELinux denials
+        cat << 'EOF' > "$STAGING_DIR/sepolicy.rule"
+allow untrusted_app_all hidraw_device chr_file { read write open ioctl getattr }
+allow untrusted_app_all uhid_device chr_file { read write open ioctl getattr }
+allow untrusted_app_all tun_device chr_file { read write open ioctl getattr }
+allow untrusted_app_all usb_device chr_file { read write open ioctl getattr }
+allow untrusted_app_all usb_device dir { read open search getattr }
+allow untrusted_app_all tty_device chr_file { read write open ioctl getattr }
+allow untrusted_app_all rfkill_device chr_file { read write open ioctl getattr }
+allow untrusted_app_all configfs dir { read open search write add_name remove_name create }
+allow untrusted_app_all configfs file { read write open getattr }
+
+allow shell hidraw_device chr_file { read write open ioctl getattr }
+allow shell uhid_device chr_file { read write open ioctl getattr }
+allow shell tun_device chr_file { read write open ioctl getattr }
+allow shell usb_device chr_file { read write open ioctl getattr }
+allow shell usb_device dir { read open search getattr }
+allow shell tty_device chr_file { read write open ioctl getattr }
+allow shell rfkill_device chr_file { read write open ioctl getattr }
+allow shell configfs dir { read open search write add_name remove_name create }
+allow shell configfs file { read write open getattr }
+EOF
+
+        # --- Early Boot Initialization (post-fs-data.sh) ---
+        cat << 'EOF' > "$STAGING_DIR/post-fs-data.sh"
+#!/system/bin/sh
+MODDIR=${0%/*}
+
+# Ensure /dev/net directory and tun device node exist for VPNs & packet manipulation
+mkdir -p /dev/net
+if [ ! -c /dev/net/tun ]; then
+  mknod /dev/net/tun c 10 200 2>/dev/null || true
+fi
+chmod 666 /dev/net/tun 2>/dev/null || true
+chmod 666 /dev/rfkill 2>/dev/null || true
+chmod 666 /dev/uhid 2>/dev/null || true
+chmod 666 /dev/hidg* 2>/dev/null || true
+
+# Copy firmware files to runtime paths if directory is writable
+for fw_target in /vendor/firmware /vendor/etc/firmware /system/etc/firmware; do
+  if [ -d "$fw_target" ] && [ -w "$fw_target" ] && [ -d "$MODDIR/system/etc/firmware" ]; then
+    cp -rf "$MODDIR/system/etc/firmware/"* "$fw_target/" 2>/dev/null || true
+  fi
+done
+
+# Load Core Wireless & Subsystem Dependencies Early
+for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
+  if [ -f "$MODDIR/lkm/$core_ko" ]; then
+    insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
+  elif [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
+    insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
+  fi
+done
+EOF
+        chmod +x "$STAGING_DIR/post-fs-data.sh"
+
+        # --- Late Boot Service & Permission Daemon (service.sh) ---
+        cat << 'EOF' > "$STAGING_DIR/service.sh"
+#!/system/bin/sh
+MODDIR=${0%/*}
+
+# Automated permission daemon for NetHunter BadUSB, Wi-Fi, SDR, Serial & VPN devices
+fix_permissions() {
+  chmod 666 /dev/hidg* 2>/dev/null || true
+  chmod 666 /dev/uhid 2>/dev/null || true
+  chmod 666 /dev/rfkill 2>/dev/null || true
+  chmod 666 /dev/net/tun 2>/dev/null || true
+  chmod 666 /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2>/dev/null || true
+  chmod -R 666 /dev/bus/usb/ 2>/dev/null || true
+}
+
+# Initial permission fix
+fix_permissions
+
+# Background daemon to maintain permissions when USB dongles or HID endpoints are dynamically connected
+(while true; do fix_permissions; sleep 2; done) &
+
+# Load Core Wireless & Subsystem Dependencies
+for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
+  if [ -f "$MODDIR/lkm/$core_ko" ]; then
+    insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
+  elif [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
+    insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
+  fi
+done
+
+# Load All Remaining Modules
+MODULE_SRC="$MODDIR/lkm"
+[ -d "$MODULE_SRC" ] && [ -n "$(ls -A "$MODULE_SRC" 2>/dev/null)" ] || MODULE_SRC="$MODDIR/system/lib/modules"
+
+for ko in $(ls "$MODULE_SRC"/*.ko 2>/dev/null); do
+  modname=$(basename "$ko")
+  if ! lsmod 2>/dev/null | grep -q "^${modname%.ko}[[:space:]]"; then
+    insmod "$ko" 2>/dev/null || ksud insmod "$ko" 2>/dev/null || true
+  fi
+done
+EOF
         chmod +x "$STAGING_DIR/service.sh"
 
-        OUT_ZIP="${{ github.workspace }}/${{ inputs.file_name }}-NetHunter-Wireless.zip"
+        OUT_ZIP="${{ github.workspace }}/Nethunter-Wireless-Module.zip"
         echo "Creating flashable module zip at: $OUT_ZIP"
         (cd "$STAGING_DIR" && zip -r -q -9 "$OUT_ZIP" .)
 
@@ -90,6 +213,6 @@ runs:
     - name: Upload NetHunter Wireless Module Artifact
       uses: actions/upload-artifact@v7
       with:
-        name: ${{ inputs.file_name }}-NetHunter-Wireless
+        name: Nethunter-Wireless-Module
         path: ${{ github.workspace }}/artifacts/nethunter-module/
         if-no-files-found: warn

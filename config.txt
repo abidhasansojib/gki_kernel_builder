@@ -1,0 +1,257 @@
+================================================================================
+GKI KERNEL BUILDER - ACTIVE NETHUNTER CONFIGURATIONS
+================================================================================
+Project: gki_kernel_builder (Android 16 - 6.12 GKI)
+Location: .github/actions/nethunter/action.yml
+Artifact Module: Nethunter-Wireless-Module.zip
+================================================================================
+
+--------------------------------------------------------------------------------
+1. USB GADGET & BADUSB ATTACKS (KEYBOARD / MOUSE INJECTION)
+--------------------------------------------------------------------------------
+CONFIG_HID=y
+  -> Enables the core Linux Human Interface Device (HID) subsystem.
+
+CONFIG_HID_GENERIC=y
+  -> Enables generic HID device protocol handling.
+
+CONFIG_USB_HID=y
+  -> Enables USB transport support for HID devices.
+
+CONFIG_UHID=y
+  -> Enables User-space I/O driver support for HID.
+  -> Needed for Bluetooth BLE keystroke injection and userspace HID emulation.
+
+CONFIG_USB_CONFIGFS=y
+  -> Enables USB gadget configuration filesystem (ConfigFS).
+
+CONFIG_USB_CONFIGFS_F_FS=y
+  -> Enables FunctionFS gadget support.
+
+CONFIG_USB_CONFIGFS_F_HID=y
+CONFIG_USB_F_HID=y
+  -> Enables USB HID function inside ConfigFS.
+  -> Creates `/dev/hidg0` (keyboard) and `/dev/hidg1` (mouse) endpoints.
+  -> Enables NetHunter BadUSB & DuckHunter attacks to execute DuckyScript payloads
+     at hardware keyboard speeds on any target computer.
+
+--------------------------------------------------------------------------------
+2. USB ARSENAL & HARDWARE HACKING GADGETS
+--------------------------------------------------------------------------------
+CONFIG_USB_ACM=y
+CONFIG_USB_CONFIGFS_ACM=y
+  -> Enables Abstract Control Model (CDC-ACM) host and gadget driver.
+  -> Allows phone to interface with Proxmark3 (RFID/NFC cloning), ChameleonMini,
+     Flipper Zero, and host a USB serial shell.
+
+CONFIG_USB_CONFIGFS_SERIAL=y
+CONFIG_USB_CONFIGFS_OBEX=y
+  -> Enables USB serial bulk in/out and Object Exchange Protocol gadget endpoints.
+
+CONFIG_USB_CONFIGFS_MASS_STORAGE=y
+CONFIG_USB_F_MASS_STORAGE=y
+  -> Enables USB Mass Storage gadget emulation.
+  -> Allows DriveDroid ISO booting, hosting virtual flash drives, and air-gapped payload delivery.
+
+CONFIG_USB_CONFIGFS_RNDIS=y
+CONFIG_USB_CONFIGFS_ECM=y
+CONFIG_USB_CONFIGFS_ECM_SUBSET=y
+CONFIG_USB_CONFIGFS_NCM=y
+CONFIG_USB_CONFIGFS_EEM=y
+  -> Enables USB Ethernet gadget emulation (RNDIS for Windows, CDC-ECM/NCM/EEM for Linux/macOS).
+  -> Enables PoisonTap attacks, USB Ethernet MITM, DHCP spoofing, and credential harvesting.
+
+--------------------------------------------------------------------------------
+3. USB-TO-UART SERIAL CONVERTERS (ROUTER & HARDWARE HACKING)
+--------------------------------------------------------------------------------
+CONFIG_USB_SERIAL=y
+CONFIG_USB_SERIAL_CONSOLE=y
+CONFIG_USB_SERIAL_GENERIC=y
+CONFIG_USB_SERIAL_CH341=m
+  -> Supports WCH CH340 / CH341 USB-to-serial chips (common on Arduino, NodeMCU, ESP8266).
+
+CONFIG_USB_SERIAL_FTDI_SIO=m
+  -> Supports FTDI FT232R / FT2232 / FT4232 high-speed USB-to-UART/JTAG adapters.
+
+CONFIG_USB_SERIAL_CP210X=m
+  -> Supports Silicon Labs CP2102 / CP2104 USB-to-UART bridges (common on ESP32 boards).
+
+CONFIG_USB_SERIAL_PL2303=m
+  -> Supports Prolific PL2303 USB-to-serial adapters.
+
+--------------------------------------------------------------------------------
+4. CORE WIRELESS & PACKET INJECTION STACK
+--------------------------------------------------------------------------------
+CONFIG_NET_CORE=y
+  -> Enables core Linux networking support.
+
+CONFIG_WIRELESS=y
+  -> Enables wireless subsystem support.
+
+CONFIG_CFG80211=y
+CONFIG_CFG80211_WEXT=y
+CONFIG_NL80211_TESTMODE=y
+  -> Enables Linux 802.11 configuration interface and nl80211 testmode.
+  -> Required for `airmon-ng`, `iw`, `aireplay-ng`, and switching to Monitor Mode.
+
+CONFIG_MAC80211=y
+CONFIG_MAC80211_MESH=y
+CONFIG_MAC80211_LEDS=y
+CONFIG_MAC80211_MESSAGE_TRACING=y
+  -> Enables generic IEEE 802.11 mac80211 stack, mesh networking, and frame injection.
+
+CONFIG_RFKILL=y
+  -> Enables radio frequency kill-switch support to control Wi-Fi/Bluetooth states.
+
+--------------------------------------------------------------------------------
+5. USB WI-FI DONGLE DRIVERS (=m)
+--------------------------------------------------------------------------------
+-- Realtek --
+CONFIG_WLAN_VENDOR_REALTEK=y
+CONFIG_RTW88=m
+CONFIG_RTW88_CORE=m
+CONFIG_RTW88_USB=m
+CONFIG_RTW88_8822B=m / CONFIG_RTW88_8822BU=m   -> Realtek RTL8812BU / RTL8822BU (Alfa AWUS036ACH / AWUS036AC)
+CONFIG_RTW88_8822C=m / CONFIG_RTW88_8822CU=m   -> Realtek RTL8822CU Dual-Band AC1300
+CONFIG_RTW88_8821C=m / CONFIG_RTW88_8821CU=m   -> Realtek RTL8811CU / RTL8821CU AC600
+CONFIG_RTW88_8723D=m / CONFIG_RTW88_8723DU=m   -> Realtek RTL8723DU Wi-Fi + Bluetooth
+CONFIG_RTW88_LEDS=y                             -> LED activity indicator support for RTW88
+CONFIG_RTL8187=m                                -> Alfa AWUS036H (High-power 2.4GHz packet injection)
+CONFIG_RTL8XXXU=m                               -> Realtek RTL8188EUS / RTL8192EU (TP-Link TL-WN722N v2/v3)
+CONFIG_RTL8XXXU_UNTESTED=y                      -> Enables experimental RTL8xxx USB device IDs
+CONFIG_RTL_CARDS=m / CONFIG_RTL8192CU=m         -> Realtek RTL8192CU 802.11n adapter support
+
+-- Atheros / Qualcomm --
+CONFIG_WLAN_VENDOR_ATH=y
+CONFIG_ATH9K_HTC=m                              -> Atheros AR9271 / AR7010 (Alfa AWUS036NHA, TP-Link TL-WN722N v1)
+CONFIG_CARL9170=m                               -> Atheros AR9170 802.11a/b/g/n dual-band USB driver
+CONFIG_CARL9170_LEDS=y / CONFIG_CARL9170_WPC=y  -> Carl9170 LED and WPS trigger support
+CONFIG_ATH6KL=m / CONFIG_ATH6KL_USB=m           -> Atheros AR6003 / AR6004 USB mobile chipset driver
+
+-- Ralink --
+CONFIG_WLAN_VENDOR_RALINK=y
+CONFIG_RT2X00=m
+CONFIG_RT2500USB=m                              -> Ralink RT2500 USB driver
+CONFIG_RT73USB=m                                -> Ralink RT73 / RT2571 USB driver
+CONFIG_RT2800USB=m                              -> Ralink RT2800 / RT3070 / RT3572 / RT5370 / RT5572 (Alfa AWUS036NH / AWUS036NEH)
+CONFIG_RT2800USB_RT33XX=y / RT35XX=y / RT3573=y / RT53XX=y / RT55XX=y / UNKNOWN=y
+
+-- MediaTek --
+CONFIG_WLAN_VENDOR_MEDIATEK=y
+CONFIG_MT7601U=m                                -> MediaTek MT7601U nano USB dongles
+CONFIG_MT76_CORE=m / CONFIG_MT76_USB=m
+CONFIG_MT76x02_LIB=m / CONFIG_MT76x02_USB=m
+CONFIG_MT76x0U=m                                -> MediaTek MT7610U (AC600 Dual-Band)
+CONFIG_MT76x2_COMMON=m / CONFIG_MT76x2U=m       -> MediaTek MT7612U (AC1200 - Alfa AWUS036ACM / Panda PAU09)
+
+-- ZyDAS & RNDIS --
+CONFIG_WLAN_VENDOR_ZYDAS=y
+CONFIG_USB_ZD1201=m / CONFIG_ZD1211RW=m         -> ZyDAS ZD1201 & ZD1211/ZD1211B 802.11b/g USB adapters
+CONFIG_USB_NET_RNDIS_WLAN=m                     -> Wireless RNDIS USB support
+
+--------------------------------------------------------------------------------
+6. USB ETHERNET & NETWORK DONGLES (=m)
+--------------------------------------------------------------------------------
+CONFIG_USB_NET_DRIVERS=m
+CONFIG_USB_USBNET=m
+CONFIG_USB_NET_AX8817X=m                        -> ASIX AX8817x USB 2.0 10/100 Ethernet
+CONFIG_USB_NET_AX88179_178A=m                   -> ASIX AX88179 Gigabit USB 3.0 Ethernet
+CONFIG_USB_NET_CDCETHER=m                       -> Generic USB CDC Ethernet adapters
+CONFIG_USB_NET_CDC_NCM=m                        -> Generic USB CDC-NCM Gigabit Ethernet adapters
+CONFIG_USB_RTL8152=m / CONFIG_USB_NET_RTL8152=m -> Realtek RTL8152 (10/100) & RTL8153 (Gigabit) USB Ethernet
+CONFIG_USB_RTL8150=m / CONFIG_USB_NET_RTL8150=m -> Realtek RTL8150 USB Ethernet
+
+--------------------------------------------------------------------------------
+7. BLUETOOTH & BLUETOOTH ARSENAL (=m)
+--------------------------------------------------------------------------------
+CONFIG_BT=y
+CONFIG_BT_RFCOMM=m
+CONFIG_BT_RFCOMM_TTY=y
+  -> Enables Bluetooth RFCOMM serial emulation for Bluesnarfing and OBD-II / GPS links.
+
+CONFIG_BT_BNEP=m
+  -> Enables Bluetooth Network Encapsulation Protocol (PAN / internet pivoting).
+
+CONFIG_BT_HIDP=m
+  -> Enables Bluetooth Human Interface Device Protocol (BLE keystroke injection).
+
+CONFIG_BT_HCIBTUSB=m
+CONFIG_BT_HCIBTUSB_BCM=y
+CONFIG_BT_HCIBTUSB_RTL=y
+  -> Enables generic external USB Bluetooth dongles (Broadcom & Realtek chipsets).
+
+CONFIG_BT_HCIUART=m / CONFIG_BT_HCIUART_H4=y
+CONFIG_BT_HCIBCM203X=m / CONFIG_BT_HCIBPA10X=m / CONFIG_BT_HCIBFUSB=m
+CONFIG_BT_HCIVHCI=m
+  -> Enables Virtual HCI (VHCI) and legacy HCI USB drivers for userspace packet injection.
+
+--------------------------------------------------------------------------------
+8. SOFTWARE-DEFINED RADIO (SDR) (=m)
+--------------------------------------------------------------------------------
+CONFIG_MEDIA_SUPPORT=m
+CONFIG_MEDIA_DIGITAL_TV_SUPPORT=y
+CONFIG_MEDIA_SDR_SUPPORT=y
+CONFIG_MEDIA_USB_SUPPORT=y
+CONFIG_MEDIA_SUBDRV_AUTOSELECT=n
+  -> Enables Linux Multimedia and Software-Defined Radio framework.
+
+CONFIG_DVB_USB_RTL28XXU=m
+CONFIG_DVB_RTL2830=m / CONFIG_DVB_RTL2832=m / CONFIG_DVB_RTL2832_SDR=m
+CONFIG_DVB_SI2168=m / CONFIG_DVB_ZD1301_DEMOD=m
+  -> Enables RTL-SDR USB dongles (RTL2832U) for wideband radio listening (24 MHz – 1.7 GHz).
+
+CONFIG_USB_HACKRF=m
+  -> Enables Great Scott Gadgets HackRF One USB SDR (1 MHz – 6 GHz full-duplex TX/RX & RF replay).
+
+CONFIG_USB_AIRSPY=m
+  -> Enables AirSpy high-performance VHF/UHF USB SDR receiver.
+
+CONFIG_USB_MSI2500=m
+  -> Enables Mirics MSi2500 / SDRplay USB receiver.
+
+--------------------------------------------------------------------------------
+9. CAN BUS & AUTOMOTIVE HACKING (CARSENAL) (=m)
+--------------------------------------------------------------------------------
+CONFIG_CAN=m
+CONFIG_CAN_RAW=m
+CONFIG_CAN_BCM=m
+CONFIG_CAN_GW=m
+CONFIG_CAN_DEV=m
+CONFIG_CAN_CALC_BITTIMING=y
+CONFIG_CAN_LEDS=y
+  -> Enables Linux SocketCAN core, raw CAN filtering, Broadcast Manager, and gateway.
+  -> Used by tools like `candump`, `cansend`, `cangen`, `canplayer`, `savvycan`.
+
+CONFIG_CAN_VCAN=m
+  -> Enables Virtual CAN interfaces for simulation and offline packet analysis.
+
+CONFIG_CAN_SLCAN=m
+  -> Enables Serial/USB CAN adapters using Lawicel ASCII protocol (CANable, Arduino, ESP32).
+
+CONFIG_CAN_EMS_USB=m
+CONFIG_CAN_KVASER_USB=m
+CONFIG_CAN_PEAK_USB=m
+CONFIG_CAN_8DEV_USB=m
+CONFIG_CAN_GS_USB=m
+  -> Enables professional USB CAN bus adapters (PEAK PCAN-USB, Kvaser, 8devices, Geschwister Schneider).
+
+--------------------------------------------------------------------------------
+10. NETWORK FILE SYSTEMS (NFS & CIFS/SMB)
+--------------------------------------------------------------------------------
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_NFS_FS=y / CONFIG_NFS_V2=y / CONFIG_NFS_V3=y / CONFIG_NFS_V4=y
+  -> Enables NFS client to mount remote Linux/Unix storage pools (huge wordlists, rainbow tables).
+
+CONFIG_NFSD=m / CONFIG_NFSD_V3=y / CONFIG_NFSD_V4=y
+  -> Enables kernel NFS server to host shares directly from Android for rapid data exfiltration.
+
+CONFIG_CIFS=m
+  -> Enables CIFS / SMB client to mount Windows shared folders and Samba servers.
+
+--------------------------------------------------------------------------------
+11. SYSTEM IPC & CHROOT ENHANCEMENTS
+--------------------------------------------------------------------------------
+CONFIG_SYSVIPC=y
+  -> Enables System V Inter-Process Communication (semaphores, shared memory).
+  -> Required for PostgreSQL database (Metasploit) and KeX desktop (VNC/X11) in Kali chroot.
+================================================================================

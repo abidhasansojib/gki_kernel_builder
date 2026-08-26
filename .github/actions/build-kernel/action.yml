@@ -43,15 +43,16 @@ runs:
         --config=stamp \
         --allow_undeclared_modules \
         --disk_cache=/home/runner/.cache/bazel \
+        //common:kernel_aarch64 \
         //common:kernel_aarch64/Image
 
-      # Also build module targets if defined
+      # Also build module/dist targets if available
       tools/bazel build \
         --config=fast \
         --config=stamp \
         --allow_undeclared_modules \
         --disk_cache=/home/runner/.cache/bazel \
-        //common:kernel_aarch64/modules 2>/dev/null || true
+        //common:kernel_aarch64_dist 2>/dev/null || true
 
   - name: 'Gather Build Artifacts'
     shell: bash

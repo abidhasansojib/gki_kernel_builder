@@ -59,14 +59,24 @@ Android 16 GKI kernels are built with Google's modern Clang toolchain under stri
 
 The kernel integrates full Kali NetHunter capabilities natively into the 6.12 GKI tree:
 
+* **HID Keyboard & BadUSB Attack**:
+  * Emulates USB HID keyboard and mouse devices via `CONFIG_USB_CONFIGFS_F_HID=y`, `CONFIG_USB_F_HID=y`, and `/dev/hidg*` endpoints for high-speed DuckyScript keystroke injection.
+* **USB Arsenal & Hardware Hacking**:
+  * Emulates CDC-ACM serial (`CONFIG_USB_CONFIGFS_ACM=y`, `CONFIG_USB_ACM=y`) for Proxmark3 and ChameleonMini RFID cloning.
+  * USB Mass Storage gadget (`CONFIG_USB_CONFIGFS_MASS_STORAGE=y`) for DriveDroid and ISO delivery.
+  * USB Ethernet gadgets (`CONFIG_USB_CONFIGFS_RNDIS=y`, `CONFIG_USB_CONFIGFS_ECM=y`, `CONFIG_USB_CONFIGFS_NCM=y`) for PoisonTap and USB Ethernet MITM.
+  * USB UART converters (`FTDI`, `CH341`, `CP210X`, `PL2303`) for router UART & embedded hardware hacking.
 * **Monitor Mode & Packet Injection**: Enabled in-tree via `CONFIG_CFG80211=y` and `CONFIG_MAC80211=y`.
-* **BadUSB / Rubber Ducky**: Emulates USB HID keyboard and mouse devices via `CONFIG_USB_CONFIGFS_F_HID=y` (`/dev/hidg0`).
 * **Modular USB WiFi Drivers (`=m`)**:
-  * Realtek: `rtw88` (802.11ac), `rtl8xxxu` (802.11n), `rtl8187`
-  * Atheros: `ath9k_htc` (AR9271), `carl9170`
-  * MediaTek / Ralink: `mt7601u`, `mt76x0u`, `mt76x2u`, `rt2800usb` (RT3070/RT5370)
-* **Flashable Wireless Module**:
-  All compiled `.ko` driver modules and official Linux firmware blobs are packaged into a standalone KernelSU/Magisk module (`NetHunter-Wireless.zip`) with an automated boot-time `service.sh` driver loader.
+  * Realtek: `rtw88` (802.11ac), `rtl8xxxu` (802.11n), `rtl8187`, `rtl8192cu`
+  * Atheros: `ath9k_htc` (AR9271), `carl9170`, `ath6kl`
+  * MediaTek / Ralink: `mt7601u`, `mt76x0u`, `mt76x2u`, `rt2800usb` (RT3070/RT5370), `rt2500usb`, `rt73usb`
+  * ZyDAS: `zd1211rw`, `zd1201`
+* **Software-Defined Radio (SDR)**: RTL-SDR (`RTL2832U`), HackRF One (`CONFIG_USB_HACKRF=m`), AirSpy, Mirics.
+* **Automotive Hacking (CARsenal)**: SocketCAN (`CONFIG_CAN=m`, `CONFIG_CAN_RAW=m`, `CONFIG_CAN_DEV=m`), `slcan`, `PEAK PCAN-USB`, `Kvaser`, `gs_usb`.
+* **Network File Systems**: NFS client/server (`CONFIG_NFS_FS=y`, `CONFIG_NFSD=m`) and CIFS/SMB (`CONFIG_CIFS=m`).
+* **Flashable Wireless & Driver Module**:
+  All compiled `.ko` driver modules, official Linux firmware blobs, and HID permission daemons are packaged into a standalone KernelSU/Magisk module (`Nethunter-Wireless-Module.zip`) with an automated boot-time `service.sh` driver loader.
 
 ---
 
@@ -75,6 +85,6 @@ The kernel integrates full Kali NetHunter capabilities natively into the 6.12 GK
 Every completed build workflow produces structured release and testing assets:
 
 1. **`AnyKernel3.zip`**: Flashable kernel installer containing both `Image` and `Bypass-Image`.
-2. **`NetHunter-Wireless.zip`**: Flashable KernelSU/Magisk module for external USB WiFi dongles and firmware.
+2. **`Nethunter-Wireless-Module.zip`**: Flashable KernelSU/Magisk module for external USB WiFi dongles and firmware.
 3. **`NoMount-Metamodule.zip`**: Standalone NoMount companion module matching the kernel's exact commit SHA.
 4. **`Build-Summary.md`**: Detailed provenance metadata containing compiler strings, KSU tag, commit SHAs, and active feature flags.

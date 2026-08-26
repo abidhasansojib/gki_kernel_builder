@@ -13,7 +13,7 @@ runs:
       uses: ./.github/actions/set-kernel-config
       with:
         config_list: |
-          # --- Wireless Core & Injection ---
+          # --- Core Wireless & Packet Injection ---
           CONFIG_NET_CORE=y
           CONFIG_WIRELESS=y
           CONFIG_CFG80211=y
@@ -23,8 +23,41 @@ runs:
           CONFIG_MAC80211_MESH=y
           CONFIG_MAC80211_LEDS=y
           CONFIG_MAC80211_MESSAGE_TRACING=y
+          CONFIG_RFKILL=y
 
-          # --- USB Wireless Drivers (=m for modular load) ---
+          # --- USB HID Gadgets (BadUSB / Rubber Ducky / Keystroke Injection) ---
+          CONFIG_HID=y
+          CONFIG_HID_GENERIC=y
+          CONFIG_USB_HID=y
+          CONFIG_UHID=y
+          CONFIG_USB_CONFIGFS=y
+          CONFIG_USB_CONFIGFS_F_FS=y
+          CONFIG_USB_CONFIGFS_F_HID=y
+          CONFIG_USB_F_HID=y
+
+          # --- USB Arsenal Gadgets (Mass Storage, Serial, CDC-ACM, USB Ethernet) ---
+          CONFIG_USB_ACM=y
+          CONFIG_USB_CONFIGFS_ACM=y
+          CONFIG_USB_CONFIGFS_SERIAL=y
+          CONFIG_USB_CONFIGFS_OBEX=y
+          CONFIG_USB_CONFIGFS_MASS_STORAGE=y
+          CONFIG_USB_F_MASS_STORAGE=y
+          CONFIG_USB_CONFIGFS_RNDIS=y
+          CONFIG_USB_CONFIGFS_ECM=y
+          CONFIG_USB_CONFIGFS_ECM_SUBSET=y
+          CONFIG_USB_CONFIGFS_NCM=y
+          CONFIG_USB_CONFIGFS_EEM=y
+
+          # --- USB Serial Adapters (Hardware Hacking / Router UART / JTAG) ---
+          CONFIG_USB_SERIAL=y
+          CONFIG_USB_SERIAL_CONSOLE=y
+          CONFIG_USB_SERIAL_GENERIC=y
+          CONFIG_USB_SERIAL_CH341=m
+          CONFIG_USB_SERIAL_FTDI_SIO=m
+          CONFIG_USB_SERIAL_CP210X=m
+          CONFIG_USB_SERIAL_PL2303=m
+
+          # --- USB Wireless Drivers (=m for modular load & GKI compatibility) ---
           CONFIG_WLAN_VENDOR_REALTEK=y
           CONFIG_RTW88=m
           CONFIG_RTW88_CORE=m
@@ -37,24 +70,32 @@ runs:
           CONFIG_RTW88_8822CU=m
           CONFIG_RTW88_8723DU=m
           CONFIG_RTW88_8821CU=m
+          CONFIG_RTW88_LEDS=y
           CONFIG_RTL8187=m
           CONFIG_RTL8XXXU=m
           CONFIG_RTL8XXXU_UNTESTED=y
+          CONFIG_RTL_CARDS=m
+          CONFIG_RTL8192CU=m
 
           CONFIG_WLAN_VENDOR_ATH=y
           CONFIG_ATH9K_HTC=m
           CONFIG_CARL9170=m
           CONFIG_CARL9170_LEDS=y
           CONFIG_CARL9170_WPC=y
+          CONFIG_ATH6KL=m
+          CONFIG_ATH6KL_USB=m
 
           CONFIG_WLAN_VENDOR_RALINK=y
           CONFIG_RT2X00=m
+          CONFIG_RT2500USB=m
+          CONFIG_RT73USB=m
           CONFIG_RT2800USB=m
           CONFIG_RT2800USB_RT33XX=y
           CONFIG_RT2800USB_RT35XX=y
           CONFIG_RT2800USB_RT3573=y
           CONFIG_RT2800USB_RT53XX=y
           CONFIG_RT2800USB_RT55XX=y
+          CONFIG_RT2800USB_UNKNOWN=y
 
           CONFIG_WLAN_VENDOR_MEDIATEK=y
           CONFIG_MT7601U=m
@@ -66,12 +107,12 @@ runs:
           CONFIG_MT76x2_COMMON=m
           CONFIG_MT76x2U=m
 
-          # --- USB HID Gadgets (BadUSB / Rubber Ducky) ---
-          CONFIG_USB_CONFIGFS_F_FS=y
-          CONFIG_USB_CONFIGFS_F_HID=y
-          CONFIG_USB_F_HID=y
+          CONFIG_WLAN_VENDOR_ZYDAS=y
+          CONFIG_USB_ZD1201=m
+          CONFIG_ZD1211RW=m
+          CONFIG_USB_NET_RNDIS_WLAN=m
 
-          # --- USB Ethernet & Network Dongles (=m for modular load & GKI compatibility) ---
+          # --- USB Ethernet & Network Dongles (=m) ---
           CONFIG_USB_NET_DRIVERS=m
           CONFIG_USB_USBNET=m
           CONFIG_USB_NET_AX8817X=m
@@ -83,16 +124,66 @@ runs:
           CONFIG_USB_NET_RTL8152=m
           CONFIG_USB_NET_RTL8150=m
 
-          # --- Bluetooth RFCOMM & USB (=m for modular load & GKI compatibility) ---
+          # --- Bluetooth & Bluetooth Arsenal (=m) ---
+          CONFIG_BT=y
           CONFIG_BT_RFCOMM=m
           CONFIG_BT_RFCOMM_TTY=y
           CONFIG_BT_BNEP=m
           CONFIG_BT_HIDP=m
           CONFIG_BT_HCIBTUSB=m
+          CONFIG_BT_HCIBTUSB_BCM=y
+          CONFIG_BT_HCIBTUSB_RTL=y
+          CONFIG_BT_HCIUART=m
+          CONFIG_BT_HCIUART_H4=y
+          CONFIG_BT_HCIBCM203X=m
+          CONFIG_BT_HCIBPA10X=m
+          CONFIG_BT_HCIBFUSB=m
+          CONFIG_BT_HCIVHCI=m
 
-          # --- SDR (Software Defined Radio) ---
+          # --- SDR (Software Defined Radio - RTL-SDR, HackRF, AirSpy, Mirics) ---
           CONFIG_MEDIA_SUPPORT=m
+          CONFIG_MEDIA_DIGITAL_TV_SUPPORT=y
+          CONFIG_MEDIA_SDR_SUPPORT=y
           CONFIG_MEDIA_USB_SUPPORT=y
+          CONFIG_MEDIA_SUBDRV_AUTOSELECT=n
           CONFIG_DVB_USB_RTL28XXU=m
+          CONFIG_DVB_RTL2830=m
+          CONFIG_DVB_RTL2832=m
+          CONFIG_DVB_RTL2832_SDR=m
+          CONFIG_DVB_SI2168=m
+          CONFIG_DVB_ZD1301_DEMOD=m
+          CONFIG_USB_HACKRF=m
+          CONFIG_USB_AIRSPY=m
+          CONFIG_USB_MSI2500=m
+
+          # --- CAN Bus & Automotive Hacking (CARsenal / SocketCAN) ---
+          CONFIG_CAN=m
+          CONFIG_CAN_RAW=m
+          CONFIG_CAN_BCM=m
+          CONFIG_CAN_GW=m
+          CONFIG_CAN_DEV=m
+          CONFIG_CAN_CALC_BITTIMING=y
+          CONFIG_CAN_LEDS=y
+          CONFIG_CAN_VCAN=m
+          CONFIG_CAN_SLCAN=m
+          CONFIG_CAN_EMS_USB=m
+          CONFIG_CAN_KVASER_USB=m
+          CONFIG_CAN_PEAK_USB=m
+          CONFIG_CAN_8DEV_USB=m
+          CONFIG_CAN_GS_USB=m
+
+          # --- Network File Systems (NFS Client/Server & CIFS/SMB) ---
+          CONFIG_NETWORK_FILESYSTEMS=y
+          CONFIG_NFS_FS=y
+          CONFIG_NFS_V2=y
+          CONFIG_NFS_V3=y
+          CONFIG_NFS_V4=y
+          CONFIG_NFSD=m
+          CONFIG_NFSD_V3=y
+          CONFIG_NFSD_V4=y
+          CONFIG_CIFS=m
+
+          # --- General IPC & Chroot Enhancements ---
+          CONFIG_SYSVIPC=y
 
 
