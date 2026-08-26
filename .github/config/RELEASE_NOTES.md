@@ -6,8 +6,9 @@
 > This software is provided for testing and educational purposes only. Use at your own risk. The developers are not responsible for any damage, data loss, or issues that may occur. Please ensure you have proper backups before installation.
 
 # Features
-- [KernelSU-Next](#kernelsu-next)
+- [Root Solution ({{ROOT_IMPL}})](#root-solution)
 - [SUSFS v2.2.0](#susfs-v220)
+- [Kali NetHunter & Wireless Drivers](#kali-nethunter--wireless-drivers)
 - [Baseband Guard (BBG)](#baseband-guard-bbg)
 - [DroidSpaces-OSS](#droidspaces-oss)
 - [Networking Improvements](#networking)
@@ -16,12 +17,9 @@
 
 <!-- NOTE: The anchor links above match GitHub's auto-generated heading IDs (derived from heading text). Do NOT add explicit {#id} heading attributes: GitHub's release-notes renderer does not support them and renders them as literal text. -->
 
-## [KernelSU-Next](https://github.com/pershoot/KernelSU-Next)
+## Root Solution
 
-A kernel-based root solution for Android devices.
-
-> [!WARNING]
-> This release uses the [pershoot/KernelSU-Next](https://github.com/pershoot/KernelSU-Next) fork. The fork maintainer has said it is not ready for production use, so treat it as use at your own risk.
+Integrated root solution: **{{ROOT_IMPL}}** (KernelSU-Next, KernelSU, or ReSukiSU).
 
 Manager: {{KSU_MANAGER}}
 
@@ -58,6 +56,16 @@ Recommended Module: [susfs4ksu-module by sidex15](https://github.com/sidex15/sus
 - AVC_SPOOF - Spoof procfs avc denial logs (enabled at runtime via the sidex15 module — not a build-time Kconfig option)
 
 {{SUSFS_BRANCHES}}
+
+## [Kali NetHunter & Wireless Drivers](https://www.kali.org/docs/nethunter/)
+
+Full kernel support for penetration testing and external wireless dongles:
+- **Monitor Mode & Packet Injection**: Enabled natively via `mac80211` and `cfg80211`.
+- **BadUSB / HID Gadgets**: USB HID Keyboard and Mouse emulation support (`/dev/hidg0`).
+- **External USB WiFi Drivers**: Realtek (`rtw88`, `rtl8xxxu`, `rtl8187`), Atheros (`ath9k_htc`, `carl9170`), MediaTek (`mt76`), and Ralink (`rt2800usb`).
+- **USB Ethernet Adapters**: CDC-ECM, CDC-NCM, RTL8152, and ASIX AX88179.
+- **Bluetooth RFCOMM & SDR**: Native RFCOMM TTY and RTL2832U DVB SDR support.
+- **Flashable Module**: Flash the accompanying `${FILE_NAME}-NetHunter-Wireless.zip` module in KernelSU/Magisk for plug-and-play driver and firmware auto-loading.
 
 ## [Baseband Guard (BBG)](https://github.com/vc-teahouse/Baseband-guard)
 

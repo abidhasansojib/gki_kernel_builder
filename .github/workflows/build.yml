@@ -492,8 +492,8 @@ jobs:
 
           KSU_VER="${KSU_VERSION:-N/A}"
           KSU_TAG="${KSU_GIT_TAG:-N/A}"
-          ROOT_IMPL="KernelSU-Next"
-          ROOT_MANAGER="KernelSU-Next Manager"
+          ROOT_IMPL="${ROOT_IMPLEMENTATION:-${{ inputs.root_flavor }}}"
+          ROOT_MANAGER="${ROOT_MANAGER:-${ROOT_IMPL} Manager}"
           ROOT_VERSION="${KSU_TAG}"
           ROOT_SHA="${KSU_COMMIT:-N/A}"
           NOMOUNT_SHA="${NOMOUNT_COMMIT:-N/A}"
@@ -667,30 +667,10 @@ jobs:
 
           echo "release_title=$release_title" >> "$GITHUB_OUTPUT"
 
-      - name: Extract KernelSU Version Info
+      - name: Extract Root Implementation Version Info
         id: ksu_version
         run: |
           set -euo pipefail
-
-          KSU_REPO="https://github.com/pershoot/KernelSU-Next.git"
-          KSU_INPUT="${{ inputs.ksu_branch }}"
-          if [ -z "$KSU_INPUT" ]; then
-            KSU_INPUT="dev-susfs"
-          fi
-
-          if git ls-remote --heads "$KSU_REPO" "$KSU_INPUT" | grep -q .; then
-            echo "Cloning KernelSU-Next from branch: $KSU_INPUT"
-            git clone --branch "$KSU_INPUT" "$KSU_REPO" /tmp/kernelsu-next
-            cd /tmp/kernelsu-next
-            KSUN_COMMIT=$(git rev-parse HEAD)
-          else
-            echo "Cloning KernelSU-Next from dev-susfs branch, then checking out commit: $KSU_INPUT"
-            git clone --branch dev-susfs "$KSU_REPO" /tmp/kernelsu-next
-            cd /tmp/kernelsu-next
-            git fetch --depth=50 origin "$KSU_INPUT"
-            git checkout "$KSU_INPUT"
-            KSUN_COMMIT="$KSU_INPUT"
-          fi
 
           retry() {
             local n=0
@@ -703,22 +683,74 @@ jobs:
             return 1
           }
 
-          OFFICIAL_KSU_REPO="https://github.com/KernelSU-Next/KernelSU-Next.git"
-          retry git fetch "$OFFICIAL_KSU_REPO" dev
-          STOCK_COMMIT=$(git merge-base HEAD FETCH_HEAD)
-          echo "KSU Stock Commit (official sync point): $STOCK_COMMIT"
+          RAW_FLAVOR="${{ inputs.root_flavor }}"
+          case "$(echo "$RAW_FLAVOR" | tr '[:upper:]' '[:lower:]')" in
+            *next*)
+              FLAVOR_NAME="KernelSU-Next"
+              KSU_REPO="https://github.com/pershoot/KernelSU-Next.git"
+              OFFICIAL_KSU_REPO="https://github.com/KernelSU-Next/KernelSU-Next.git"
+              DEFAULT_REF="dev-susfs"
+              OFFICIAL_SYNC_BRANCH="dev"
+              MANAGER_WORKFLOW="build-manager-ci.yml"
+              MANAGER_REPO="KernelSU-Next/KernelSU-Next"
+              ;;
+            *resukisu*)
+              FLAVOR_NAME="ReSukiSU"
+              KSU_REPO="https://github.com/ReSukiSU/ReSukiSU.git"
+              OFFICIAL_KSU_REPO="https://github.com/ReSukiSU/ReSukiSU.git"
+              DEFAULT_REF="main"
+              OFFICIAL_SYNC_BRANCH="main"
+              MANAGER_WORKFLOW="build-manager.yml"
+              MANAGER_REPO="ReSukiSU/ReSukiSU"
+              ;;
+            *classic*|*kernelsu*|*)
+              FLAVOR_NAME="KernelSU"
+              KSU_REPO="https://github.com/tiann/KernelSU.git"
+              OFFICIAL_KSU_REPO="https://github.com/tiann/KernelSU.git"
+              DEFAULT_REF="main"
+              OFFICIAL_SYNC_BRANCH="main"
+              MANAGER_WORKFLOW="build-manager.yml"
+              MANAGER_REPO="tiann/KernelSU"
+              ;;
+          esac
 
-          COMMITS_COUNT=$(git rev-list --count "$STOCK_COMMIT")
+          KSU_INPUT="${{ inputs.ksu_branch }}"
+          if [ -z "$KSU_INPUT" ]; then
+            KSU_INPUT="$DEFAULT_REF"
+          fi
+
+          echo "Resolving root flavor: $FLAVOR_NAME ($KSU_REPO)"
+          echo "Target ref: $KSU_INPUT"
+
+          if git ls-remote --heads "$KSU_REPO" "$KSU_INPUT" | grep -q .; then
+            echo "Cloning $FLAVOR_NAME from branch: $KSU_INPUT"
+            git clone --branch "$KSU_INPUT" "$KSU_REPO" /tmp/kernelsu-repo
+            cd /tmp/kernelsu-repo
+            KSUN_COMMIT=$(git rev-parse HEAD)
+          else
+            echo "Cloning $FLAVOR_NAME from default branch $DEFAULT_REF, checking out commit: $KSU_INPUT"
+            git clone --branch "$DEFAULT_REF" "$KSU_REPO" /tmp/kernelsu-repo
+            cd /tmp/kernelsu-repo
+            git fetch --depth=50 origin "$KSU_INPUT" || true
+            git checkout "$KSU_INPUT" || true
+            KSUN_COMMIT="$KSU_INPUT"
+          fi
+
+          retry git fetch "$OFFICIAL_KSU_REPO" "$OFFICIAL_SYNC_BRANCH"
+          STOCK_COMMIT=$(git merge-base HEAD FETCH_HEAD 2>/dev/null || git rev-parse HEAD)
+          echo "Root stock commit (official sync point): $STOCK_COMMIT"
+
+          COMMITS_COUNT=$(git rev-list --count "$STOCK_COMMIT" 2>/dev/null || echo "0")
           BASE_VERSION=30000
           KSU_VERSION=$(expr $COMMITS_COUNT "+" $BASE_VERSION)
 
           KSU_GIT_TAG=$(git describe --tags --abbrev=0 "$STOCK_COMMIT" 2>/dev/null || echo "no-tag")
 
-          MANAGER_RUN_ID=$(curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors -H "Authorization: Bearer ${GH_TOKEN}" "https://api.github.com/repos/KernelSU-Next/KernelSU-Next/actions/workflows/build-manager-ci.yml/runs?head_sha=${STOCK_COMMIT}" | jq -r '.workflow_runs[0].id // empty')
+          MANAGER_RUN_ID=$(curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors -H "Authorization: Bearer ${GH_TOKEN}" "https://api.github.com/repos/${MANAGER_REPO}/actions/workflows/${MANAGER_WORKFLOW}/runs?head_sha=${STOCK_COMMIT}" | jq -r '.workflow_runs[0].id // empty' 2>/dev/null || echo "")
           if [[ -n "${MANAGER_RUN_ID:-}" ]]; then
-            KSU_MANAGER="https://github.com/KernelSU-Next/KernelSU-Next/actions/runs/${MANAGER_RUN_ID}"
+            KSU_MANAGER="https://github.com/${MANAGER_REPO}/actions/runs/${MANAGER_RUN_ID}"
           else
-            KSU_MANAGER="https://github.com/KernelSU-Next/KernelSU-Next/actions/workflows/build-manager-ci.yml"
+            KSU_MANAGER="https://github.com/${MANAGER_REPO}/releases"
           fi
 
           echo "Commits count: $COMMITS_COUNT"
@@ -726,12 +758,14 @@ jobs:
           echo "KSU Git Tag: $KSU_GIT_TAG"
           echo "KSU Manager: $KSU_MANAGER"
 
-          echo "KSUN_BRANCH=$KSU_INPUT" >> $GITHUB_ENV
-          echo "KSUN_COMMIT=$KSUN_COMMIT" >> $GITHUB_ENV
-          echo "KSU_COMMITS_COUNT=$COMMITS_COUNT" >> $GITHUB_ENV
-          echo "KSU_VERSION=$KSU_VERSION" >> $GITHUB_ENV
-          echo "KSU_GIT_TAG=$KSU_GIT_TAG" >> $GITHUB_ENV
-          echo "KSU_MANAGER=$KSU_MANAGER" >> $GITHUB_ENV
+          echo "ROOT_IMPL=$FLAVOR_NAME" >> "$GITHUB_ENV"
+          echo "ROOT_MANAGER_NAME=${FLAVOR_NAME} Manager" >> "$GITHUB_ENV"
+          echo "KSUN_BRANCH=$KSU_INPUT" >> "$GITHUB_ENV"
+          echo "KSUN_COMMIT=$KSUN_COMMIT" >> "$GITHUB_ENV"
+          echo "KSU_COMMITS_COUNT=$COMMITS_COUNT" >> "$GITHUB_ENV"
+          echo "KSU_VERSION=$KSU_VERSION" >> "$GITHUB_ENV"
+          echo "KSU_GIT_TAG=$KSU_GIT_TAG" >> "$GITHUB_ENV"
+          echo "KSU_MANAGER=$KSU_MANAGER" >> "$GITHUB_ENV"
 
       - name: Set release body
         run: |
