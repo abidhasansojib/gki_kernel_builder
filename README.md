@@ -41,6 +41,33 @@ Please do thorough research and understand the features included before flashing
 
 ---
 
+## 🐉 Supported NetHunter Hardware & WiFi Adapters
+
+The kernel and accompanying flashable `NetHunter-Wireless.zip` module provide plug-and-play driver and firmware support for packet injection, monitor mode, AP mode, BadUSB, RTL-SDR, and Bluetooth attacks:
+
+### 📡 Wireless WiFi Adapters (Monitor Mode & Packet Injection)
+
+| Vendor | Supported Chipset / Driver | Popular Tested Adapters | Capabilities |
+| :--- | :--- | :--- | :--- |
+| **MediaTek** | `mt76x2u` / `mt76x0u` (`mt76`) | **Alfa AWUS036ACM**, **Alfa AWUS036ACHM**, Archer T2U Plus / Nano, Netgear A6210 | Dual-band 2.4/5GHz 802.11ac, Monitor Mode, Packet Injection, AP Mode |
+| **MediaTek** | `mt7601u` | Generic MT7601U Mini Dongles | 2.4GHz 802.11n, Monitor Mode, Packet Injection |
+| **Atheros** | `ath9k_htc` | **TP-Link TL-WN722N v1**, **Alfa AWUS036NHA**, AR9271 | 2.4GHz 802.11n, High-power Packet Injection, AP/Master Mode |
+| **Atheros** | `carl9170` | AR9170 based USB dongles | 2.4/5GHz 802.11a/b/g/n, Monitor Mode, Packet Injection |
+| **Ralink** | `rt2800usb` (`rt2x00`) | **Alfa AWUS036NH**, **Alfa AWUS036NEH**, RT3070, RT2870, RT3572, RT5370 | 2.4GHz 802.11n, Long-range Packet Injection, AP Mode |
+| **Realtek** | `rtw88_8822bu` / `rtw88_8822cu` | **Alfa AWUS036ACH**, **Alfa AWUS036AC**, Realtek RTL8812BU, RTL8822BU, RTL8822CU | Dual-band AC1200 / AC1300, Monitor Mode, Frame Injection |
+| **Realtek** | `rtw88_8821cu` / `rtw88_8723du` | Realtek RTL8811CU, RTL8821CU, RTL8723DU | AC600 Dual-band Mini Dongles |
+| **Realtek** | `rtl8xxxu` | Realtek RTL8188EUS, RTL8192EU, RTL8723AU | 2.4GHz 802.11n, Monitor Mode |
+| **Realtek** | `rtl8187` | **Alfa AWUS036H** (RTL8187L) | Legacy 2.4GHz High-power Injection |
+
+### 🛠️ Hardware Gadgets, Network Dongles & SDR
+
+- 🦆 **BadUSB / Rubber Ducky**: Native USB HID keyboard and mouse emulation (`/dev/hidg0`) for NetHunter DuckHunter payloads.
+- 📻 **Software Defined Radio (SDR)**: RTL2832U / RTL28xx based RTL-SDR USB dongles supported natively via `dvb_usb_rtl28xxu.ko` (HackRF One / Airspy supported via userspace USB OTG).
+- 🌐 **USB Ethernet Adapters**: Realtek RTL8152 / RTL8153, ASIX AX88179 / AX8817x, CDC-ECM, and CDC-NCM high-speed adapters.
+- 📶 **Bluetooth Attacks**: Generic USB Bluetooth dongles supported via `btusb.ko` with RFCOMM TTY and BNEP frame injection.
+
+---
+
 ## 📱 Tested Devices & Compatibility
 
 > [!TIP]
