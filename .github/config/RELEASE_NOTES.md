@@ -130,17 +130,28 @@ Install the KernelSU‑Next Manager APK, same version as mentioned in the releas
 Open the KernelSU‑Next app.
 Reboot the device if you performed any cleanup in step 2
 
+## 📱 Tested Devices & Compatibility
+
+| Device | Codename | Tested OS Version | Stock Kernel Version | Flashing Mode | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Redmi Note 14 4G** | `tanzanite` | **Xiaomi HyperOS 3.0.302** (Android 16) | `6.12.30-android16-5-g6e872b4863d6-ab13847919-4k` | **Bypass Image** (`do.flash_bypass=1`) | ✅ Fully Working |
+
+> [!CAUTION]
+> **CRITICAL FLASHING WARNINGS**:
+> 1. **HyperOS 3.0+ Only**: Do **NOT** flash on HyperOS versions lower than 3.0 (e.g., HyperOS 1.0 or 2.0 based on Android 14/15). Flashing an Android 16 kernel on older Android OS builds will cause a **HARD BRICK**!
+> 2. **Must Use Bypass-Image on HyperOS**: You **MUST** set `do.flash_bypass=1` in `anykernel.sh` inside the `AnyKernel3.zip`. Flashing standard `Image` on HyperOS 3 will cause a **bootloop / soft brick** due to vendor module CRC version checks.
+
 ## Force Load Kernel Modules (Bypass) — flashing with `Bypass-Image`
 
 > [!IMPORTANT]
-> Most users do not need this. This option does not help bypass root-detection systems — it only replaces the kernel image used during flashing for compatibility workarounds.
+> This option replaces the kernel image used during flashing for compatibility workarounds.
 
 **How to enable:**
-- Set `do.flash_bypass=1`, in the anykernel.sh file within the AnyKernel3.zip. 
+- Set `do.flash_bypass=1` in the `anykernel.sh` file within `AnyKernel3.zip`. 
 
 **Behavior:**
-- If `do.flash_bypass=1` is set it will move `Bypass-Image` to replace the usual `Image` file prior to performing version checks and flashing.
-- If `do.flash_bypass=1` is set and `Bypass-Image` is not found, the installer will abort with an error to avoid accidental forced flashing of an unintended image.
+- If `do.flash_bypass=1` is set, it will flash `Bypass-Image` (with vendor module CRC check bypass) instead of standard `Image`.
+- If `do.flash_bypass=1` is set and `Bypass-Image` is not found, the installer will abort with an error.
 
 **Why / When to use:**
-- Use this only when a `Normal` flash fails to boot due to kernel module incompatibilities.
+- **Required for Xiaomi HyperOS 3** (such as Redmi Note 14 4G / `tanzanite`) and any OEM builds that enforce strict vendor module version validation.

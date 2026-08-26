@@ -41,15 +41,30 @@ Please do thorough research and understand the features included before flashing
 
 ---
 
+## 📱 Tested Devices
+
+| Device | Codename | Tested OS Version | Stock Kernel Version | Flashing Mode | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Redmi Note 14 4G** | `tanzanite` | **Xiaomi HyperOS 3.0.302** (Android 16) | `6.12.30-android16-5-g6e872b4863d6-ab13847919-4k` | **Bypass Image** (`do.flash_bypass=1`) | ✅ Fully Working |
+
+> [!CAUTION]
+> **CRITICAL COMPATIBILITY & FLASHING WARNINGS**:
+> 1. **HyperOS 3.0+ Only**: Do **NOT** flash this kernel on **HyperOS < 3.0** (e.g. HyperOS 1.0 or 2.0 based on Android 14/15). Flashing an Android 16 GKI kernel on older OS versions will cause a **HARD BRICK**.
+> 2. **Must Use Bypass-Image on HyperOS**: You **MUST** set `do.flash_bypass=1` in `anykernel.sh` inside the `AnyKernel3.zip` to flash `Bypass-Image`. Flashing the regular `Image` on HyperOS 3 will cause a **bootloop / soft brick** due to strict vendor module version CRC enforcement.
+
+---
+
 ## 📋 Installation Instructions
 
 1. **Prerequisites**:
    - Unlocked bootloader.
-   - Backup of your current boot image.
+   - Backup of your current boot image (`boot.img`).
+   - Android 16 / HyperOS 3.0+ installed.
    - Flashing utility (e.g. [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher)).
 
-2. **Flashing Kernel**:
+2. **Flashing Kernel (Bypass Mode)**:
    - Download the generated `AnyKernel3.zip` artifact from the GitHub Actions run or GitHub Release.
+   - Extract `anykernel.sh` and ensure `do.flash_bypass=1` is set (or use the built-in bypass installer).
    - Flash the ZIP using Kernel Flasher or custom recovery.
    - Install the matching Manager app for your selected root implementation (KernelSU-Next, KernelSU, or ReSukiSU).
    - Reboot device.
