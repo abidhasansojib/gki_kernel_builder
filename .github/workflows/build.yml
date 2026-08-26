@@ -34,66 +34,36 @@ on:
           - KernelSU
           - ReSukiSU
         default: KernelSU-Next
-      include_all:
-        description: "FULL (Enable all features below)"
-        type: boolean
-        default: true
-      include_root:
-        description: "Root (KernelSU-Next / KernelSU / ReSukiSU)"
-        type: boolean
-        default: true
-      include_susfs:
-        description: "SUSFS v2.2.0"
-        type: boolean
-        default: true
-      include_nomount:
-        description: "NoMount VFS Hooks & Metamodule"
-        type: boolean
-        default: true
-      include_nethunter:
-        description: "Kali NetHunter & Wireless Drivers"
-        type: boolean
-        default: true
-      include_bbg:
-        description: "Baseband Guard (BBG)"
-        type: boolean
-        default: true
-      include_bbrv3:
-        description: "TCP BBRv3 Congestion Control"
-        type: boolean
-        default: true
-      include_wireguard:
-        description: "WireGuard VPN"
-        type: boolean
-        default: true
-      include_ip_set:
-        description: "IP Set & Advanced Firewall"
-        type: boolean
-        default: true
-      include_qdisc:
-        description: "Traffic Shaping (CAKE & FQ-CoDel)"
-        type: boolean
-        default: true
-      include_cifs:
-        description: "CIFS / SMB Network Filesystem"
-        type: boolean
-        default: true
-      include_ntsync:
-        description: "NTSync (Windows NT Sync Primitives)"
-        type: boolean
-        default: true
-      include_droidspaces:
-        description: "DroidSpaces-OSS Containers"
-        type: boolean
-        default: true
-      include_btf:
-        description: "BTF & eBPF Tooling"
-        type: boolean
-        default: true
-      include_unicode_fix:
-        description: "Unicode Path Traversal Fix"
-        type: boolean
-        default: true
+      feature_set:
+        description: "Feature Set"
+        type: choice
+        options:
+          - FULL
+          - ROOT+SUSFS+NOMOUNT
+          - ROOT+SUSFS+NH+BBG+NET+DS
+          - ROOT+SUSFS+BBG+NET+DS
+          - ROOT+SUSFS+BBG
+          - ROOT+SUSFS+NET
+          - ROOT+SUSFS+DS
+          - ROOT+SUSFS
+          - ROOT+BBG
+          - ROOT+NET
+          - ROOT+DS
+          - ROOT
+          - KSUN+SUSFS+NOMOUNT
+          - KSUN+SUSFS+BBG+NET+DS
+          - KSUN+SUSFS+BBG
+          - KSUN+SUSFS+NET
+          - KSUN+SUSFS+DS
+          - KSUN+SUSFS
+          - KSUN+BBG
+          - KSUN+NET
+          - KSUN+DS
+          - KSUN
+          - NETHUNTER
+          - NOMOUNT
+          - NONE
+        default: FULL
       ksu_branch:
         description: "KernelSU branch or commit (empty = default for selected flavor)"
         type: string
@@ -113,7 +83,7 @@ jobs:
     steps:
       - name: Resolve latest NoMount dev commit
         id: resolve
-        if: ${{ inputs.include_all || inputs.include_nomount }}
+        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -130,17 +100,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        if: ${{ inputs.include_all || inputs.include_nomount }}
+        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
 
       - name: Build NoMount metamodule
         id: nomount-metamodule
-        if: ${{ inputs.include_all || inputs.include_nomount }}
+        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/nomount-metamodule
         with:
           commit: ${{ needs.resolve-nomount.outputs.nomount_commit }}
 
       - name: Upload NoMount metamodule
-        if: ${{ inputs.include_all || inputs.include_nomount }}
+        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
         uses: actions/upload-artifact@v7
         with:
           name: NoMount-Metamodule
@@ -326,14 +296,14 @@ jobs:
           os_patch_level: ${{ matrix.os_patch_level }}
 
       - name: Setup Root Implementation
-        if: ${{ inputs.include_all || inputs.include_root }}
+        if: ${{ contains(inputs.feature_set, 'KSUN') || contains(inputs.feature_set, 'ROOT') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/kernelsu
         with:
           flavor: ${{ inputs.root_flavor }}
           ksu_branch: ${{ inputs.ksu_branch }}
 
       - name: SUSFS
-        if: ${{ inputs.include_all || inputs.include_susfs }}
+        if: ${{ contains(inputs.feature_set, 'SUSFS') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/susfs
         with:
           susfs_commit: ${{ inputs.susfs_commit_android16-6-12 }}
@@ -343,10 +313,10 @@ jobs:
           os_patch_level: ${{ matrix.os_patch_level }}
           sublevel: ${{ steps.extract.outputs.sublevel }}
           root_flavor: ${{ inputs.root_flavor }}
-          nomount_enabled: ${{ inputs.include_all || inputs.include_nomount }}
+          nomount_enabled: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
 
       - name: Fix selinux_hide pointer-bool-conversion on 6.12
-        if: ${{ inputs.include_all || inputs.include_root }}
+        if: ${{ contains(inputs.feature_set, 'KSUN') || contains(inputs.feature_set, 'ROOT') || inputs.feature_set == 'FULL' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -365,11 +335,11 @@ jobs:
           done
 
       - name: Baseband Guard
-        if: ${{ inputs.include_all || inputs.include_bbg }}
+        if: ${{ contains(inputs.feature_set, 'BBG') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/bbg
 
       - name: Setup Networking
-        if: ${{ inputs.include_all || inputs.include_bbrv3 || inputs.include_wireguard || inputs.include_ip_set || inputs.include_qdisc || inputs.include_cifs }}
+        if: ${{ contains(inputs.feature_set, 'NET') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/networking
         with:
           version: ${{ matrix.version }}
@@ -378,20 +348,19 @@ jobs:
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
       - name: Setup NetHunter & Wireless Drivers
-        if: ${{ inputs.include_all || inputs.include_nethunter }}
+        if: ${{ contains(inputs.feature_set, 'NETHUNTER') || contains(inputs.feature_set, 'NH') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/nethunter
         with:
           version: ${{ matrix.version }}
 
       - name: DroidSpaces-OSS Patches
-        if: ${{ inputs.include_all || inputs.include_droidspaces }}
+        if: ${{ contains(inputs.feature_set, 'DS') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/droidspaces
         with:
           version: ${{ matrix.version }}
           kernel_version: ${{ matrix.kernel_version }}
 
       - name: Apply NTSync Patches
-        if: ${{ inputs.include_all || inputs.include_ntsync }}
         uses: ./.github/actions/ntsync
         with:
           version: ${{ matrix.version }}
@@ -404,7 +373,6 @@ jobs:
           kernel_version: ${{ matrix.kernel_version }}
 
       - name: Apply Unicode Fix Patch
-        if: ${{ inputs.include_all || inputs.include_unicode_fix }}
         uses: ./.github/actions/unicode-fix
         with:
           kernel_version: ${{ matrix.kernel_version }}
@@ -413,7 +381,6 @@ jobs:
         uses: ./.github/actions/misc
 
       - name: Enable BTF
-        if: ${{ inputs.include_all || inputs.include_btf }}
         uses: ./.github/actions/btf
         with:
           version: ${{ matrix.version }}
@@ -427,7 +394,7 @@ jobs:
           kernel_version: ${{ matrix.kernel_version }}
 
       - name: Integrate NoMount
-        if: ${{ inputs.include_all || inputs.include_nomount }}
+        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/nomount
         with:
           commit: ${{ needs.resolve-nomount.outputs.nomount_commit }}
@@ -492,7 +459,7 @@ jobs:
           version: ${{ matrix.version }}
 
       - name: 📦 Build NetHunter Wireless Module
-        if: ${{ inputs.include_all || inputs.include_nethunter }}
+        if: ${{ contains(inputs.feature_set, 'NETHUNTER') || contains(inputs.feature_set, 'NH') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/nethunter-module
         with:
           file_name: ${{ steps.extract.outputs.file_name }}
@@ -537,28 +504,6 @@ jobs:
             SUSFS_VER=$(grep '#define SUSFS_VERSION' "${{ github.workspace }}/kernel/common/include/linux/susfs.h" | awk -F'"' '{print $2}' || echo "N/A")
           fi
 
-          FEATURES=()
-          if [ "${{ inputs.include_all }}" = "true" ]; then
-            FEATURE_STR="FULL"
-          else
-            [ "${{ inputs.include_root }}" = "true" ] && FEATURES+=("ROOT")
-            [ "${{ inputs.include_susfs }}" = "true" ] && FEATURES+=("SUSFS")
-            [ "${{ inputs.include_nomount }}" = "true" ] && FEATURES+=("NOMOUNT")
-            [ "${{ inputs.include_nethunter }}" = "true" ] && FEATURES+=("NETHUNTER")
-            [ "${{ inputs.include_bbg }}" = "true" ] && FEATURES+=("BBG")
-            [ "${{ inputs.include_bbrv3 }}" = "true" ] && FEATURES+=("BBRv3")
-            [ "${{ inputs.include_wireguard }}" = "true" ] && FEATURES+=("WIREGUARD")
-            [ "${{ inputs.include_ip_set }}" = "true" ] && FEATURES+=("IPSET")
-            [ "${{ inputs.include_qdisc }}" = "true" ] && FEATURES+=("QDISC")
-            [ "${{ inputs.include_cifs }}" = "true" ] && FEATURES+=("CIFS")
-            [ "${{ inputs.include_ntsync }}" = "true" ] && FEATURES+=("NTSYNC")
-            [ "${{ inputs.include_droidspaces }}" = "true" ] && FEATURES+=("DS")
-            [ "${{ inputs.include_btf }}" = "true" ] && FEATURES+=("BTF")
-            [ "${{ inputs.include_unicode_fix }}" = "true" ] && FEATURES+=("UNICODE_FIX")
-            FEATURE_STR=$(IFS=+; echo "${FEATURES[*]}")
-            FEATURE_STR="${FEATURE_STR:-NONE}"
-          fi
-
           {
             echo "## ${{ matrix.android_version }} ${{ matrix.kernel_version }}.${{ matrix.sublevel }} (${{ matrix.variant }}) — ${STATUS}"
             echo
@@ -578,7 +523,7 @@ jobs:
             echo "| **SUSFS Version** | ${SUSFS_VER} |"
             echo "| **SUSFS Commit** | ${SUSFS_SHA} |"
             echo "| **NoMount Commit** | ${NOMOUNT_SHA} |"
-            echo "| **Feature Set** | ${FEATURE_STR} |"
+            echo "| **Feature Set** | ${{ inputs.feature_set }} |"
             echo "| **Variant** | ${{ matrix.variant }} |"
             echo
 
