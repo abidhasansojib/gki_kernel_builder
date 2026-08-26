@@ -105,102 +105,14 @@ runs:
 
         # --- SELinux Policy Rules (sepolicy.rule) ---
         # Allows NetHunter, Termux, and shell to access HID, USB, TUN, and serial devices without SELinux denials
-        cat << 'EOF' > "$STAGING_DIR/sepolicy.rule"
-allow untrusted_app_all hidraw_device chr_file { read write open ioctl getattr }
-allow untrusted_app_all uhid_device chr_file { read write open ioctl getattr }
-allow untrusted_app_all tun_device chr_file { read write open ioctl getattr }
-allow untrusted_app_all usb_device chr_file { read write open ioctl getattr }
-allow untrusted_app_all usb_device dir { read open search getattr }
-allow untrusted_app_all tty_device chr_file { read write open ioctl getattr }
-allow untrusted_app_all rfkill_device chr_file { read write open ioctl getattr }
-allow untrusted_app_all configfs dir { read open search write add_name remove_name create }
-allow untrusted_app_all configfs file { read write open getattr }
-
-allow shell hidraw_device chr_file { read write open ioctl getattr }
-allow shell uhid_device chr_file { read write open ioctl getattr }
-allow shell tun_device chr_file { read write open ioctl getattr }
-allow shell usb_device chr_file { read write open ioctl getattr }
-allow shell usb_device dir { read open search getattr }
-allow shell tty_device chr_file { read write open ioctl getattr }
-allow shell rfkill_device chr_file { read write open ioctl getattr }
-allow shell configfs dir { read open search write add_name remove_name create }
-allow shell configfs file { read write open getattr }
-EOF
+        echo 'YXxsb3cgdW50cnVzdGVkX2FwcF9hbGwgaGlkcmF3X2RldmljZSBjaHJfZmlsZSB7IHJlYWQgd3JpdGUgb3BlbiBpb2N0bCBnZXRhdHRyIH0KYWxsb3cgdW50cnVzdGVkX2FwcF9hbGwgdWhpZF9kZXZpY2UgY2hyX2ZpbGUgeyByZWFkIHdyaXRlIG9wZW4gaW9jdGwgZ2V0YXR0ciB9CmFsbG93IHVudHJ1c3RlZF9hcHBfYWxsIHR1bl9kZXZpY2UgY2hyX2ZpbGUgeyByZWFkIHdyaXRlIG9wZW4gaW9jdGwgZ2V0YXR0ciB9CmFsbG93IHVudHJ1c3RlZF9hcHBfYWxsIHVzYl9kZXZpY2UgY2hyX2ZpbGUgeyByZWFkIHdyaXRlIG9wZW4gaW9jdGwgZ2V0YXR0ciB9CmFsbG93IHVudHJ1c3RlZF9hcHBfYWxsIHVzYl9kZXZpY2UgZGlyIHsgcmVhZCBvcGVuIHNlYXJjaCBnZXRhdHRyIH0KYWxsb3cgdW50cnVzdGVkX2FwcF9hbGwgdHR5X2RldmljZSBjaHJfZmlsZSB7IHJlYWQgd3JpdGUgb3BlbiBpb2N0bCBnZXRhdHRyIH0KYWxsb3cgdW50cnVzdGVkX2FwcF9hbGwgcmZraWxsX2RldmljZSBjaHJfZmlsZSB7IHJlYWQgd3JpdGUgb3BlbiBpb2N0bCBnZXRhdHRyIH0KYWxsb3cgdW50cnVzdGVkX2FwcF9hbGwgY29uZmlnZnMgZGlyIHsgcmVhZCBvcGVuIHNlYXJjaCB3cml0ZSBhZGRfbmFtZSByZW1vdmVfbmFtZSBjcmVhdGUgfQphbGxvdyB1bnRydXN0ZWRfYXBwX2FsbCBjb25maWdmcyBmaWxlIHsgcmVhZCB3cml0ZSBvcGVuIGdldGF0dHIgfQoKYWxsb3cgc2hlbGwgaGlkcmF3X2RldmljZSBjaHJfZmlsZSB7IHJlYWQgd3JpdGUgb3BlbiBpb2N0bCBnZXRhdHRyIH0KYWxsb3cgc2hlbGwgdWhpZF9kZXZpY2UgY2hyX2ZpbGUgeyByZWFkIHdyaXRlIG9wZW4gaW9jdGwgZ2V0YXR0ciB9CmFsbG93IHNoZWxsIHR1bl9kZXZpY2UgY2hyX2ZpbGUgeyByZWFkIHdyaXRlIG9wZW4gaW9jdGwgZ2V0YXR0ciB9CmFsbG93IHNoZWxsIHVzYl9kZXZpY2UgY2hyX2ZpbGUgeyByZWFkIHdyaXRlIG9wZW4gaW9jdGwgZ2V0YXR0ciB9CmFsbG93IHNoZWxsIHVzYl9kZXZpY2UgZGlyIHsgcmVhZCBvcGVuIHNlYXJjaCBnZXRhdHRyIH0KYWxsb3cgc2hlbGwgdHR5X2RldmljZSBjaHJfZmlsZSB7IHJlYWQgd3JpdGUgb3BlbiBpb2N0bCBnZXRhdHRyIH0KYWxsb3cgc2hlbGwgcmZraWxsX2RldmljZSBjaHJfZmlsZSB7IHJlYWQgd3JpdGUgb3BlbiBpb2N0bCBnZXRhdHRyIH0KYWxsb3cgc2hlbGwgY29uZmlnZnMgZGlyIHsgcmVhZCBvcGVuIHNlYXJjaCB3cml0ZSBhZGRfbmFtZSByZW1vdmVfbmFtZSBjcmVhdGUgfQphbGxvdyBzaGVsbCBjb25maWdmcyBmaWxlIHsgcmVhZCB3cml0ZSBvcGVuIGdldGF0dHIgfQo=' | base64 -d > "$STAGING_DIR/sepolicy.rule"
 
         # --- Early Boot Initialization (post-fs-data.sh) ---
-        cat << 'EOF' > "$STAGING_DIR/post-fs-data.sh"
-#!/system/bin/sh
-MODDIR=${0%/*}
-
-# Ensure /dev/net directory and tun device node exist for VPNs & packet manipulation
-mkdir -p /dev/net
-if [ ! -c /dev/net/tun ]; then
-  mknod /dev/net/tun c 10 200 2>/dev/null || true
-fi
-chmod 666 /dev/net/tun 2>/dev/null || true
-chmod 666 /dev/rfkill 2>/dev/null || true
-chmod 666 /dev/uhid 2>/dev/null || true
-chmod 666 /dev/hidg* 2>/dev/null || true
-
-# Copy firmware files to runtime paths if directory is writable
-for fw_target in /vendor/firmware /vendor/etc/firmware /system/etc/firmware; do
-  if [ -d "$fw_target" ] && [ -w "$fw_target" ] && [ -d "$MODDIR/system/etc/firmware" ]; then
-    cp -rf "$MODDIR/system/etc/firmware/"* "$fw_target/" 2>/dev/null || true
-  fi
-done
-
-# Load Core Wireless & Subsystem Dependencies Early
-for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
-  if [ -f "$MODDIR/lkm/$core_ko" ]; then
-    insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
-  elif [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
-    insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
-  fi
-done
-EOF
+        echo 'IyEvc3lzdGVtL2Jpbi9zaApNT0RESVI9JHswJS8qfQoKIyBFbnN1cmUgL2Rldi9uZXQgZGlyZWN0b3J5IGFuZCB0dW4gZGV2aWNlIG5vZGUgZXhpc3QgZm9yIFZQTnMgJiBwYWNrZXQgbWFuaXB1bGF0aW9uCm1rZGlyIC1wIC9kZXYvbmV0CmlmIFsgISAtYyAvZGV2L25ldC90dW4gXTsgdGhlbgogIG1rbm9kIC9kZXYvbmV0L3R1biBjIDEwIDIwMCAyPi9kZXYvbnVsbCB8fCB0cnVlCmZpCmNobW9kIDY2NiAvZGV2L25ldC90dW4gMj4vZGV2L251bGwgfHwgdHJ1ZQpjaG1vZCA2NjYgL2Rldi9yZmtpbGwgMj4vZGV2L251bGwgfHwgdHJ1ZQpjaG1vZCA2NjYgL2Rldi91aGlkIDI+L2Rldi9udWxsIHx8IHRydWUKY2htb2QgNjY2IC9kZXYvaGlkZyogMj4vZGV2L251bGwgfHwgdHJ1ZQoKIyBDb3B5IGZpcm13YXJlIGZpbGVzIHRvIHJ1bnRpbWUgcGF0aHMgaWYgZGlyZWN0b3J5IGlzIHdyaXRhYmxlCmZvciBmd190YXJnZXQgaW4gL3ZlbmRvci9maXJtd2FyZSAvdmVuZG9yL2V0Yy9maXJtd2FyZSAvc3lzdGVtL2V0Yy9maXJtd2FyZTsgZG8KICBpZiBbIC1kICIkZndfdGFyZ2V0IiBdICYmIFsgLXcgIiRmd190YXJnZXQiIF0gJiYgWyAtZCAiJE1PRERJUi9zeXN0ZW0vZXRjL2Zpcm13YXJlIiBdOyB0aGVuCiAgICBjcCAtcmYgIiRNT0RESVIvc3lzdGVtL2V0Yy9maXJtd2FyZS8iKiAiJGZ3X3RhcmdldC8iIDI+L2Rldi9udWxsIHx8IHRydWUKICBmaQpkb25lCgojIExvYWQgQ29yZSBXaXJlbGVzcyAmIFN1YnN5c3RlbSBEZXBlbmRlbmNpZXMgRWFybHkKZm9yIGNvcmVfa28gaW4gY2ZnODAyMTEua28gbWFjODAyMTEua28gcnR3ODhfY29yZS5rbyBydHc4OF91c2Iua28gcnR3ODhfODgyMmIua28gcnR3ODhfODgyMmMua28gcnR3ODhfODgyMWMua28gcnR3ODcyM2Qua28gY2FuLmtvIGNhbi1kZXYua28gY2FuLXJhdy5rbyBjYW4tYmNtLmtvIGNhbi1ndy5rbzsgZG8KICBpZiBbIC1mICIkTU9ERElSL2xrbS8kY29yZV9rbyIgXTsgdGhlbgogICAgaW5zbW9kICIkTU9ERElSL2xrbS8kY29yZV9rbyIgMj4vZGV2L251bGwgfHwga3N1ZCBpbnNtb2QgIiRNT0RESVIvbGttLyRjb3JlX2tvIiAyPi9kZXYvbnVsbCB8fCB0cnVlCiAgZWxpZiBbIC1mICIkTU9ERElSL3N5c3RlbS9saWIvbW9kdWxlcy8kY29yZV9rbyIgXTsgdGhlbgogICAgaW5zbW9kICIkTU9ERElSL3N5c3RlbS9saWIvbW9kdWxlcy8kY29yZV9rbyIgMj4vZGV2L251bGwgfHwga3N1ZCBpbnNtb2QgIiRNT0RESVIvc3lzdGVtL2xpYi9tb2R1bGVzLyRjb3JlX2tvIiAyPi9kZXYvbnVsbCB8fCB0cnVlCiAgZmkKZG9uZQo=' | base64 -d > "$STAGING_DIR/post-fs-data.sh"
         chmod +x "$STAGING_DIR/post-fs-data.sh"
 
         # --- Late Boot Service & Permission Daemon (service.sh) ---
-        cat << 'EOF' > "$STAGING_DIR/service.sh"
-#!/system/bin/sh
-MODDIR=${0%/*}
-
-# Automated permission daemon for NetHunter BadUSB, Wi-Fi, SDR, Serial & VPN devices
-fix_permissions() {
-  chmod 666 /dev/hidg* 2>/dev/null || true
-  chmod 666 /dev/uhid 2>/dev/null || true
-  chmod 666 /dev/rfkill 2>/dev/null || true
-  chmod 666 /dev/net/tun 2>/dev/null || true
-  chmod 666 /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2>/dev/null || true
-  chmod -R 666 /dev/bus/usb/ 2>/dev/null || true
-}
-
-# Initial permission fix
-fix_permissions
-
-# Background daemon to maintain permissions when USB dongles or HID endpoints are dynamically connected
-(while true; do fix_permissions; sleep 2; done) &
-
-# Load Core Wireless & Subsystem Dependencies
-for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
-  if [ -f "$MODDIR/lkm/$core_ko" ]; then
-    insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
-  elif [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
-    insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
-  fi
-done
-
-# Load All Remaining Modules
-MODULE_SRC="$MODDIR/lkm"
-[ -d "$MODULE_SRC" ] && [ -n "$(ls -A "$MODULE_SRC" 2>/dev/null)" ] || MODULE_SRC="$MODDIR/system/lib/modules"
-
-for ko in $(ls "$MODULE_SRC"/*.ko 2>/dev/null); do
-  modname=$(basename "$ko")
-  if ! lsmod 2>/dev/null | grep -q "^${modname%.ko}[[:space:]]"; then
-    insmod "$ko" 2>/dev/null || ksud insmod "$ko" 2>/dev/null || true
-  fi
-done
-EOF
+        echo 'IyEvc3lzdGVtL2Jpbi9zaApNT0RESVI9JHswJS8qfQoKIyBBdXRvbWF0ZWQgcGVybWlzc2lvbiBkYWVtb24gZm9yIE5ldEh1bnRlciBCYWRVU0IsIFdpLUZpLCBTRFIsIFNlcmlhbCAmIFZQTiBkZXZpY2VzCmZpeF9wZXJtaXNzaW9ucygpIHsKICBjaG1vZCA2NjYgL2Rldi9oaWRnKiAyPi9kZXYvbnVsbCB8fCB0cnVlCiAgY2htb2QgNjY2IC9kZXYvdWhpZCAyPi9kZXYvbnVsbCB8fCB0cnVlCiAgY2htb2QgNjY2IC9kZXYvcmZraWxsIDI+L2Rldi9udWxsIHx8IHRydWUKICBjaG1vZCA2NjYgL2Rldi9uZXQvdHVuIDI+L2Rldi9udWxsIHx8IHRydWUKICBjaG1vZCA2NjYgL2Rldi90dHlVU0IqIC9kZXYvdHR5QUNNKiAvZGV2L3JmY29tbSogMj4vZGV2L251bGwgfHwgdHJ1ZQogIGNobW9kIC1SIDY2NiAvZGV2L2J1cy91c2IvIDI+L2Rldi9udWxsIHx8IHRydWUKfQoKIyBJbml0aWFsIHBlcm1pc3Npb24gZml4CmZpeF9wZXJtaXNzaW9ucwoKIyBCYWNrZ3JvdW5kIGRhZW1vbiB0byBtYWludGFpbiBwZXJtaXNzaW9ucyB3aGVuIFVTQiBkb25nbGVzIG9yIEhJRCBlbmRwb2ludHMgYXJlIGR5bmFtaWNhbGx5IGNvbm5lY3RlZAood2hpbGUgdHJ1ZTsgZG8gZml4X3Blcm1pc3Npb25zOyBzbGVlcCAyOyBkb25lKSAmCgojIExvYWQgQ29yZSBXaXJlbGVzcyAmIFN1YnN5c3RlbSBEZXBlbmRlbmNpZXMKZm9yIGNvcmVfa28gaW4gY2ZnODAyMTEua28gbWFjODAyMTEua28gcnR3ODhfY29yZS5rbyBydHc4OF91c2Iua28gcnR3ODhfODgyMmIua28gcnR3ODhfODgyMmMua28gcnR3ODhfODgyMWMua28gcnR3ODcyM2Qua28gY2FuLmtvIGNhbi1kZXYua28gY2FuLXJhdy5rbyBjYW4tYmNtLmtvIGNhbi1ndy5rbzsgZG8KICBpZiBbIC1mICIkTU9ERElSL2xrbS8kY29yZV9rbyIgXTsgdGhlbgogICAgaW5zbW9kICIkTU9ERElSL2xrbS8kY29yZV9rbyIgMj4vZGV2L251bGwgfHwga3N1ZCBpbnNtb2QgIiRNT0RESVIvbGttLyRjb3JlX2tvIiAyPi9kZXYvbnVsbCB8fCB0cnVlCiAgZWxpZiBbIC1mICIkTU9ERElSL3N5c3RlbS9saWIvbW9kdWxlcy8kY29yZV9rbyIgXTsgdGhlbgogICAgaW5zbW9kICIkTU9ERElSL3N5c3RlbS9saWIvbW9kdWxlcy8kY29yZV9rbyIgMj4vZGV2L251bGwgfHwga3N1ZCBpbnNtb2QgIiRNT0RESVIvc3lzdGVtL2xpYi9tb2R1bGVzLyRjb3JlX2tvIiAyPi9kZXYvbnVsbCB8fCB0cnVlCiAgZmkKZG9uZQoKIyBMb2FkIEFsbCBSZW1haW5pbmcgTW9kdWxlcwpNT0RVTEVfU1JDPSIkTU9ERElSL2xrbSIKWyAtZCAiJE1PRFVMRV9TUkMiIF0gJiYgWyAtbiAiJChscyAtQSAiJE1PRFVMRV9TUkMiIDI+L2Rldi9udWxsKSIgXSB8fCBNT0RVTEVfU1JDPSIkTU9ERElSL3N5c3RlbS9saWIvbW9kdWxlcyIKCmZvciBrbyBpbiAkKGxzICIkTU9EVUxFX1NSQyIvKi5rbyAyPi9kZXYvbnVsbCk7IGRvCiAgbW9kbmFtZT0kKGJhc2VuYW1lICIka28iKQogIGlmICEgbHNtb2QgMj4vZGV2L251bGwgfCBncmVwIC1xICJeJHttb2RuYW1lJS5rb31bWzpzcGFjZTpdXSI7IHRoZW4KICAgIGluc21vZCAiJGtvIiAyPi9kZXYvbnVsbCB8fCBrc3VkIGluc21vZCAiJGtvIiAyPi9kZXYvbnVsbCB8fCB0cnVlCiAgZmkKZG9uZQo=' | base64 -d > "$STAGING_DIR/service.sh"
         chmod +x "$STAGING_DIR/service.sh"
 
         OUT_ZIP="${{ github.workspace }}/Nethunter-Wireless-Module.zip"
