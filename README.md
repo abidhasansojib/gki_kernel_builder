@@ -80,10 +80,10 @@ The kernel and accompanying flashable `Nethunter-Wireless-Module.zip` module pro
 
 ## 🔍 Instant Kernel & Driver Verification (`checker.sh`)
 
-You can instantly audit and verify all NetHunter features, compiled `.ko` drivers, firmware blobs, and `/dev` permissions directly on your rooted Android phone:
+You can instantly audit and verify all NetHunter features, compiled `.ko` drivers, firmware blobs, and `/dev` permissions directly on your rooted Android phone (Termux / NetHunter terminal / ADB root shell):
 
 ```bash
-curl -sSL https://cdn.jsdelivr.net/gh/abidhasansojib/gki_kernel_builder@main/checker.sh | su
+curl -sSL https://raw.githubusercontent.com/abidhasansojib/gki_kernel_builder/main/checker.sh | su -c "sh"
 ```
 
 This automated auditor tests:
