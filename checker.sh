@@ -395,9 +395,11 @@ check_firmware "rtw88/rtw8821c_fw.bin"  "Realtek RTL8821CU / RTL8811CU Firmware"
 check_firmware "rtw88/rtw8723d_fw.bin"  "Realtek RTL8723DU Firmware"
 check_firmware "ath9k_htc/htc_9271.fw"  "Atheros AR9271 Firmware (TL-WN722N v1)"
 check_firmware "carl9170-1.fw"          "Atheros AR9170 Dual-Band Firmware"
+check_firmware "mediatek/mt7662u.bin"   "MediaTek MT7612U/MT7662U 5GHz Firmware (AWUS036ACM)"
 check_firmware "mt7601u.bin"            "MediaTek MT7601U Mini Dongle Firmware"
 check_firmware "rt2870.bin"             "Ralink RT2870/RT3070 Firmware (AWUS036NH)"
 check_firmware "rtlwifi/rtl8192cufw.bin" "Realtek RTL8192CU Firmware"
+check_firmware "rtlwifi/rtl8192eu_nic.bin" "Realtek RTL8192EU NIC Firmware"
 
 # ==============================================================================
 # 13. LIVE HARDWARE NODES & PERMISSIONS AUDIT
