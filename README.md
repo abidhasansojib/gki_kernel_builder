@@ -62,9 +62,28 @@ The kernel and accompanying flashable `Nethunter-Wireless-Module.zip` module pro
 ### 🛠️ Hardware Gadgets, Network Dongles & SDR
 
 - 🦆 **BadUSB / Rubber Ducky**: Native USB HID keyboard and mouse emulation (`/dev/hidg0`) for NetHunter DuckHunter payloads.
-- 📻 **Software Defined Radio (SDR)**: RTL2832U / RTL28xx based RTL-SDR USB dongles supported natively via `dvb_usb_rtl28xxu.ko` (HackRF One / Airspy supported via userspace USB OTG).
-- 🌐 **USB Ethernet Adapters**: Realtek RTL8152 / RTL8153, ASIX AX88179 / AX8817x, CDC-ECM, and CDC-NCM high-speed adapters.
-- 📶 **Bluetooth Attacks**: Generic USB Bluetooth dongles supported via `btusb.ko` with RFCOMM TTY and BNEP frame injection.
+- 📻 **Software Defined Radio (SDR)**: In-kernel and USB drivers for RTL2832U / RTL-SDR (`dvb_usb_rtl28xxu`), HackRF One (`hackrf.ko`), AirSpy (`airspy.ko`), and Mirics (`msi2500.ko` / `msi001.ko`).
+- 🚗 **Automotive Hacking (CARsenal)**: SocketCAN framework (`can.ko`, `can-raw.ko`, `can-bcm.ko`, `can-gw.ko`), Virtual CAN (`vcan.ko`), Serial CAN (`slcan.ko`), PEAK PCAN-USB (`peak_usb.ko`), Kvaser (`kvaser_usb.ko`), and EMS USB (`ems_usb.ko`).
+- 🔌 **USB Serial & Hardware Hacking**: CDC-ACM (`cdc-acm.ko`), FTDI (`ftdi_sio.ko`), WCH (`ch341.ko`), Silicon Labs (`cp210x.ko`), and Prolific (`pl2303.ko`) for router consoles, embedded hardware debugging, and RFID cloner tools (Proxmark3 / ChameleonMini).
+- 🌐 **USB Ethernet Adapters**: Realtek RTL8152 / RTL8153 (`r8152.ko`), ASIX AX88179 / AX8817x (`ax88179_178a.ko`), CDC-ECM, and CDC-NCM high-speed adapters.
+- 📶 **Bluetooth Attacks**: Generic USB Bluetooth dongles supported via `btusb.ko` with RFCOMM TTY (`rfcomm.ko`), BNEP (`bnep.ko`), and HIDP (`hidp.ko`).
+- 📁 **Network File Systems**: In-tree NFS client & server (`CONFIG_NFS_FS=y`, `CONFIG_NFSD=y`) and CIFS/SMB (`CONFIG_CIFS=y`) for high-speed network shares.
+
+---
+
+## 🔍 Instant Kernel & Driver Verification (`checker.sh`)
+
+You can instantly audit and verify all NetHunter features, compiled `.ko` drivers, firmware blobs, and `/dev` permissions directly on your rooted Android phone:
+
+```bash
+su -c "curl -sSL https://cdn.jsdelivr.net/gh/abidhasansojib/gki_kernel_builder@main/checker.sh | sh"
+```
+
+This automated auditor tests:
+- ✅ **Kernel Configs**: Audits `/proc/config.gz` for all 80+ NetHunter configs.
+- ✅ **Live Drivers & Modules**: Verifies loaded `.ko` modules via `lsmod`.
+- ✅ **Firmware Blobs**: Checks firmware presence in `/vendor/firmware` and `/system/etc/firmware`.
+- ✅ **Device Nodes & Permissions**: Tests read/write access to `/dev/hidg*`, `/dev/uhid`, `/dev/rfkill`, `/dev/net/tun`, and `/dev/bus/usb/`.
 
 ---
 

@@ -72,9 +72,9 @@ The kernel integrates full Kali NetHunter capabilities natively into the 6.12 GK
   * Atheros: `ath9k_htc` (AR9271), `carl9170`, `ath6kl`
   * MediaTek / Ralink: `mt7601u`, `mt76x0u`, `mt76x2u`, `rt2800usb` (RT3070/RT5370), `rt2500usb`, `rt73usb`
   * ZyDAS: `zd1211rw`, `zd1201`
-* **Software-Defined Radio (SDR)**: RTL-SDR (`RTL2832U`), HackRF One (`CONFIG_USB_HACKRF=m`), AirSpy, Mirics.
-* **Automotive Hacking (CARsenal)**: SocketCAN (`CONFIG_CAN=m`, `CONFIG_CAN_RAW=m`, `CONFIG_CAN_DEV=m`), `slcan`, `PEAK PCAN-USB`, `Kvaser`, `gs_usb`.
-* **Network File Systems**: NFS client/server (`CONFIG_NFS_FS=y`, `CONFIG_NFSD=m`) and CIFS/SMB (`CONFIG_CIFS=m`).
+* **Software-Defined Radio (SDR)**: RTL-SDR (`RTL2832U`), HackRF One (`CONFIG_USB_HACKRF=m`), AirSpy (`CONFIG_USB_AIRSPY=m`), Mirics (`CONFIG_USB_MSI2500=m`).
+* **Automotive Hacking (CARsenal)**: SocketCAN (`CONFIG_CAN=m`, `CONFIG_CAN_RAW=m`, `CONFIG_CAN_DEV=m`, `CONFIG_CAN_BCM=m`, `CONFIG_CAN_GW=m`), `vcan`, `slcan`, `PEAK PCAN-USB`, `Kvaser`, `EMS USB`.
+* **Network File Systems**: NFS client/server (`CONFIG_NFS_FS=y`, `CONFIG_NFSD=y`) and CIFS/SMB (`CONFIG_CIFS=y`).
 * **Flashable Wireless & Driver Module**:
   All compiled `.ko` driver modules, official Linux firmware blobs, and HID permission daemons are packaged into a standalone KernelSU/Magisk module (`Nethunter-Wireless-Module.zip`) with an automated boot-time `service.sh` driver loader.
 
