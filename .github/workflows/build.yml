@@ -15,12 +15,6 @@ on:
           - Pre-Release
           - Release
         default: Action
-      kernel_build_version:
-        description: "Kernel Version"
-        type: choice
-        options:
-          - android16-6.12
-        default: android16-6.12
       os_patch_level:
         description: "OS Patch Level (e.g. 2025-07, or 'all')"
         type: string
@@ -76,132 +70,17 @@ on:
         default: ""
 
 jobs:
-  resolve-nomount:
-    runs-on: ubuntu-latest
-    outputs:
-      nomount_commit: ${{ steps.resolve.outputs.nomount_commit }}
-    steps:
-      - name: Resolve latest NoMount dev commit
-        id: resolve
-        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          sha="$(git ls-remote https://github.com/maxsteeel/nomount.git refs/heads/dev | awk '{print $1}')"
-          if [ -z "$sha" ] || ! [[ "$sha" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "Failed to resolve NoMount dev branch tip." >&2
-            exit 1
-          fi
-          echo "nomount_commit=$sha" >> "$GITHUB_OUTPUT"
-          echo "Resolved NoMount dev commit: $sha"
-
-  build-nomount-module:
-    needs: resolve-nomount
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
-
-      - name: Build NoMount metamodule
-        id: nomount-metamodule
-        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
-        uses: ./.github/actions/nomount-metamodule
-        with:
-          commit: ${{ needs.resolve-nomount.outputs.nomount_commit }}
-
-      - name: Upload NoMount metamodule
-        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: NoMount-Metamodule
-          path: ${{ steps.nomount-metamodule.outputs.module_path }}
-          if-no-files-found: error
-          compression-level: 0
-
-  generate-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.final.outputs.matrix }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v7
-
-      - name: Read Config and Build Final Matrix
-        id: final
-        shell: bash
-        run: |
-          CONFIG_FILE=".github/config/${{ inputs.kernel_build_version }}.json"
-          if [ ! -f "$CONFIG_FILE" ]; then
-            echo "Error: Config file not found: $CONFIG_FILE"
-            exit 1
-          fi
-
-          CONFIG_JSON=$(cat "$CONFIG_FILE" | jq -c .)
-
-          FINAL=$(jq -cn \
-            --argjson cfg "$CONFIG_JSON" \
-            '
-            ($cfg.version | split("-")) as $version_parts
-            | ($cfg.include) as $targets
-            | {
-              include: (
-                [
-                  $targets[] as $item
-                  | {
-                      version: $cfg.version,
-                      android_version: $version_parts[0],
-                      kernel_version: $version_parts[1],
-                      sublevel: $item.sublevel,
-                      os_patch_level: $item.date,
-                      variant: "Normal"
-                    }
-                ]
-                + [
-                    $targets[] as $item
-                    | select($item.variant != null)
-                    | {
-                        version: $cfg.version,
-                        android_version: $version_parts[0],
-                        kernel_version: $version_parts[1],
-                        sublevel: $item.sublevel,
-                        os_patch_level: $item.date,
-                        variant: $item.variant
-                      }
-                  ]
-                | unique_by([.android_version, .kernel_version, .sublevel, .os_patch_level, .variant])
-              )
-            }')
-
-          SELECTED_PATCH_LEVEL="${{ inputs.os_patch_level }}"
-          if [ "$SELECTED_PATCH_LEVEL" = "all" ] || [ -z "$SELECTED_PATCH_LEVEL" ]; then
-            SELECTED_PATCH_LEVEL=""
-          fi
-          if [ -n "$SELECTED_PATCH_LEVEL" ]; then
-            FULL_FINAL="$FINAL"
-            FINAL=$(jq -c --arg patch_level "$SELECTED_PATCH_LEVEL" '
-              {include: [.include[] | select(.os_patch_level == $patch_level)]}
-            ' <<< "$FINAL")
-            if [ "$(jq '.include | length' <<< "$FINAL")" -eq 0 ]; then
-              FINAL=$(jq -c --arg sublevel "$SELECTED_PATCH_LEVEL" '
-                {include: [.include[] | select(.sublevel == $sublevel)]}
-              ' <<< "$FULL_FINAL")
-            fi
-          fi
-          if [ "$(jq '.include | length' <<< "$FINAL")" -eq 0 ]; then
-            echo "Error: no build targets match patch level '${SELECTED_PATCH_LEVEL}'." >&2
-            exit 1
-          fi
-
-          echo "matrix=$FINAL" >> "$GITHUB_OUTPUT"
-
   build-kernel:
-    name: "${{ matrix.kernel_version }}.${{ matrix.sublevel }}-${{ matrix.android_version }}-${{ matrix.os_patch_level }} (${{ matrix.variant }})"
-    needs: [generate-matrix, resolve-nomount]
+    name: "Build Kernel (6.12.30-android16)"
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+    env:
+      VERSION: "android16-6.12"
+      ANDROID_VERSION: "android16"
+      KERNEL_VERSION: "6.12"
+      SUBLEVEL: "30"
+      OS_PATCH_LEVEL: ${{ inputs.os_patch_level || '2025-07' }}
+      VARIANT: "Normal"
 
     steps:
       - name: Checkout Repository
@@ -230,33 +109,32 @@ jobs:
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-environment
         with:
-          version: ${{ matrix.version }}
-          sublevel: ${{ matrix.sublevel }}
+          version: "android16-6.12"
+          sublevel: "30"
         env:
           BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
 
       - name: Download Kernel Repository
         uses: ./.github/actions/download-kernel
         with:
-          version: ${{ matrix.version }}
-          android_version: ${{ matrix.android_version }}
-          kernel_version: ${{ matrix.kernel_version }}
-          os_patch_level: ${{ matrix.os_patch_level }}
+          version: "android16-6.12"
+          android_version: "android16"
+          kernel_version: "6.12"
+          os_patch_level: ${{ inputs.os_patch_level || '2025-07' }}
 
       - name: Build FUSE-BPF Userspace Daemon
-        if: ${{ matrix.version == 'android16-6.12' }}
         continue-on-error: true
         uses: ./.github/actions/fuse-bpf
         with:
-          version: ${{ matrix.version }}
-          kernel_version: ${{ matrix.kernel_version }}
-          android_version: ${{ matrix.android_version }}
+          version: "android16-6.12"
+          kernel_version: "6.12"
+          android_version: "android16"
 
       - name: Set Build Timestamp from Kernel Commit
         shell: bash
         run: |
           set -x
-          OS_PATCH_LEVEL_INPUT="${{ matrix.os_patch_level }}"
+          OS_PATCH_LEVEL_INPUT="${{ inputs.os_patch_level || '2025-07' }}"
           if [[ "$OS_PATCH_LEVEL_INPUT" == lts* ]]; then
             if [[ "$OS_PATCH_LEVEL_INPUT" =~ ^lts-([0-9]{2})$ ]]; then
               OS_PATCH_LEVEL_YM="$(date -u +%Y)-${BASH_REMATCH[1]}"
@@ -280,20 +158,20 @@ jobs:
         id: extract
         uses: ./.github/actions/extract-sublevel-file-name
         with:
-          android_version: ${{ matrix.android_version }}
-          kernel_version: ${{ matrix.kernel_version }}
-          sublevel: ${{ matrix.sublevel }}
-          os_patch_level: ${{ matrix.os_patch_level }}
-          variant: ${{ matrix.variant }}
+          android_version: "android16"
+          kernel_version: "6.12"
+          sublevel: "30"
+          os_patch_level: ${{ inputs.os_patch_level || '2025-07' }}
+          variant: "Normal"
 
       - name: Kernel Fixes
         uses: ./.github/actions/kernel-fixes
         with:
-          version: ${{ matrix.version }}
-          android_version: ${{ matrix.android_version }}
-          kernel_version: ${{ matrix.kernel_version }}
+          version: "android16-6.12"
+          android_version: "android16"
+          kernel_version: "6.12"
           sublevel: ${{ steps.extract.outputs.sublevel }}
-          os_patch_level: ${{ matrix.os_patch_level }}
+          os_patch_level: ${{ inputs.os_patch_level || '2025-07' }}
 
       - name: Setup Root Implementation
         if: ${{ contains(inputs.feature_set, 'KSUN') || contains(inputs.feature_set, 'ROOT') || inputs.feature_set == 'FULL' }}
@@ -307,10 +185,10 @@ jobs:
         uses: ./.github/actions/susfs
         with:
           susfs_commit: ${{ inputs.susfs_commit_android16-6-12 }}
-          version: ${{ matrix.version }}
-          android_version: ${{ matrix.android_version }}
-          kernel_version: ${{ matrix.kernel_version }}
-          os_patch_level: ${{ matrix.os_patch_level }}
+          version: "android16-6.12"
+          android_version: "android16"
+          kernel_version: "6.12"
+          os_patch_level: ${{ inputs.os_patch_level || '2025-07' }}
           sublevel: ${{ steps.extract.outputs.sublevel }}
           root_flavor: ${{ inputs.root_flavor }}
           nomount_enabled: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
@@ -342,40 +220,40 @@ jobs:
         if: ${{ contains(inputs.feature_set, 'NET') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/networking
         with:
-          version: ${{ matrix.version }}
-          kernel_version: ${{ matrix.kernel_version }}
-          android_version: ${{ matrix.android_version }}
+          version: "android16-6.12"
+          kernel_version: "6.12"
+          android_version: "android16"
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
       - name: Setup NetHunter & Wireless Drivers
         if: ${{ contains(inputs.feature_set, 'NETHUNTER') || contains(inputs.feature_set, 'NH') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/nethunter
         with:
-          version: ${{ matrix.version }}
+          version: "android16-6.12"
 
       - name: DroidSpaces-OSS Patches
         if: ${{ contains(inputs.feature_set, 'DS') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/droidspaces
         with:
-          version: ${{ matrix.version }}
-          kernel_version: ${{ matrix.kernel_version }}
+          version: "android16-6.12"
+          kernel_version: "6.12"
 
       - name: Apply NTSync Patches
         uses: ./.github/actions/ntsync
         with:
-          version: ${{ matrix.version }}
-          kernel_version: ${{ matrix.kernel_version }}
+          version: "android16-6.12"
+          kernel_version: "6.12"
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
       - name: Apply Ptrace Patch
         uses: ./.github/actions/ptrace
         with:
-          kernel_version: ${{ matrix.kernel_version }}
+          kernel_version: "6.12"
 
       - name: Apply Unicode Fix Patch
         uses: ./.github/actions/unicode-fix
         with:
-          kernel_version: ${{ matrix.kernel_version }}
+          kernel_version: "6.12"
 
       - name: Setup Misc Configs
         uses: ./.github/actions/misc
@@ -383,30 +261,61 @@ jobs:
       - name: Enable BTF
         uses: ./.github/actions/btf
         with:
-          version: ${{ matrix.version }}
-          kernel_version: ${{ matrix.kernel_version }}
+          version: "android16-6.12"
+          kernel_version: "6.12"
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
       - name: Apply Device-Specific Patches
         uses: ./.github/actions/apply-device-patches
         with:
-          version: ${{ matrix.version }}
-          kernel_version: ${{ matrix.kernel_version }}
+          version: "android16-6.12"
+          kernel_version: "6.12"
+
+      - name: Resolve latest NoMount dev commit
+        id: resolve-nomount
+        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha="$(git ls-remote https://github.com/maxsteeel/nomount.git refs/heads/dev | awk '{print $1}')"
+          if [ -z "$sha" ] || ! [[ "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Failed to resolve NoMount dev branch tip." >&2
+            exit 1
+          fi
+          echo "nomount_commit=$sha" >> "$GITHUB_OUTPUT"
+          echo "NOMOUNT_COMMIT=$sha" >> "$GITHUB_ENV"
+          echo "Resolved NoMount dev commit: $sha"
 
       - name: Integrate NoMount
         if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/nomount
         with:
-          commit: ${{ needs.resolve-nomount.outputs.nomount_commit }}
-          kernel_version: ${{ matrix.kernel_version }}
+          commit: ${{ steps.resolve-nomount.outputs.nomount_commit }}
+          kernel_version: "6.12"
+
+      - name: Build NoMount metamodule
+        id: nomount-metamodule
+        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
+        uses: ./.github/actions/nomount-metamodule
+        with:
+          commit: ${{ steps.resolve-nomount.outputs.nomount_commit }}
+
+      - name: Upload NoMount metamodule
+        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: NoMount-Metamodule
+          path: ${{ steps.nomount-metamodule.outputs.module_path }}
+          if-no-files-found: error
+          compression-level: 0
 
       - name: Apply Kernel Branding
         uses: ./.github/actions/apply-kernel-branding
         with:
-          variant: ${{ matrix.variant }}
-          kernel_version: ${{ matrix.kernel_version }}
-          android_version: ${{ matrix.android_version }}
-          version: ${{ matrix.version }}
+          variant: "Normal"
+          kernel_version: "6.12"
+          android_version: "android16"
+          version: "android16-6.12"
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
       - name: Remove Protected Exports
@@ -432,9 +341,9 @@ jobs:
       - name: 'Setup Cache and Build Environment'
         uses: ./.github/actions/cache-setup
         with:
-          version: ${{ matrix.version }}
-          android_version: ${{ matrix.android_version }}
-          kernel_version: ${{ matrix.kernel_version }}
+          version: "android16-6.12"
+          android_version: "android16"
+          kernel_version: "6.12"
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
       - name: Initialize Config Fragment
@@ -446,7 +355,7 @@ jobs:
           KBUILD_BUILD_TIMESTAMP: ${{ env.KBUILD_BUILD_TIMESTAMP }}
         uses: ./.github/actions/build-kernel
         with:
-          version: ${{ matrix.version }}
+          version: "android16-6.12"
           bypass: false
 
       - name: Build Bypass Kernel
@@ -456,7 +365,7 @@ jobs:
         uses: ./.github/actions/build-kernel
         with:
           bypass: true
-          version: ${{ matrix.version }}
+          version: "android16-6.12"
 
       - name: 📦 Build NetHunter Wireless Module
         if: ${{ contains(inputs.feature_set, 'NETHUNTER') || contains(inputs.feature_set, 'NH') || inputs.feature_set == 'FULL' }}
@@ -464,20 +373,34 @@ jobs:
         with:
           file_name: ${{ steps.extract.outputs.file_name }}
 
+      - name: 📦 Package AnyKernel3 Flashable ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP_NAME="${{ steps.extract.outputs.file_name }}-AnyKernel3.zip"
+          cd "${{ github.workspace }}/AnyKernel3"
+          rm -rf .git .github .gitignore
+          zip -r -q -9 "${{ github.workspace }}/${ZIP_NAME}" . -x ".git*" -x "*/.git*"
+          echo "Successfully created flashable ZIP: ${ZIP_NAME}"
+          ls -lh "${{ github.workspace }}/${ZIP_NAME}"
+
+      - name: Upload AnyKernel3 ZIP Artifact
+        id: kernel-artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.extract.outputs.file_name }}-AnyKernel3
+          path: ${{ github.workspace }}/${{ steps.extract.outputs.file_name }}-AnyKernel3.zip
+          if-no-files-found: error
+          compression-level: 0
+
       - name: 📋 Consolidated Build Summary
         if: ${{ always() }}
         shell: bash
         run: |
           SUMMARY_BASE="${{ steps.extract.outputs.file_name }}"
           if [ -z "${SUMMARY_BASE}" ]; then
-            SUMMARY_BASE="${{ matrix.kernel_version }}.${{ matrix.sublevel }}-${{ matrix.android_version }}-${{ matrix.os_patch_level }}"
-            VARIANT="${{ matrix.variant }}"
-            if [ -n "${VARIANT}" ] && [ "${VARIANT}" != "Normal" ]; then
-              SUMMARY_BASE="${SUMMARY_BASE}-${VARIANT}"
-            fi
+            SUMMARY_BASE="6.12.30-android16-${{ inputs.os_patch_level || '2025-07' }}"
           fi
-          SUMMARY_FILE="/tmp/build-summary-${SUMMARY_BASE}.md"
-          echo "SUMMARY_BASE=${SUMMARY_BASE}" >> "$GITHUB_ENV"
 
           if [ "${{ job.status }}" = "success" ]; then
             STATUS="✅ Success"
@@ -505,12 +428,14 @@ jobs:
           fi
 
           {
-            echo "## ${{ matrix.android_version }} ${{ matrix.kernel_version }}.${{ matrix.sublevel }} (${{ matrix.variant }}) — ${STATUS}"
+            echo "# 📋 Consolidated Build Summary"
+            echo
+            echo "## android16 6.12.30 (Normal) — ${STATUS}"
             echo
             echo "| Metric | Value |"
             echo "|--------|-------|"
             echo "| **Status** | ${STATUS} |"
-            echo "| **Kernel** | ${{ matrix.kernel_version }}.${{ matrix.sublevel }}-${{ matrix.android_version }}-${{ matrix.os_patch_level }} |"
+            echo "| **Kernel** | 6.12.30-android16-${{ inputs.os_patch_level || '2025-07' }} |"
             if [ -n "$KERNEL_VER_STR" ]; then
               echo "| **Version String** | \`${KERNEL_VER_STR}\` |"
             fi
@@ -524,7 +449,7 @@ jobs:
             echo "| **SUSFS Commit** | ${SUSFS_SHA} |"
             echo "| **NoMount Commit** | ${NOMOUNT_SHA} |"
             echo "| **Feature Set** | ${{ inputs.feature_set }} |"
-            echo "| **Variant** | ${{ matrix.variant }} |"
+            echo "| **Variant** | Normal |"
             echo
 
             if [ -f /tmp/kernel-fixes-summary.md ]; then
@@ -532,88 +457,16 @@ jobs:
               cat /tmp/kernel-fixes-summary.md
               echo
             fi
-          } > "$SUMMARY_FILE"
-
-      - name: Upload Build Summary Artifact
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ env.SUMMARY_BASE }}-Summary
-          path: /tmp/build-summary-${{ env.SUMMARY_BASE }}.md
-          if-no-files-found: ignore
-          compression-level: 9
-
-      - name: 📦 Package AnyKernel3 Flashable ZIP
-        shell: bash
-        run: |
-          set -euo pipefail
-          ZIP_NAME="${{ steps.extract.outputs.file_name }}-AnyKernel3.zip"
-          cd "${{ github.workspace }}/AnyKernel3"
-          rm -rf .git .github .gitignore
-          zip -r -q -9 "${{ github.workspace }}/${ZIP_NAME}" . -x ".git*" -x "*/.git*"
-          echo "Successfully created flashable ZIP: ${ZIP_NAME}"
-          ls -lh "${{ github.workspace }}/${ZIP_NAME}"
-
-      - name: Upload AnyKernel3 ZIP Artifact
-        id: kernel-artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ steps.extract.outputs.file_name }}-AnyKernel3
-          path: ${{ github.workspace }}/${{ steps.extract.outputs.file_name }}-AnyKernel3.zip
-          if-no-files-found: error
-          compression-level: 0
-
-  summary:
-    runs-on: ubuntu-latest
-    if: ${{ always() }}
-    needs: [build-kernel]
-    steps:
-      - name: 📥 Download Build Summaries
-        uses: actions/download-artifact@v7
-        with:
-          path: ./summaries
-          pattern: "*-Summary"
-          merge-multiple: true
-
-      - name: 📋 Merge Summaries
-        run: |
-          {
-            echo "# 📋 Consolidated Build Summary"
-            echo ""
-            for summary_file in ./summaries/*.md; do
-              if [ -f "$summary_file" ]; then
-                cat "$summary_file"
-                echo ""
-                echo "---"
-                echo ""
-              fi
-            done
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: 🧹 Cleanup Summary Files
-        if: ${{ always() }}
-        run: rm -rf ./summaries
-
-      - name: 🧹 Delete Summary Artifacts
-        if: ${{ always() }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          RUN_ID="${{ github.run_id }}"
-          ARTIFACTS=$(gh api "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" --jq '.artifacts[] | select(.name | endswith("-Summary")) | .id')
-          for id in $ARTIFACTS; do
-            echo "Deleting summary artifact id=$id"
-            gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/${id}" || true
-          done
-
   release:
+    name: "Publish Release"
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'workflow_dispatch' && (inputs.release_type == 'Pre-Release' || inputs.release_type == 'Release') }}
     permissions:
       contents: write
     needs:
       - build-kernel
-      - build-nomount-module
 
     env:
       GH_TOKEN: ${{ github.token }}
@@ -800,11 +653,6 @@ jobs:
             [ -e "$item" ] || continue
             base_name="$(basename "$item")"
 
-            # Skip internal summaries if any remain
-            if [[ "$base_name" == *"-Summary" ]]; then
-              continue
-            fi
-
             if [ -d "$item" ]; then
               # Check if directory contains exactly one zip file
               zip_count=$(find "$item" -maxdepth 1 -type f -name "*.zip" | wc -l)
@@ -837,5 +685,3 @@ jobs:
           draft: false
           prerelease: ${{ inputs.release_type == 'Pre-Release' }}
           files: release-assets/*
-
-
