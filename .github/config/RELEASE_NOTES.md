@@ -130,19 +130,13 @@ Install the KernelSU‑Next Manager APK, same version as mentioned in the releas
 Open the KernelSU‑Next app.
 Reboot the device if you performed any cleanup in step 2
 
-## 📱 Tested Devices & Compatibility
+## 📱 Tested Device & Compatibility
 
-> [!TIP]
-> **Universal GKI Compatibility**: Because this is a Generic Kernel Image (GKI), you can flash it on **any Android device running on a kernel based on `6.12.30-android16`** (sublevel 30 / 2025-07 patch level).
-
-| Device | Codename | Tested OS Version | Stock Kernel Version | Flashing Mode | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Redmi Note 14 4G** | `tanzanite` | **Xiaomi HyperOS 3.0.302** (Android 16) | `6.12.30-android16-5-g6e872b4863d6-ab13847919-4k` | **Bypass Image** (`do.flash_bypass=1`) | ✅ Fully Working |
-
-> [!CAUTION]
-> **CRITICAL FLASHING WARNINGS**:
-> 1. **HyperOS 3.0+ Only**: Do **NOT** flash on HyperOS versions lower than 3.0 (e.g., HyperOS 1.0 or 2.0 based on Android 14/15). Flashing an Android 16 kernel on older Android OS builds will cause a **HARD BRICK**!
-> 2. **Must Use Bypass-Image on HyperOS**: You **MUST** set `do.flash_bypass=1` in `anykernel.sh` inside the `AnyKernel3.zip`. Flashing standard `Image` on HyperOS 3 will cause a **bootloop / soft brick** due to vendor module CRC version checks.
+* **Tested Device**: **Redmi Note 14 4G (`tanzanite`)** &mdash; everything is fully working!
+* **Target Kernel**: **Android 16 (`6.12.30-android16`)** GKI only.
+* **Xiaomi HyperOS 3.0 Warning**:
+  * For **HyperOS 3.0+ only** (Android 16). Do **NOT** flash on HyperOS 1.0 or 2.0 (Android 14/15) or you will brick your device.
+  * You **must use Bypass Image** by setting `do.flash_bypass=1` in `anykernel.sh` inside `AnyKernel3.zip` to bypass vendor module CRC checks.
 
 ## Force Load Kernel Modules (Bypass) — flashing with `Bypass-Image`
 
