@@ -115,99 +115,103 @@ runs:
         # --- SELinux Policy Rules (sepolicy.rule) ---
         # Restricts hardware node access to root/su and shell (ADB/terminal) only, blocking regular non-root apps
         cat << 'EOF' > "$STAGING_DIR/sepolicy.rule"
-allow shell hidraw_device chr_file { read write open ioctl getattr }
-allow shell uhid_device chr_file { read write open ioctl getattr }
-allow shell tun_device chr_file { read write open ioctl getattr }
-allow shell usb_device chr_file { read write open ioctl getattr }
-allow shell usb_device dir { read open search getattr }
-allow shell tty_device chr_file { read write open ioctl getattr }
-allow shell rfkill_device chr_file { read write open ioctl getattr }
-allow shell configfs dir { read open search write add_name remove_name create }
-allow shell configfs file { read write open getattr }
-EOF
+        allow shell hidraw_device chr_file { read write open ioctl getattr }
+        allow shell uhid_device chr_file { read write open ioctl getattr }
+        allow shell tun_device chr_file { read write open ioctl getattr }
+        allow shell usb_device chr_file { read write open ioctl getattr }
+        allow shell usb_device dir { read open search getattr }
+        allow shell tty_device chr_file { read write open ioctl getattr }
+        allow shell rfkill_device chr_file { read write open ioctl getattr }
+        allow shell configfs dir { read open search write add_name remove_name create }
+        allow shell configfs file { read write open getattr }
+        EOF
+        sed -i 's/^[[:space:]]*//' "$STAGING_DIR/sepolicy.rule"
 
         # --- Early Boot Initialization (post-fs-data.sh) ---
         cat << 'EOF' > "$STAGING_DIR/post-fs-data.sh"
-#!/system/bin/sh
-MODDIR=${0%/*}
+        #!/system/bin/sh
+        MODDIR=${0%/*}
 
-# Ensure /dev/net directory and tun device node exist for VPNs & packet manipulation
-mkdir -p /dev/net
-if [ ! -c /dev/net/tun ]; then
-  mknod /dev/net/tun c 10 200 2>/dev/null || true
-fi
-chmod 666 /dev/net/tun 2>/dev/null || true
-chmod 666 /dev/rfkill 2>/dev/null || true
-chmod 666 /dev/uhid 2>/dev/null || true
-chmod 666 /dev/hidg* 2>/dev/null || true
+        # Ensure /dev/net directory and tun device node exist for VPNs & packet manipulation
+        mkdir -p /dev/net
+        if [ ! -c /dev/net/tun ]; then
+          mknod /dev/net/tun c 10 200 2>/dev/null || true
+        fi
+        chmod 666 /dev/net/tun 2>/dev/null || true
+        chmod 666 /dev/rfkill 2>/dev/null || true
+        chmod 666 /dev/uhid 2>/dev/null || true
+        chmod 666 /dev/hidg* 2>/dev/null || true
 
-# Copy firmware files to runtime paths if directory is writable
-for fw_target in /vendor/firmware /vendor/etc/firmware /system/etc/firmware; do
-  if [ -d "$fw_target" ] && [ -w "$fw_target" ] && [ -d "$MODDIR/system/etc/firmware" ]; then
-    cp -rf "$MODDIR/system/etc/firmware/"* "$fw_target/" 2>/dev/null || true
-  fi
-done
+        # Copy firmware files to runtime paths if directory is writable
+        for fw_target in /vendor/firmware /vendor/etc/firmware /system/etc/firmware; do
+          if [ -d "$fw_target" ] && [ -w "$fw_target" ] && [ -d "$MODDIR/system/etc/firmware" ]; then
+            cp -rf "$MODDIR/system/etc/firmware/"* "$fw_target/" 2>/dev/null || true
+          fi
+        done
 
-# Load Core Wireless & Subsystem Dependencies Early
-for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
-  if [ -f "$MODDIR/lkm/$core_ko" ]; then
-    insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
-  elif [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
-    insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
-  fi
-done
-EOF
+        # Load Core Wireless & Subsystem Dependencies Early
+        for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
+          if [ -f "$MODDIR/lkm/$core_ko" ]; then
+            insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
+          elif [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
+            insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
+          fi
+        done
+        EOF
+        sed -i 's/^[[:space:]]*//' "$STAGING_DIR/post-fs-data.sh"
         chmod +x "$STAGING_DIR/post-fs-data.sh"
 
         # --- Native ueventd Hotplug Rules (0% CPU / 0 Battery Drain) ---
         cat << 'EOF' > "$STAGING_DIR/system/etc/ueventd.rc"
-/dev/hidg*                0666   root   root
-/dev/uhid                 0666   root   root
-/dev/rfkill               0666   root   root
-/dev/net/tun              0666   root   root
-/dev/ttyUSB*              0666   root   root
-/dev/ttyACM*              0666   root   root
-/dev/rfcomm*              0666   root   root
-/dev/bus/usb/*/*          0666   root   root
-EOF
+        /dev/hidg*                0666   root   root
+        /dev/uhid                 0666   root   root
+        /dev/rfkill               0666   root   root
+        /dev/net/tun              0666   root   root
+        /dev/ttyUSB*              0666   root   root
+        /dev/ttyACM*              0666   root   root
+        /dev/rfcomm*              0666   root   root
+        /dev/bus/usb/*/*          0666   root   root
+        EOF
+        sed -i 's/^[[:space:]]*//' "$STAGING_DIR/system/etc/ueventd.rc"
         cp -vf "$STAGING_DIR/system/etc/ueventd.rc" "$STAGING_DIR/ueventd.rc" 2>/dev/null || true
 
         # --- Late Boot Service & Driver Loader (service.sh) ---
         cat << 'EOF' > "$STAGING_DIR/service.sh"
-#!/system/bin/sh
-MODDIR=${0%/*}
+        #!/system/bin/sh
+        MODDIR=${0%/*}
 
-# Set permissions for NetHunter BadUSB, Wi-Fi, SDR, Serial & VPN devices once on boot
-chmod 666 /dev/hidg* 2>/dev/null || true
-chmod 666 /dev/uhid 2>/dev/null || true
-chmod 666 /dev/rfkill 2>/dev/null || true
-chmod 666 /dev/net/tun 2>/dev/null || true
-chmod 666 /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2>/dev/null || true
-chmod -R 666 /dev/bus/usb/ 2>/dev/null || true
+        # Set permissions for NetHunter BadUSB, Wi-Fi, SDR, Serial & VPN devices once on boot
+        chmod 666 /dev/hidg* 2>/dev/null || true
+        chmod 666 /dev/uhid 2>/dev/null || true
+        chmod 666 /dev/rfkill 2>/dev/null || true
+        chmod 666 /dev/net/tun 2>/dev/null || true
+        chmod 666 /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2>/dev/null || true
+        chmod -R 666 /dev/bus/usb/ 2>/dev/null || true
 
-# Load Core Wireless & Subsystem Dependencies
-for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
-  if [ -f "$MODDIR/lkm/$core_ko" ]; then
-    insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
-  elif [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
-    insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
-  fi
-done
+        # Load Core Wireless & Subsystem Dependencies
+        for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
+          if [ -f "$MODDIR/lkm/$core_ko" ]; then
+            insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
+          elif [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
+            insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
+          fi
+        done
 
-# Multi-Pass Module Loader (Automatically Resolves Complex Dependency Chains)
-MODULE_SRC="$MODDIR/lkm"
-[ -d "$MODULE_SRC" ] && [ -n "$(ls -A "$MODULE_SRC" 2>/dev/null)" ] || MODULE_SRC="$MODDIR/system/lib/modules"
+        # Multi-Pass Module Loader (Automatically Resolves Complex Dependency Chains)
+        MODULE_SRC="$MODDIR/lkm"
+        [ -d "$MODULE_SRC" ] && [ -n "$(ls -A "$MODULE_SRC" 2>/dev/null)" ] || MODULE_SRC="$MODDIR/system/lib/modules"
 
-for pass in 1 2 3; do
-  for ko in $(ls "$MODULE_SRC"/*.ko 2>/dev/null); do
-    modname=$(basename "$ko")
-    modbase=$(echo "${modname%.ko}" | tr '-' '_')
-    if ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
-      insmod "$ko" 2>/dev/null || ksud insmod "$ko" 2>/dev/null || true
-    fi
-  done
-done
-EOF
+        for pass in 1 2 3; do
+          for ko in $(ls "$MODULE_SRC"/*.ko 2>/dev/null); do
+            modname=$(basename "$ko")
+            modbase=$(echo "${modname%.ko}" | tr '-' '_')
+            if ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
+              insmod "$ko" 2>/dev/null || ksud insmod "$ko" 2>/dev/null || true
+            fi
+          done
+        done
+        EOF
+        sed -i 's/^[[:space:]]*//' "$STAGING_DIR/service.sh"
         chmod +x "$STAGING_DIR/service.sh"
 
         OUT_ZIP="${{ github.workspace }}/Nethunter-Wireless-Module.zip"

@@ -8,11 +8,22 @@ import yaml
 WORKFLOW_DIR = pathlib.Path(".github/workflows")
 
 
+ACTIONS_DIR = pathlib.Path(".github/actions")
+
+
 def find_workflow_files():
     if not WORKFLOW_DIR.exists():
         return []
     return sorted(
         list(WORKFLOW_DIR.glob("*.yml")) + list(WORKFLOW_DIR.glob("*.yaml"))
+    )
+
+
+def find_action_files():
+    if not ACTIONS_DIR.exists():
+        return []
+    return sorted(
+        list(ACTIONS_DIR.glob("**/action.yml")) + list(ACTIONS_DIR.glob("**/action.yaml"))
     )
 
 
@@ -57,6 +68,29 @@ def check_jobs(data):
     return errors
 
 
+def check_action_file(path):
+    errors = []
+    try:
+        with path.open(encoding="utf-8") as handle:
+            data = yaml.safe_load(handle)
+    except yaml.YAMLError as error:
+        mark = getattr(error, "problem_mark", None)
+        if mark is not None:
+            errors.append(f"YAML error at line {mark.line + 1}, column {mark.column + 1}: {error}")
+        else:
+            errors.append(f"YAML error: {error}")
+        return errors
+
+    if not isinstance(data, dict):
+        errors.append("file does not parse to a mapping at the top level")
+        return errors
+
+    if "runs" not in data:
+        errors.append("missing top-level 'runs' key")
+
+    return errors
+
+
 def check_file(path):
     errors = []
     try:
@@ -83,13 +117,14 @@ def check_file(path):
 
 
 def main():
-    files = find_workflow_files()
-    if not files:
-        print(f"No workflow files found in {WORKFLOW_DIR}.")
+    wf_files = find_workflow_files()
+    action_files = find_action_files()
+    if not wf_files and not action_files:
+        print(f"No workflow or action files found.")
         return 0
 
     status = 0
-    for path in files:
+    for path in wf_files:
         errors = check_file(path)
         if errors:
             status = 1
@@ -97,7 +132,15 @@ def main():
             for error in errors:
                 print(f"  {error}")
 
-    print(f"Checked {len(files)} workflow file(s).")
+    for path in action_files:
+        errors = check_action_file(path)
+        if errors:
+            status = 1
+            print(f"Issues in: {path}")
+            for error in errors:
+                print(f"  {error}")
+
+    print(f"Checked {len(wf_files)} workflow file(s) and {len(action_files)} action file(s).")
     return status
 
 
