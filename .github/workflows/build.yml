@@ -200,12 +200,15 @@ jobs:
           root_flavor: ${{ inputs.root_flavor }}
           nomount_enabled: ${{ inputs.feature_set != 'NONE' }}
 
-      - name: Fix selinux_hide pointer-bool-conversion on 6.12
+      - name: Fix selinux_hide static declarations & pointer-bool-conversion on 6.12
         if: ${{ inputs.feature_set != 'NONE' }}
         shell: bash
         run: |
           set -euo pipefail
           for f in $(find "${{ github.workspace }}/kernel" -name selinux_hide.c 2>/dev/null); do
+            sed -i 's/^static int security_context_to_sid_with_policy/int security_context_to_sid_with_policy/g' "$f"
+            sed -i 's/^static int security_sid_to_context_with_policy/int security_sid_to_context_with_policy/g' "$f"
+            sed -i 's/^static void security_compute_av_user_with_policy/void security_compute_av_user_with_policy/g' "$f"
             if grep -q "extern void security_dump_masked_av_fn" "$f"; then
               echo "[INFO] $f is extern-function form, patching with &"
               sed -i 's/if (security_dump_masked_av_fn)/if (\&security_dump_masked_av_fn)/g' "$f"

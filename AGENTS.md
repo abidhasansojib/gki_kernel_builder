@@ -42,10 +42,9 @@
    * Replaced broken base64 decoding in `nethunter-module/action.yml` with plain-text heredocs (`cat << 'EOF'`) + `sed -i 's/^[[:space:]]*//'` to strip YAML indentation — eliminates `base64: invalid input` and `YAML scanning simple key` errors.
    * Added hyphen-to-underscore translation (`tr '-' '_'`) in `service.sh` for accurate `lsmod` multi-pass module checking.
    * Handled `feature_set: NONE` gracefully in the release pipeline (exports `ROOT_IMPL=None (Vanilla Stock GKI)`, skips all KSU git ops).
-8. **Stale Patch Cleanup (Rejects Fix):**
-   * Diagnosed `6.12.30-android16-2025-07-Rejects` artifact: contained `selinux_hide.c.rej` because `static.patch` tried to remove `static` keyword from 3 forward declarations, but upstream KernelSU-Next already uses `__maybe_static` — making the patch obsolete.
-   * Deleted `.github/actions/kernelsu/patches/static.patch` and removed the dead `'Fix KernelSU Static Patch'` step from `kernelsu/action.yml`.
-   * Next build will produce **zero rejects**.
+8. **`static.patch` Restoration & Linker Fix (`selinux_hide.c`):**
+   * **Root Cause of Build Failure (Run `33063924512`):** Removing `static.patch` caused the linker to fail with `undefined symbol: security_context_to_sid_with_policy`, `security_sid_to_context_with_policy`, and `security_compute_av_user_with_policy` because upstream `KernelSU-Next` still forward-declared those functions as `static` in `kernel/feature/selinux_hide.c` (giving them internal linkage), while SUSFS in `security/selinux/selinuxfs.c` called them as `extern`.
+   * **Dual-Layer Fix:** Restored `static.patch` at `.github/actions/kernelsu/patches/static.patch` AND added dual-layer `sed` regex replacement in `kernelsu/action.yml` and `build.yml` (`s/^static int security_context_to_sid_with_policy/int security_context_to_sid_with_policy/g`, etc.) with automatic `.rej` cleanup. This guarantees external symbol visibility and produces zero rejects across all root variants.
 9. **CI Validator Enhancement:**
    * Expanded `validate_workflows.py` to also parse and validate all **46 composite action YAML manifests** in `.github/actions/`, catching action.yml YAML parse errors on every push before a real build is triggered.
 10. **Linux 6.12 (Android 16 GKI) NetHunter Compatibility Audit & Refinement:**

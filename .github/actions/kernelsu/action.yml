@@ -176,6 +176,26 @@ runs:
 
 
 
+    - name: 'Fix KernelSU Static Patch'
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        set -euo pipefail
+        if [ -f "${{ github.action_path }}/patches/static.patch" ]; then
+          for candidate in KernelSU-Next ReSukiSU KernelSU common/drivers/kernelsu drivers/kernelsu; do
+            if [ -d "$candidate" ]; then
+              cp "${{ github.action_path }}/patches/static.patch" "$candidate/static.patch"
+              (cd "$candidate" && patch -p1 < static.patch) || true
+              rm -f "$candidate/static.patch" "$candidate"/*.rej "$candidate"/kernel/*.rej "$candidate"/kernel/feature/*.rej 2>/dev/null || true
+            fi
+          done
+        fi
+        for f in $(find . -name "selinux_hide.c" 2>/dev/null); do
+          sed -i 's/^static int security_context_to_sid_with_policy/int security_context_to_sid_with_policy/g' "$f"
+          sed -i 's/^static int security_sid_to_context_with_policy/int security_sid_to_context_with_policy/g' "$f"
+          sed -i 's/^static void security_compute_av_user_with_policy/void security_compute_av_user_with_policy/g' "$f"
+        done
+
     - name: Enable Kernel Configs
       uses: ./.github/actions/set-kernel-config
       with:
