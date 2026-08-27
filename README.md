@@ -44,7 +44,9 @@ Please do thorough research and understand the features included before flashing
 
 The kernel and accompanying flashable `Nethunter-Wireless-Module.zip` module provide plug-and-play driver and firmware support for packet injection, monitor mode, AP mode, BadUSB, RTL-SDR, and Bluetooth attacks:
 
-### 📡 Wireless WiFi Adapters (Monitor Mode & Packet Injection)
+<details>
+<summary><b>📡 Supported Wireless WiFi Adapters (Click to Expand)</b></summary>
+<br>
 
 | Vendor | Supported Chipset / Driver | Popular Tested Adapters | Capabilities |
 | :--- | :--- | :--- | :--- |
@@ -58,7 +60,11 @@ The kernel and accompanying flashable `Nethunter-Wireless-Module.zip` module pro
 | **Realtek** | `rtl8xxxu` | Realtek RTL8188EUS, RTL8192EU, RTL8723AU | 2.4GHz 802.11n, Monitor Mode |
 | **Realtek** | `rtl8187` | **Alfa AWUS036H** (RTL8187L) | Legacy 2.4GHz High-power Injection |
 
-### 🛠️ Hardware Gadgets, Network Dongles & SDR
+</details>
+
+<details>
+<summary><b>🛠️ Hardware Gadgets, Network Dongles & SDR (Click to Expand)</b></summary>
+<br>
 
 - 🦆 **BadUSB / Rubber Ducky**: Native USB HID keyboard and mouse emulation (`/dev/hidg0`) for NetHunter DuckHunter payloads.
 - 📻 **Software Defined Radio (SDR)**: In-kernel and USB drivers for RTL2832U / RTL-SDR (`dvb_usb_rtl28xxu`), HackRF One (`hackrf.ko`), AirSpy (`airspy.ko`), and Mirics (`msi2500.ko` / `msi001.ko`).
@@ -67,6 +73,8 @@ The kernel and accompanying flashable `Nethunter-Wireless-Module.zip` module pro
 - 🌐 **USB Ethernet Adapters**: Realtek RTL8152 / RTL8153 (`r8152.ko`), ASIX AX88179 / AX8817x (`ax88179_178a.ko`), CDC-ECM, and CDC-NCM high-speed adapters.
 - 📶 **Bluetooth Attacks**: Generic USB Bluetooth dongles supported via `btusb.ko` with RFCOMM TTY (`rfcomm.ko`), BNEP (`bnep.ko`), and HIDP (`hidp.ko`).
 - 📁 **Network File Systems**: In-tree NFS client & server (`CONFIG_NFS_FS=y`, `CONFIG_NFSD=y`) and CIFS/SMB (`CONFIG_CIFS=y`) for high-speed network shares.
+
+</details>
 
 ---
 
