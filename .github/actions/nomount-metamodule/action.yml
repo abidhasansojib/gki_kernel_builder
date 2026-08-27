@@ -56,10 +56,25 @@ runs:
             -Wl,--entry=_start nm.c -o ../../bin/nm-arm
         )
 
+        echo "=== Building ko-loader ==="
+        ko_loader_dir="${RUNNER_TEMP}/ko-loader-src"
+        rm -rf "$ko_loader_dir"
+        git clone --depth=1 https://github.com/maxsteeel/ko-loader.git "$ko_loader_dir"
+        (
+          cd "$ko_loader_dir"
+          make TARGET=aarch64-linux
+          mv ko-loader "$source_dir/bin/ko-loader-arm64"
+          make clean
+          make TARGET=arm-linux
+          mv ko-loader "$source_dir/bin/ko-loader-arm"
+        )
+
         cp -a "$source_dir/module" "$module_dir"
         mkdir -p "$module_dir/bin"
         install -m 0755 "$source_dir/bin/nm-arm64" "$module_dir/bin/nm-arm64"
         install -m 0755 "$source_dir/bin/nm-arm" "$module_dir/bin/nm-arm"
+        install -m 0755 "$source_dir/bin/ko-loader-arm64" "$module_dir/bin/ko-loader-arm64"
+        install -m 0755 "$source_dir/bin/ko-loader-arm" "$module_dir/bin/ko-loader-arm"
         sed -i "s/^versionCode=.*/versionCode=1/" "$module_dir/module.prop"
         printf '%s\n' "$actual_commit" > "$module_dir/NOMOUNT_SOURCE_COMMIT"
         (
