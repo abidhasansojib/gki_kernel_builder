@@ -37,6 +37,7 @@
 7. **CI/CD & UI Streamlining:**
    * Streamlined `build.yml` from fragmented matrix jobs into a single direct first-class job (`Build Kernel (6.12.30-android16)`), eliminating the "Show all jobs (1)" UI dropdown in GitHub Actions.
    * Removed `os_patch_level` input and permanently locked the build target to `2025-07` (`6.12.30-android16-2025-07`).
+   * Simplified `feature_set` input to 3 clear, clean options: `FULL` (All features + NetHunter), `WITHOUT-NETHUNTER` (Root, SUSFS, NoMount, BBG, NET, DS), and `NONE` (Vanilla stock GKI).
 
 ---
 
