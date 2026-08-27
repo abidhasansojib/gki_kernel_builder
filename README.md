@@ -109,7 +109,10 @@ This automated auditor tests:
    - Download the generated `AnyKernel3.zip` artifact from Releases or Actions.
    - Flash the ZIP using Kernel Flasher or custom recovery.
    - Press **Volume Up (`[VOL+]`)** during flashing to select **Bypass Image**.
-   - Install the [KernelSU-Next Manager APK](https://github.com/KernelSU-Next/KernelSU-Next/releases).
+   - Install the matching Manager app for your selected root flavor:
+     - [KernelSU-Next Manager](https://github.com/KernelSU-Next/KernelSU-Next/releases) *(for KernelSU-Next)*
+     - [KernelSU Manager](https://github.com/tiann/KernelSU/releases) *(for official KernelSU)*
+     - [ReSukiSU Manager](https://github.com/ReSukiSU/ReSukiSU/releases) *(for ReSukiSU)*
    - Reboot device.
 
 3. **External USB WiFi & NetHunter Tools (Optional)**:
