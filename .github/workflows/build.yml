@@ -43,8 +43,52 @@ on:
         default: ""
 
 jobs:
+  resolve-nomount:
+    name: "Resolve NoMount Commit"
+    if: ${{ inputs.feature_set != 'NONE' }}
+    runs-on: ubuntu-latest
+    outputs:
+      nomount_commit: ${{ steps.resolve.outputs.nomount_commit }}
+    steps:
+      - name: Resolve latest NoMount dev commit
+        id: resolve
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha="$(git ls-remote https://github.com/maxsteeel/nomount.git refs/heads/dev | awk '{print $1}')"
+          if [ -z "$sha" ] || ! [[ "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Failed to resolve NoMount dev branch tip." >&2
+            exit 1
+          fi
+          echo "nomount_commit=$sha" >> "$GITHUB_OUTPUT"
+          echo "Resolved NoMount dev commit: $sha"
+
+  build-nomount-module:
+    name: "Build NoMount Metamodule"
+    needs: [resolve-nomount]
+    if: ${{ inputs.feature_set != 'NONE' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build NoMount metamodule
+        id: nomount-metamodule
+        uses: ./.github/actions/nomount-metamodule
+        with:
+          commit: ${{ needs.resolve-nomount.outputs.nomount_commit }}
+
+      - name: Upload NoMount metamodule
+        uses: actions/upload-artifact@v7
+        with:
+          name: NoMount-Metamodule
+          path: ${{ steps.nomount-metamodule.outputs.module_path }}
+          if-no-files-found: error
+          compression-level: 0
+
   build-kernel:
     name: "Build Kernel (6.12.30-android16)"
+    needs: [resolve-nomount]
+    if: ${{ always() && (needs.resolve-nomount.result == 'success' || needs.resolve-nomount.result == 'skipped') }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     env:
@@ -234,43 +278,12 @@ jobs:
           version: "android16-6.12"
           kernel_version: "6.12"
 
-      - name: Resolve latest NoMount dev commit
-        id: resolve-nomount
-        if: ${{ inputs.feature_set != 'NONE' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          sha="$(git ls-remote https://github.com/maxsteeel/nomount.git refs/heads/dev | awk '{print $1}')"
-          if [ -z "$sha" ] || ! [[ "$sha" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "Failed to resolve NoMount dev branch tip." >&2
-            exit 1
-          fi
-          echo "nomount_commit=$sha" >> "$GITHUB_OUTPUT"
-          echo "NOMOUNT_COMMIT=$sha" >> "$GITHUB_ENV"
-          echo "Resolved NoMount dev commit: $sha"
-
       - name: Integrate NoMount
         if: ${{ inputs.feature_set != 'NONE' }}
         uses: ./.github/actions/nomount
         with:
-          commit: ${{ steps.resolve-nomount.outputs.nomount_commit }}
+          commit: ${{ needs.resolve-nomount.outputs.nomount_commit }}
           kernel_version: "6.12"
-
-      - name: Build NoMount metamodule
-        id: nomount-metamodule
-        if: ${{ inputs.feature_set != 'NONE' }}
-        uses: ./.github/actions/nomount-metamodule
-        with:
-          commit: ${{ steps.resolve-nomount.outputs.nomount_commit }}
-
-      - name: Upload NoMount metamodule
-        if: ${{ inputs.feature_set != 'NONE' }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: NoMount-Metamodule
-          path: ${{ steps.nomount-metamodule.outputs.module_path }}
-          if-no-files-found: error
-          compression-level: 0
 
       - name: Apply Kernel Branding
         uses: ./.github/actions/apply-kernel-branding
@@ -336,27 +349,7 @@ jobs:
         with:
           file_name: ${{ steps.extract.outputs.file_name }}
 
-      - name: 📦 Package AnyKernel3 Flashable ZIP
-        shell: bash
-        run: |
-          set -euo pipefail
-          ZIP_NAME="${{ steps.extract.outputs.file_name }}-AnyKernel3.zip"
-          cd "${{ github.workspace }}/AnyKernel3"
-          rm -rf .git .github .gitignore
-          zip -r -q -9 "${{ github.workspace }}/${ZIP_NAME}" . -x ".git*" -x "*/.git*"
-          echo "Successfully created flashable ZIP: ${ZIP_NAME}"
-          ls -lh "${{ github.workspace }}/${ZIP_NAME}"
-
-      - name: Upload AnyKernel3 ZIP Artifact
-        id: kernel-artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ steps.extract.outputs.file_name }}-AnyKernel3
-          path: ${{ github.workspace }}/${{ steps.extract.outputs.file_name }}-AnyKernel3.zip
-          if-no-files-found: error
-          compression-level: 0
-
-      - name: 📋 Consolidated Build Summary
+      - name: 📋 Generate Build Summary
         if: ${{ always() }}
         shell: bash
         run: |
@@ -364,6 +357,8 @@ jobs:
           if [ -z "${SUMMARY_BASE}" ]; then
             SUMMARY_BASE="6.12.30-android16-2025-07"
           fi
+          SUMMARY_FILE="/tmp/build-summary-${SUMMARY_BASE}.md"
+          echo "SUMMARY_BASE=${SUMMARY_BASE}" >> "$GITHUB_ENV"
 
           if [ "${{ job.status }}" = "success" ]; then
             STATUS="✅ Success"
@@ -382,7 +377,7 @@ jobs:
           ROOT_MANAGER="${ROOT_MANAGER:-${ROOT_IMPL} Manager}"
           ROOT_VERSION="${KSU_TAG}"
           ROOT_SHA="${KSU_COMMIT:-N/A}"
-          NOMOUNT_SHA="${NOMOUNT_COMMIT:-N/A}"
+          NOMOUNT_SHA="${{ needs.resolve-nomount.outputs.nomount_commit || 'N/A' }}"
           SUSFS_SHA="${SUSFS_COMMIT:-N/A}"
 
           SUSFS_VER="N/A"
@@ -391,8 +386,6 @@ jobs:
           fi
 
           {
-            echo "# 📋 Consolidated Build Summary"
-            echo
             echo "## android16 6.12.30 (Normal) — ${STATUS}"
             echo
             echo "| Metric | Value |"
@@ -420,16 +413,75 @@ jobs:
               cat /tmp/kernel-fixes-summary.md
               echo
             fi
+          } > "$SUMMARY_FILE"
+
+      - name: Upload Build Summary Artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.SUMMARY_BASE }}-Summary
+          path: /tmp/build-summary-${{ env.SUMMARY_BASE }}.md
+          if-no-files-found: ignore
+          compression-level: 9
+
+      - name: 📦 Package AnyKernel3 Flashable ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP_NAME="${{ steps.extract.outputs.file_name }}-AnyKernel3.zip"
+          cd "${{ github.workspace }}/AnyKernel3"
+          rm -rf .git .github .gitignore
+          zip -r -q -9 "${{ github.workspace }}/${ZIP_NAME}" . -x ".git*" -x "*/.git*"
+          echo "Successfully created flashable ZIP: ${ZIP_NAME}"
+          ls -lh "${{ github.workspace }}/${ZIP_NAME}"
+
+      - name: Upload AnyKernel3 ZIP Artifact
+        id: kernel-artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.extract.outputs.file_name }}-AnyKernel3
+          path: ${{ github.workspace }}/${{ steps.extract.outputs.file_name }}-AnyKernel3.zip
+          if-no-files-found: error
+          compression-level: 0
+
+  summary:
+    name: "Consolidated Build Summary"
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [build-kernel]
+    steps:
+      - name: 📥 Download Build Summaries
+        uses: actions/download-artifact@v7
+        with:
+          path: ./summaries
+          pattern: "*-Summary"
+          merge-multiple: true
+
+      - name: 📋 Merge Summaries
+        run: |
+          {
+            echo "# 📋 Consolidated Build Summary"
+            echo
+            for f in ./summaries/*.md; do
+              if [ -f "$f" ]; then
+                cat "$f"
+                echo
+                echo "---"
+                echo
+              fi
+            done
           } >> "$GITHUB_STEP_SUMMARY"
 
   release:
     name: "Publish Release"
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.release_type == 'Pre-Release' || inputs.release_type == 'Release') }}
+    if: ${{ always() && github.event_name == 'workflow_dispatch' && (inputs.release_type == 'Pre-Release' || inputs.release_type == 'Release') && (needs.build-kernel.result == 'success') }}
     permissions:
       contents: write
     needs:
       - build-kernel
+      - summary
+      - build-nomount-module
 
     env:
       GH_TOKEN: ${{ github.token }}
@@ -628,6 +680,11 @@ jobs:
           for item in raw-artifacts/*; do
             [ -e "$item" ] || continue
             base_name="$(basename "$item")"
+
+            # Skip internal summaries if any remain
+            if [[ "$base_name" == *"-Summary" ]]; then
+              continue
+            fi
 
             if [ -d "$item" ]; then
               # Check if directory contains exactly one zip file
