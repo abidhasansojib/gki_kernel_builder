@@ -93,7 +93,7 @@ This automated auditor tests:
 * **Target Kernel**: **Android 16 (`6.12.30-android16`)** GKI only.
 * **Xiaomi HyperOS 3.0 Warning**:
   * For **HyperOS 3.0+ only** (Android 16). Do **NOT** flash on HyperOS 1.0 or 2.0 (Android 14/15) or you will brick your device.
-  * You **must use Bypass Image** by setting `do.flash_bypass=1` in `anykernel.sh` inside `AnyKernel3.zip` to bypass vendor module CRC checks.
+  * When flashing `AnyKernel3.zip`, press the **Volume Up (`[VOL+]`)** button to flash **Bypass-Image** and bypass vendor module CRC checks.
 
 ---
 
@@ -106,10 +106,10 @@ This automated auditor tests:
    - Flashing utility (e.g. [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher)).
 
 2. **Flashing Kernel (Bypass Mode)**:
-   - Download the generated `AnyKernel3.zip` artifact from the GitHub Actions run or GitHub Release.
-   - Extract `anykernel.sh` and ensure `do.flash_bypass=1` is set (or use the built-in bypass installer).
+   - Download the generated `AnyKernel3.zip` artifact from Releases or Actions.
    - Flash the ZIP using Kernel Flasher or custom recovery.
-   - Install the matching Manager app for your selected root implementation (KernelSU-Next, KernelSU, or ReSukiSU).
+   - Press **Volume Up (`[VOL+]`)** during flashing to select **Bypass Image**.
+   - Install the [KernelSU-Next Manager APK](https://github.com/KernelSU-Next/KernelSU-Next/releases).
    - Reboot device.
 
 3. **External USB WiFi & NetHunter Tools (Optional)**:

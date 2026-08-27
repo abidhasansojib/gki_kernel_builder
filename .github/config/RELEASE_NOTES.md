@@ -136,7 +136,7 @@ Reboot the device if you performed any cleanup in step 2
 * **Target Kernel**: **Android 16 (`6.12.30-android16`)** GKI only.
 * **Xiaomi HyperOS 3.0 Warning**:
   * For **HyperOS 3.0+ only** (Android 16). Do **NOT** flash on HyperOS 1.0 or 2.0 (Android 14/15) or you will brick your device.
-  * You **must use Bypass Image** by setting `do.flash_bypass=1` in `anykernel.sh` inside `AnyKernel3.zip` to bypass vendor module CRC checks.
+  * When flashing `AnyKernel3.zip`, press the **Volume Up (`[VOL+]`)** button to flash **Bypass-Image** and bypass vendor module CRC checks.
 
 ## Force Load Kernel Modules (Bypass) — flashing with `Bypass-Image`
 
