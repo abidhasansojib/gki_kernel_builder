@@ -1,115 +1,155 @@
-name: Bug Report
-description: Create a bug report
-labels: [Bug]
+name: "🐛 Bug Report"
+description: "Report a reproducible bug, boot issue, driver fault, or crash in GKI Kernel Builder"
+title: "[Bug]: "
+labels: ["Bug", "triage"]
 
 body:
-  - type: input
+  - type: markdown
     attributes:
-        label: Device Model
-        description: Your device model
-        placeholder: "e.g., Google Pixel 9"
-    validations:
-        required: true
-
-  - type: input
-    attributes:
-        label: Android Version
-        description: Your Android version
-        placeholder: "e.g., Android 16"
-    validations:
-        required: true
-
-  - type: input
-    attributes:
-        label: Stock Kernel Version
-        description: The original kernel version on your device
-        placeholder: "e.g., 6.12.30-android16"
-    validations:
-        required: true
-
-  - type: input
-    attributes:
-        label: Kernel Flashed Version
-        description: The kernel version you flashed
-        placeholder: "e.g., 6.12.30-android16"
-    validations:
-        required: true
-
-  - type: input
-    attributes:
-        label: KSUN Kernel Version
-        description: Your KSUN kernel version number
-        placeholder: "e.g., 30xxx"
-    validations:
-        required: true
-
-  - type: dropdown
-    attributes:
-        label: Manager
-        description: Which KernelSU manager you're using
-        options:
-          - KernelSU Next
-          - KernelSU
-          - MKSU
-          - KowSU
-          - RKSU
-          - SukiSU
-    validations:
-        required: true
-
-  - type: input
-    attributes:
-        label: Manager Version
-        description: Your manager version
-        placeholder: "e.g., v0.0.165(30xxx)"
-    validations:
-        required: true
-
-  - type: input
-    attributes:
-        label: Release Flashed
-        description: Which release version you flashed
-        placeholder: "e.g., Release 1"
-    validations:
-        required: true
-
-  - type: input
-    attributes:
-        label: Full File Name
-        description: The complete filename of the kernel you flashed
-        placeholder: "e.g., 6.12.30-android16-2025-07-AnyKernel3.zip"
-    validations:
-        required: true
+      value: |
+        ### 📋 Thank you for reporting an issue!
+        Please fill out this form as completely as possible to help us reproduce and fix the bug quickly.
+        * If you are reporting a **bootloop on Xiaomi HyperOS**, make sure you have tried flashing with **Bypass Mode (`[VOL+]`)**.
 
   - type: checkboxes
+    id: preflight
     attributes:
-        label: Have you tested both build variants?
-        description: You must test both Normal and Module Check Bypass variants before reporting
-        options:
-          - label: "Yes, I have tried both Normal and Module Check Bypass variants"
-            required: true
+      label: Pre-flight Checklist
+      description: Please verify each item before submitting
+      options:
+        - label: I am using a device running a stock 6.12 GKI kernel (`6.12.xx-android16`).
+          required: true
+        - label: I have read the README, tested **Bypass Image** (`[VOL+]`) if on Xiaomi HyperOS, and backed up `boot.img`.
+          required: true
+        - label: I have cleaned up any previous root remnants (e.g. Magisk/APatch leftovers).
+          required: true
+        - label: I have searched existing GitHub Issues to ensure this is not a duplicate.
+          required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Bug Category
+      description: What subsystem or component is affected?
+      options:
+        - "Bootloop / Softbrick / Black Screen"
+        - "Root Manager & Permissions (KernelSU-Next / KernelSU / ReSukiSU)"
+        - "NetHunter / WiFi Adapter / Packet Injection / BadUSB"
+        - "SUSFS / Root Hiding / Detection Bypasses"
+        - "NoMount VFS Hooks & Metamodule"
+        - "Networking / BBRv3 / WireGuard / CIFS"
+        - "Other Kernel Panic / Performance / System Crash"
     validations:
-        required: true
+      required: true
 
   - type: input
+    id: device_info
     attributes:
-        label: Last Working Release
-        description: The last release version that worked (if any)
-        placeholder: "e.g., Release 1"
+      label: Device Model & Codename
+      description: Exact model and codename of your Android device
+      placeholder: "e.g., Redmi Note 14 4G (tanzanite) / Google Pixel 9 (tokay)"
     validations:
-        required: false
+      required: true
 
   - type: input
+    id: rom_version
     attributes:
-        label: Last Working File Name
-        description: The filename of the last working kernel (if any)
-        placeholder: "e.g., 6.12.30-android16-2025-07-AnyKernel3.zip"
+      label: ROM & OS Version
+      description: The exact ROM / OS build running on your phone
+      placeholder: "e.g., Xiaomi HyperOS 3.0.302 (Android 16) / AOSP 16 Beta"
     validations:
-        required: false
+      required: true
+
+  - type: input
+    id: stock_kernel
+    attributes:
+      label: Stock Kernel Version
+      description: Output of `uname -r` or stock kernel build string before flashing
+      placeholder: "e.g., 6.12.30-android16-5-g6e872b4863d6-ab13847919-4k"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: root_flavor
+    attributes:
+      label: Flashed Root Flavor
+      description: Which root variant did you build and flash?
+      options:
+        - "KernelSU-Next"
+        - "KernelSU (Official)"
+        - "ReSukiSU"
+        - "Vanilla (No Root)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: flash_mode
+    attributes:
+      label: Flashing Mode Used
+      description: Which kernel image variant was installed?
+      options:
+        - "Bypass-Image ([VOL+] button pressed in AnyKernel3 / do.flash_bypass=1)"
+        - "Normal Image (Standard AnyKernel3 Image)"
+        - "Direct Boot Image Flash (fastboot flash boot boot.img)"
+    validations:
+      required: true
+
+  - type: input
+    id: release_info
+    attributes:
+      label: Flashed Release Tag / ZIP Filename
+      description: The exact release tag or filename of the AnyKernel3 ZIP
+      placeholder: "e.g., Release 1 (r1) / 6.12.30-android16-2025-07-AnyKernel3.zip"
+    validations:
+      required: true
+
+  - type: input
+    id: hardware_model
+    attributes:
+      label: External Hardware / WiFi Adapter (If Applicable)
+      description: Specific Wi-Fi dongle, SDR, or USB adapter model being used
+      placeholder: "e.g., Alfa AWUS036ACM (MT7612U) / TP-Link TL-WN722N v1 (AR9271) / RTL8812BU"
+    validations:
+      required: false
 
   - type: textarea
+    id: description
     attributes:
-        label: Describe the bug and attach any screenshots*
-        description: A clear and concise description of what the bug is. Please get log from /data/adb/ksu/logs/dmesg.log
+      label: Bug Description
+      description: A clear and concise description of the unexpected behavior.
+      placeholder: "Describe what happened versus what you expected to happen..."
     validations:
-        required: true
+      required: true
+
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Steps to Reproduce
+      description: Precise step-by-step instructions to trigger the bug.
+      value: |
+        1. Flash kernel ZIP via ...
+        2. Boot device and open ...
+        3. Observe error ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs & Diagnostic Output
+      description: |
+        Please attach logs such as:
+        - Output of `curl -sSL https://raw.githubusercontent.com/abidhasansojib/gki_kernel_builder/main/checker.sh | su -c "sh"`
+        - Kernel log (`dmesg` or `/data/adb/ksu/logs/dmesg.log` or `/sys/fs/pstore/console-ramoops`)
+        - `logcat` if an app / UI crashes
+      placeholder: "Paste checker.sh output, dmesg, or crash logs here..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra_context
+    attributes:
+      label: Screenshots & Additional Context
+      description: Drag & drop screenshots, screen recordings, or add any other relevant details here.
+    validations:
+      required: false
