@@ -488,6 +488,19 @@ jobs:
         run: |
           set -euo pipefail
 
+          if [ "${{ inputs.feature_set }}" = "NONE" ]; then
+            echo "Building vanilla stock GKI release (no root)."
+            echo "ROOT_IMPL=None (Vanilla Stock GKI)" >> "$GITHUB_ENV"
+            echo "ROOT_MANAGER_NAME=None" >> "$GITHUB_ENV"
+            echo "KSUN_BRANCH=N/A" >> "$GITHUB_ENV"
+            echo "KSUN_COMMIT=N/A" >> "$GITHUB_ENV"
+            echo "KSU_COMMITS_COUNT=0" >> "$GITHUB_ENV"
+            echo "KSU_VERSION=N/A" >> "$GITHUB_ENV"
+            echo "KSU_GIT_TAG=N/A" >> "$GITHUB_ENV"
+            echo "KSU_MANAGER=N/A" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
           retry() {
             local n=0
             until [ "$n" -ge 5 ]; do
