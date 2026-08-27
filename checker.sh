@@ -83,8 +83,13 @@ check_config() {
             return 0
         elif [ "$val" = "m" ]; then
             local mod_base="${config_name#CONFIG_}"
-            mod_base=$(echo "$mod_base" | tr '[:upper:]' '[:lower:]')
-            if lsmod 2>/dev/null | grep -qi "^$mod_base"; then
+            mod_base=$(echo "$mod_base" | tr '[:upper:]' '[:lower:]' | tr '-' '_')
+            local target_mod=""
+            if [ -n "$fallback_target" ]; then
+                target_mod="${fallback_target%.ko}"
+                target_mod=$(echo "$target_mod" | tr '[:upper:]' '[:lower:]' | tr '-' '_')
+            fi
+            if lsmod 2>/dev/null | grep -qi -E "^(${mod_base}|${target_mod})([[:space:]]|$)"; then
                 echo -e "  [ ${GREEN}✔ MODULE (LOADED)${NC} ] ${BOLD}${config_name}${NC}=m  (${CYAN}${feature_desc}${NC})"
             else
                 echo -e "  [ ${YELLOW}● MODULE (=m)${NC} ]    ${BOLD}${config_name}${NC}=m  (${CYAN}${feature_desc}${NC})"

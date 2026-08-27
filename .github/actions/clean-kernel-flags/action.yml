@@ -17,5 +17,7 @@ runs:
 
         # Commit changes to avoid dirty state during build
         cd ${{ github.workspace }}/kernel/common
+        git config user.name "github-actions[bot]" || true
+        git config user.email "github-actions[bot]@users.noreply.github.com" || true
         git add .
         git commit -m "GKI: Clean Dirty Flag" || true
