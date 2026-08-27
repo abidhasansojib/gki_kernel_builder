@@ -34,6 +34,9 @@
    * Updated `README.md` with raw GitHub URL for real-time `checker.sh` execution.
 6. **Repository Clean State:**
    * Purged previous release `r1`, remote/local release tags, and 12 past GitHub Actions workflow run logs for a clean baseline.
+7. **CI/CD & UI Streamlining:**
+   * Streamlined `build.yml` from fragmented matrix jobs into a single direct first-class job (`Build Kernel (6.12.30-android16)`), eliminating the "Show all jobs (1)" UI dropdown in GitHub Actions.
+   * Removed `os_patch_level` input and permanently locked the build target to `2025-07` (`6.12.30-android16-2025-07`).
 
 ---
 
