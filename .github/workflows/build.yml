@@ -28,29 +28,7 @@ on:
         type: choice
         options:
           - FULL
-          - ROOT+SUSFS+NOMOUNT
-          - ROOT+SUSFS+NH+BBG+NET+DS
-          - ROOT+SUSFS+BBG+NET+DS
-          - ROOT+SUSFS+BBG
-          - ROOT+SUSFS+NET
-          - ROOT+SUSFS+DS
-          - ROOT+SUSFS
-          - ROOT+BBG
-          - ROOT+NET
-          - ROOT+DS
-          - ROOT
-          - KSUN+SUSFS+NOMOUNT
-          - KSUN+SUSFS+BBG+NET+DS
-          - KSUN+SUSFS+BBG
-          - KSUN+SUSFS+NET
-          - KSUN+SUSFS+DS
-          - KSUN+SUSFS
-          - KSUN+BBG
-          - KSUN+NET
-          - KSUN+DS
-          - KSUN
-          - NETHUNTER
-          - NOMOUNT
+          - WITHOUT-NETHUNTER
           - NONE
         default: FULL
       ksu_branch:
@@ -159,14 +137,14 @@ jobs:
           os_patch_level: "2025-07"
 
       - name: Setup Root Implementation
-        if: ${{ contains(inputs.feature_set, 'KSUN') || contains(inputs.feature_set, 'ROOT') || inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.feature_set != 'NONE' }}
         uses: ./.github/actions/kernelsu
         with:
           flavor: ${{ inputs.root_flavor }}
           ksu_branch: ${{ inputs.ksu_branch }}
 
       - name: SUSFS
-        if: ${{ contains(inputs.feature_set, 'SUSFS') || inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.feature_set != 'NONE' }}
         uses: ./.github/actions/susfs
         with:
           susfs_commit: ${{ inputs.susfs_commit_android16-6-12 }}
@@ -176,10 +154,10 @@ jobs:
           os_patch_level: "2025-07"
           sublevel: ${{ steps.extract.outputs.sublevel }}
           root_flavor: ${{ inputs.root_flavor }}
-          nomount_enabled: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
+          nomount_enabled: ${{ inputs.feature_set != 'NONE' }}
 
       - name: Fix selinux_hide pointer-bool-conversion on 6.12
-        if: ${{ contains(inputs.feature_set, 'KSUN') || contains(inputs.feature_set, 'ROOT') || inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.feature_set != 'NONE' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -198,11 +176,11 @@ jobs:
           done
 
       - name: Baseband Guard
-        if: ${{ contains(inputs.feature_set, 'BBG') || inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.feature_set != 'NONE' }}
         uses: ./.github/actions/bbg
 
       - name: Setup Networking
-        if: ${{ contains(inputs.feature_set, 'NET') || inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.feature_set != 'NONE' }}
         uses: ./.github/actions/networking
         with:
           version: "android16-6.12"
@@ -211,13 +189,13 @@ jobs:
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
       - name: Setup NetHunter & Wireless Drivers
-        if: ${{ contains(inputs.feature_set, 'NETHUNTER') || contains(inputs.feature_set, 'NH') || inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/nethunter
         with:
           version: "android16-6.12"
 
       - name: DroidSpaces-OSS Patches
-        if: ${{ contains(inputs.feature_set, 'DS') || inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.feature_set != 'NONE' }}
         uses: ./.github/actions/droidspaces
         with:
           version: "android16-6.12"
@@ -258,7 +236,7 @@ jobs:
 
       - name: Resolve latest NoMount dev commit
         id: resolve-nomount
-        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.feature_set != 'NONE' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -272,7 +250,7 @@ jobs:
           echo "Resolved NoMount dev commit: $sha"
 
       - name: Integrate NoMount
-        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.feature_set != 'NONE' }}
         uses: ./.github/actions/nomount
         with:
           commit: ${{ steps.resolve-nomount.outputs.nomount_commit }}
@@ -280,13 +258,13 @@ jobs:
 
       - name: Build NoMount metamodule
         id: nomount-metamodule
-        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.feature_set != 'NONE' }}
         uses: ./.github/actions/nomount-metamodule
         with:
           commit: ${{ steps.resolve-nomount.outputs.nomount_commit }}
 
       - name: Upload NoMount metamodule
-        if: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.feature_set != 'NONE' }}
         uses: actions/upload-artifact@v7
         with:
           name: NoMount-Metamodule
@@ -353,7 +331,7 @@ jobs:
           version: "android16-6.12"
 
       - name: 📦 Build NetHunter Wireless Module
-        if: ${{ contains(inputs.feature_set, 'NETHUNTER') || contains(inputs.feature_set, 'NH') || inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.feature_set == 'FULL' }}
         uses: ./.github/actions/nethunter-module
         with:
           file_name: ${{ steps.extract.outputs.file_name }}
