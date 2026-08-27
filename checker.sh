@@ -288,8 +288,6 @@ check_config "CONFIG_USB_NET_CDCETHER" "CDC-Ethernet generic USB adapters" "modu
 check_config "CONFIG_USB_NET_CDC_NCM" "CDC-NCM high-speed Gigabit adapters" "module_file" "cdc_ncm.ko"
 check_config "CONFIG_USB_RTL8152" "Realtek RTL8152 (10/100) & RTL8153 (Gigabit)" "module_file" "r8152.ko"
 check_config "CONFIG_USB_RTL8150" "Realtek RTL8150 USB Ethernet" "module_file" "rtl8150.ko"
-check_config "CONFIG_USB_NET_RTL8152" "Realtek RTL8152 Driver Interface" "module_file" "r8152.ko"
-check_config "CONFIG_USB_NET_RTL8150" "Realtek RTL8150 Driver Interface" "module_file" "rtl8150.ko"
 
 # ==============================================================================
 # 7. BLUETOOTH & BLUETOOTH ARSENAL
@@ -389,7 +387,7 @@ check_firmware() {
     fi
 }
 
-check_firmware "rtw88/rtw8822cu_fw.bin" "Realtek RTL8822CU Dual-Band Firmware"
+check_firmware "rtw88/rtw8822c_fw.bin"  "Realtek RTL8822CU / RTL8822CE Firmware"
 check_firmware "rtw88/rtw8822b_fw.bin"  "Realtek RTL8822B / RTL8812BU Firmware"
 check_firmware "rtw88/rtw8821c_fw.bin"  "Realtek RTL8821CU / RTL8811CU Firmware"
 check_firmware "rtw88/rtw8723d_fw.bin"  "Realtek RTL8723DU Firmware"
