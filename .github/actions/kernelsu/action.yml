@@ -174,19 +174,7 @@ runs:
           fi
         done
 
-    - name: 'Fix KernelSU Static Patch'
-      shell: bash
-      working-directory: ${{ github.workspace }}/kernel
-      run: |
-        set -euo pipefail
-        if [ -f "${{ github.action_path }}/patches/static.patch" ]; then
-          for candidate in KernelSU-Next ReSukiSU KernelSU; do
-            if [ -d "$candidate" ]; then
-              cp "${{ github.action_path }}/patches/static.patch" "$candidate/static.patch"
-              (cd "$candidate" && patch -p1 < static.patch) || true
-            fi
-          done
-        fi
+
 
     - name: Enable Kernel Configs
       uses: ./.github/actions/set-kernel-config
