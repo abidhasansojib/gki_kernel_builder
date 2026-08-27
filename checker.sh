@@ -196,7 +196,6 @@ check_config "CONFIG_USB_CONFIGFS_EEM" "CDC-EEM Ethernet gadget" "dev_node" "/co
 # ==============================================================================
 section_header "3. USB-to-UART Adapters (Hardware Hacking / Router Serial)"
 check_config "CONFIG_USB_SERIAL" "USB Serial core converter stack" "module_file" "usbserial.ko"
-check_config "CONFIG_USB_SERIAL_CONSOLE" "USB Serial console debugging" "dev_node" "/dev/ttyUSB*"
 check_config "CONFIG_USB_SERIAL_GENERIC" "Generic USB Serial driver" "dev_node" "/dev/ttyUSB*"
 check_config "CONFIG_USB_SERIAL_CH341" "WCH CH340 / CH341 (Arduino/NodeMCU)" "module_file" "ch341.ko"
 check_config "CONFIG_USB_SERIAL_FTDI_SIO" "FTDI FT232R / FT2232 UART & JTAG" "module_file" "ftdi_sio.ko"
@@ -277,9 +276,7 @@ check_config "CONFIG_MT76x2U" "MediaTek MT7612U (Alfa AWUS036ACM / Panda PAU09)"
 
 # ZyDAS
 check_config "CONFIG_WLAN_VENDOR_ZYDAS" "ZyDAS WLAN Vendor Support" "module_file" "zd1211rw.ko"
-check_config "CONFIG_USB_ZD1201" "ZyDAS ZD1201 802.11b/g USB Driver" "module_file" "zd1201.ko"
 check_config "CONFIG_ZD1211RW" "ZyDAS ZD1211 / ZD1211B USB Driver" "module_file" "zd1211rw.ko"
-check_config "CONFIG_USB_NET_RNDIS_WLAN" "Wireless RNDIS USB Support" "module_file" "rndis_wlan.ko"
 
 # ==============================================================================
 # 6. USB ETHERNET & NETWORK DONGLES
@@ -321,7 +318,8 @@ check_config "CONFIG_MEDIA_SUPPORT" "Linux Media & DVB Subsystem" "module_file" 
 check_config "CONFIG_MEDIA_DIGITAL_TV_SUPPORT" "Digital TV & SDR tuner support" "module_file" "dvb-core.ko"
 check_config "CONFIG_MEDIA_SDR_SUPPORT" "Software-Defined Radio framework" "module_file" "dvb-core.ko"
 check_config "CONFIG_MEDIA_USB_SUPPORT" "USB Media & Tuner support" "module_file" "dvb-core.ko"
-check_config "CONFIG_MEDIA_SUBDRV_AUTOSELECT" "Disable demodulator auto-pruning" "module_file" "dvb-core.ko"
+check_config "CONFIG_DVB_CORE" "DVB Digital TV & Demodulator Core" "module_file" "dvb-core.ko"
+check_config "CONFIG_DVB_USB_V2" "DVB USB v2 Driver Framework" "module_file" "dvb_usb_v2.ko"
 check_config "CONFIG_DVB_USB_RTL28XXU" "RTL-SDR USB Dongles (RTL2832U)" "module_file" "dvb-usb-rtl28xxu.ko"
 check_config "CONFIG_DVB_RTL2830" "RTL2830 DVB-T Demodulator" "module_file" "rtl2830.ko"
 check_config "CONFIG_DVB_RTL2832" "RTL2832 DVB-T Demodulator" "module_file" "rtl2832.ko"
@@ -342,7 +340,7 @@ check_config "CONFIG_CAN_BCM" "Broadcast Manager (cangen / packet floods)" "modu
 check_config "CONFIG_CAN_GW" "CAN Gateway & Packet Routing" "module_file" "can-gw.ko"
 check_config "CONFIG_CAN_DEV" "CAN Device Driver Framework" "module_file" "can-dev.ko"
 check_config "CONFIG_CAN_CALC_BITTIMING" "Automatic Bit-rate Calculation" "module_file" "can-dev.ko"
-check_config "CONFIG_CAN_LEDS" "CAN Controller LED Triggers" "module_file" "can-dev.ko"
+check_config "CONFIG_LEDS_TRIGGER_NETDEV" "Network & CAN LED Activity Triggers" "dev_node" "/sys/class/leds"
 check_config "CONFIG_CAN_VCAN" "Virtual CAN (vcan0 for offline analysis)" "module_file" "vcan.ko"
 check_config "CONFIG_CAN_SLCAN" "Serial CAN / Lawicel ASCII (CANable)" "module_file" "slcan.ko"
 check_config "CONFIG_CAN_EMS_USB" "EMS CPC-USB CAN Interface" "module_file" "ems_usb.ko"
@@ -359,9 +357,10 @@ check_config "CONFIG_NETWORK_FILESYSTEMS" "Network Filesystem Infrastructure" "f
 check_config "CONFIG_NFS_FS" "NFS Client (Remote Storage & Wordlists)" "fs" "nfs"
 check_config "CONFIG_NFS_V2" "NFS Protocol v2 Support" "fs" "nfs"
 check_config "CONFIG_NFS_V3" "NFS Protocol v3 Support" "fs" "nfs"
+check_config "CONFIG_NFS_V3_ACL" "NFS Client v3 POSIX ACL Support" "fs" "nfs"
 check_config "CONFIG_NFS_V4" "NFS Protocol v4 Support" "fs" "nfs4"
 check_config "CONFIG_NFSD" "In-Kernel NFS Server (Android Exfiltration)" "fs" "nfsd"
-check_config "CONFIG_NFSD_V3" "NFS Server v3 Support" "fs" "nfsd"
+check_config "CONFIG_NFSD_V3_ACL" "NFS Server v3 POSIX ACL Support" "fs" "nfsd"
 check_config "CONFIG_NFSD_V4" "NFS Server v4 Support" "fs" "nfsd"
 check_config "CONFIG_CIFS" "CIFS / SMB Client (Windows Network Shares)" "fs" "cifs"
 

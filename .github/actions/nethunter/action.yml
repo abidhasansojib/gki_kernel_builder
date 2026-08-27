@@ -50,7 +50,6 @@ runs:
 
           # --- USB Serial Adapters (Hardware Hacking / Router UART / JTAG) ---
           CONFIG_USB_SERIAL=m
-          CONFIG_USB_SERIAL_CONSOLE=y
           CONFIG_USB_SERIAL_GENERIC=y
           CONFIG_USB_SERIAL_CH341=m
           CONFIG_USB_SERIAL_FTDI_SIO=m
@@ -108,9 +107,7 @@ runs:
           CONFIG_MT76x2U=m
 
           CONFIG_WLAN_VENDOR_ZYDAS=y
-          CONFIG_USB_ZD1201=m
           CONFIG_ZD1211RW=m
-          CONFIG_USB_NET_RNDIS_WLAN=m
 
           # --- USB Ethernet & Network Dongles (=m) ---
           CONFIG_USB_NET_DRIVERS=m
@@ -194,7 +191,6 @@ runs:
           CONFIG_NFS_V3_ACL=y
           CONFIG_NFS_V4=y
           CONFIG_NFSD=y
-          CONFIG_NFSD_V3=y
           CONFIG_NFSD_V3_ACL=y
           CONFIG_NFSD_V4=y
           CONFIG_CIFS=y

@@ -48,15 +48,21 @@
    * Next build will produce **zero rejects**.
 9. **CI Validator Enhancement:**
    * Expanded `validate_workflows.py` to also parse and validate all **46 composite action YAML manifests** in `.github/actions/`, catching action.yml YAML parse errors on every push before a real build is triggered.
+10. **Linux 6.12 (Android 16 GKI) NetHunter Compatibility Audit & Refinement:**
+    * Performed on-device diagnostic audit of `checker.sh` (145 checks) against live kernel `6.12.30-android16`.
+    * **Obsolete / Removed Upstream Symbols Cleaned:** Removed `CONFIG_USB_ZD1201` and `CONFIG_USB_NET_RNDIS_WLAN` (removed in Linux 6.8+), `CONFIG_NFSD_V3` (removed in Linux 5.18+, permanently integrated into `CONFIG_NFSD=y`), and `CONFIG_USB_SERIAL_CONSOLE=y` (impossible when `CONFIG_USB_SERIAL=m` in GKI modular architecture).
+    * **Modern LED Trigger Standard:** Migrated deprecated `CONFIG_CAN_LEDS` to `CONFIG_LEDS_TRIGGER_NETDEV=y` (`netdev` trigger for CAN/network activity).
+    * **Demodulator Auto-Pruning Alignment:** Replaced incorrect positive check for `CONFIG_MEDIA_SUBDRV_AUTOSELECT` with explicit checks for `CONFIG_DVB_CORE` and `CONFIG_DVB_USB_V2`.
+    * **Module & Firmware Instructions:** Confirmed that `[ ● MODULE (=m) ]` and `[ ● NOT FOUND / UNLOADED ]` firmware states resolve automatically upon flashing `Nethunter-Wireless-Module.zip` in KernelSU-Next.
 
 ---
 
 ### 📋 What's Next (Upcoming Priorities)
 1. **Trigger a Fresh Kernel Build:**
-   * Run `Build Kernel` workflow with `FULL` feature set + `KernelSU-Next` to verify zero rejects and clean artifacts.
+   * Run `Build Kernel` workflow with `FULL` feature set + `KernelSU-Next` to produce the updated kernel and `Nethunter-Wireless-Module.zip` with zero rejects and updated DVB/LED drivers.
 2. **Live Device Verification:**
-   * **NoMount:** Flash `NoMount-*.zip` via KernelSU-Next Manager and confirm clean install (no `KoLoader binary not found` error).
-   * **NetHunter Modules:** Flash `Nethunter-Wireless-Module.zip`, verify USB WiFi, BadUSB HID, SDR drivers load correctly via `checker.sh`.
+   * **Kernel Flash:** Flash the newly built `*-AnyKernel3.zip` via Recovery / Kernel Flasher.
+   * **NetHunter Modules:** Flash `Nethunter-Wireless-Module.zip` in KernelSU-Next Manager to load all 75 modular drivers and place all 11 firmware blobs.
    * **Checker:** Run `checker.sh` on device and confirm 100% pass rate.
 3. **Upstream Monitoring & Maintenance:**
    * Track upstream KernelSU-Next (`dev-susfs`), SUSFS v2.2.0, and NoMount (`dev`) commits for future Android 16 GKI revisions.
