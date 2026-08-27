@@ -23,7 +23,7 @@ Please do thorough research and understand the features included before flashing
 ## ✨ Features
 
 - 🔐 **Multi-Root Support**: Choose between **KernelSU-Next**, **KernelSU** (tiann official), and **ReSukiSU** with automated SUSFS patch integration.
-- 🛡️ **SUSFS v2.2.0**: Advanced root-hiding kernel patches and userspace integration.
+- 🛡️ **SUSFS**: Advanced root-hiding kernel patches and userspace integration.
 - 🪝 **NoMount VFS Hooks**: Advanced VFS mounting hiding and stealth capabilities with automated hook collision avoidance.
 - 🐉 **Kali NetHunter Support**:
   - **Packet Injection & Monitor Mode**: In-tree `mac80211` and `cfg80211` frame injection support.
@@ -98,9 +98,9 @@ This automated auditor tests:
 
 * **Tested Device**: **Redmi Note 14 4G (`tanzanite`)** &mdash; everything is fully working!
 * **Target Kernel**: **Android 16 (`6.12.30-android16`)** GKI only.
-* **Xiaomi HyperOS 3.0 Warning**:
-  * For **HyperOS 3.0+ only** (Android 16). Do **NOT** flash on HyperOS 1.0 or 2.0 (Android 14/15) or you will brick your device.
-  * When flashing `AnyKernel3.zip`, press the **Volume Up (`[VOL+]`)** button to flash **Bypass-Image** and bypass vendor module CRC checks.
+* **Warning**:For Redmi Note 14 4g flash this kernel only on Hyperos 3.Always check kernel version before flashing.
+*  
+  * When flashing `AnyKernel3.zip`, press the **Volume Up (`[VOL+]`)** button to flash **Bypass-Image** and bypass vendor module CRC checks.Else you will face bootloop.
 
 ---
 
