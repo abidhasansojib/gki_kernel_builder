@@ -7,8 +7,7 @@
 [![NetHunter](https://img.shields.io/badge/Kali--NetHunter-Ready-blueviolet)](https://www.kali.org/docs/nethunter/)
 [![Android](https://img.shields.io/badge/Android-16-blue)](https://android.googlesource.com/)
 [![Linux](https://img.shields.io/badge/Kernel-6.12.30-red)](https://kernel.org/)
-
-An automated GitHub Actions builder for building Android 16 (Kernel 6.12.30, 2025-07) Generic Kernel Images (GKI) with multi-root flavor support (KernelSU-Next, KernelSU, ReSukiSU), SUSFS v2.2.0, NoMount VFS hooks, Kali NetHunter wireless stack & BadUSB HID gadgets, Baseband Guard, DroidSpaces-OSS, BBRv3, and NTSync.
+A GKI kernel builder for kernel 6.12.30-android16, 2025-07.
 
 </div>
 
