@@ -15,11 +15,6 @@ on:
           - Pre-Release
           - Release
         default: Action
-      os_patch_level:
-        description: "OS Patch Level (e.g. 2025-07, or 'all')"
-        type: string
-        required: false
-        default: "2025-07"
       root_flavor:
         description: "Root Flavor"
         type: choice
@@ -79,7 +74,7 @@ jobs:
       ANDROID_VERSION: "android16"
       KERNEL_VERSION: "6.12"
       SUBLEVEL: "30"
-      OS_PATCH_LEVEL: ${{ inputs.os_patch_level || '2025-07' }}
+      OS_PATCH_LEVEL: "2025-07"
       VARIANT: "Normal"
 
     steps:
@@ -120,7 +115,7 @@ jobs:
           version: "android16-6.12"
           android_version: "android16"
           kernel_version: "6.12"
-          os_patch_level: ${{ inputs.os_patch_level || '2025-07' }}
+          os_patch_level: "2025-07"
 
       - name: Build FUSE-BPF Userspace Daemon
         continue-on-error: true
@@ -134,17 +129,7 @@ jobs:
         shell: bash
         run: |
           set -x
-          OS_PATCH_LEVEL_INPUT="${{ inputs.os_patch_level || '2025-07' }}"
-          if [[ "$OS_PATCH_LEVEL_INPUT" == lts* ]]; then
-            if [[ "$OS_PATCH_LEVEL_INPUT" =~ ^lts-([0-9]{2})$ ]]; then
-              OS_PATCH_LEVEL_YM="$(date -u +%Y)-${BASH_REMATCH[1]}"
-            else
-              OS_PATCH_LEVEL_YM="$(date -u +%Y-%m)"
-            fi
-          else
-            OS_PATCH_LEVEL_YM="$OS_PATCH_LEVEL_INPUT"
-          fi
-          FIXED_BUILD_DATE="${OS_PATCH_LEVEL_YM}-05 04:20:00 UTC"
+          FIXED_BUILD_DATE="2025-07-05 04:20:00 UTC"
           SOURCE_DATE_EPOCH=$(date -u -d "$FIXED_BUILD_DATE" +%s)
           echo "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH" >> $GITHUB_ENV
           KBUILD_TS=$(date -u -d @${SOURCE_DATE_EPOCH} '+%a %b %d %H:%M:%S UTC %Y')
@@ -161,7 +146,7 @@ jobs:
           android_version: "android16"
           kernel_version: "6.12"
           sublevel: "30"
-          os_patch_level: ${{ inputs.os_patch_level || '2025-07' }}
+          os_patch_level: "2025-07"
           variant: "Normal"
 
       - name: Kernel Fixes
@@ -171,7 +156,7 @@ jobs:
           android_version: "android16"
           kernel_version: "6.12"
           sublevel: ${{ steps.extract.outputs.sublevel }}
-          os_patch_level: ${{ inputs.os_patch_level || '2025-07' }}
+          os_patch_level: "2025-07"
 
       - name: Setup Root Implementation
         if: ${{ contains(inputs.feature_set, 'KSUN') || contains(inputs.feature_set, 'ROOT') || inputs.feature_set == 'FULL' }}
@@ -188,7 +173,7 @@ jobs:
           version: "android16-6.12"
           android_version: "android16"
           kernel_version: "6.12"
-          os_patch_level: ${{ inputs.os_patch_level || '2025-07' }}
+          os_patch_level: "2025-07"
           sublevel: ${{ steps.extract.outputs.sublevel }}
           root_flavor: ${{ inputs.root_flavor }}
           nomount_enabled: ${{ contains(inputs.feature_set, 'NOMOUNT') || inputs.feature_set == 'FULL' }}
@@ -399,7 +384,7 @@ jobs:
         run: |
           SUMMARY_BASE="${{ steps.extract.outputs.file_name }}"
           if [ -z "${SUMMARY_BASE}" ]; then
-            SUMMARY_BASE="6.12.30-android16-${{ inputs.os_patch_level || '2025-07' }}"
+            SUMMARY_BASE="6.12.30-android16-2025-07"
           fi
 
           if [ "${{ job.status }}" = "success" ]; then
@@ -435,7 +420,7 @@ jobs:
             echo "| Metric | Value |"
             echo "|--------|-------|"
             echo "| **Status** | ${STATUS} |"
-            echo "| **Kernel** | 6.12.30-android16-${{ inputs.os_patch_level || '2025-07' }} |"
+            echo "| **Kernel** | 6.12.30-android16-2025-07 |"
             if [ -n "$KERNEL_VER_STR" ]; then
               echo "| **Version String** | \`${KERNEL_VER_STR}\` |"
             fi
