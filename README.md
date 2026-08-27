@@ -102,7 +102,7 @@ This automated auditor tests:
 1. **Prerequisites**:
    - Unlocked bootloader.
    - Backup of your current boot image (`boot.img`).
-   - Android 16 / HyperOS 3.0+ installed.
+   - Stock kernel based on `6.12.30-android16`.
    - Flashing utility (e.g. [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher)).
 
 2. **Flashing Kernel (Bypass Mode)**:

@@ -115,8 +115,9 @@ Provide high-performance, low-latency synchronization primitives compatible with
 
 ### Prerequisites
 - Unlocked bootloader.
-- Backup your current boot image.
-- Have root access using Magisk / KernelSU / Apatch (Any forks).
+- Backup your current boot image (`boot.img`).
+- Stock kernel based on `6.12.30-android16`.
+- Have root access or custom recovery to flash ZIPs.
 
 ### Via Kernel Flasher
 Download the correct AnyKernel3 ZIP for your device.
