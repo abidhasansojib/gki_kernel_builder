@@ -114,18 +114,100 @@ runs:
 
         # --- SELinux Policy Rules (sepolicy.rule) ---
         # Restricts hardware node access to root/su and shell (ADB/terminal) only, blocking regular non-root apps
-        echo 'YWxsb3cgc2hlbGwgaGlkcmF3X2RldmljZSBjaHJfZmlsZSB7IHJlYWQgd3JpdGUgb3BlbiBpb2N0bCBnZXRhdHRyIH0KYWxsb3cgc2hlbGwgdWhpZF9kZXZpY2UgY2hyX2ZpbGUgeyByZWFkIHdyaXRlIG9wZW4gaW9jdGwgZ2V0YXR0ciB9CmFsbG93IHNoZWxsIHR1bl9kZXZpY2UgY2hyX2ZpbGUgeyByZWFkIHdyaXRlIG9wZW4gaW9jdGwgZ2V0YXR0ciB9CmFsbG93IHNoZWxsIHVzYl9kZXZpY2UgY2hyX2ZpbGUgeyByZWFkIHdyaXRlIG9wZW4gaW9jdGwgZ2V0YXR0ciB9CmFsbG93IHNoZWxsIHVzYl9kZXZpY2UgZGlyIHsgcmVhZCBvcGVuIHNlYXJjaCBnZXRhdHRyIH0KYWxsb3cgc2hlbGwgdHR5X2RldmljZSBjaHJfZmlsZSB7IHJlYWQgd3JpdGUgb3BlbiBpb2N0bCBnZXRhdHRyIH0KYWxsb3cgc2hlbGwgcmZraWxsX2RldmljZSBjaHJfZmlsZSB7IHJlYWQgd3JpdGUgb3BlbiBpb2N0bCBnZXRhdHRyIH0KYWxsb3cgc2hlbGwgY29uZmlnZnMgZGlyIHsgcmVhZCBvcGVuIHNlYXJjaCB3cml0ZSBhZGRfbmFtZSByZW1vdmVfbmFtZSBjcmVhdGUgfQphbGxvdyBzaGVsbCBjb25maWdmcyBmaWxlIHsgcmVhZCB3cml0ZSBvcGVuIGdldGF0dHIgfQo=' | base64 -d > "$STAGING_DIR/sepolicy.rule"
+        cat << 'EOF' > "$STAGING_DIR/sepolicy.rule"
+allow shell hidraw_device chr_file { read write open ioctl getattr }
+allow shell uhid_device chr_file { read write open ioctl getattr }
+allow shell tun_device chr_file { read write open ioctl getattr }
+allow shell usb_device chr_file { read write open ioctl getattr }
+allow shell usb_device dir { read open search getattr }
+allow shell tty_device chr_file { read write open ioctl getattr }
+allow shell rfkill_device chr_file { read write open ioctl getattr }
+allow shell configfs dir { read open search write add_name remove_name create }
+allow shell configfs file { read write open getattr }
+EOF
 
         # --- Early Boot Initialization (post-fs-data.sh) ---
-        echo 'IyEvc3lzdGVtL2Jpbi9zaApNT0RESVI9JHswJS8qfQoKIyBFbnN1cmUgL2Rldi9uZXQgZGlyZWN0b3J5IGFuZCB0dW4gZGV2aWNlIG5vZGUgZXhpc3QgZm9yIFZQTnMgJiBwYWNrZXQgbWFuaXB1bGF0aW9uCm1rZGlyIC1wIC9kZXYvbmV0CmlmIFsgISAtYyAvZGV2L25ldC90dW4gXTsgdGhlbgogIG1rbm9kIC9kZXYvbmV0L3R1biBjIDEwIDIwMCAyPi9kZXYvbnVsbCB8fCB0cnVlCmZpCmNobW9kIDY2NiAvZGV2L25ldC90dW4gMj4vZGV2L251bGwgfHwgdHJ1ZQpjaG1vZCA2NjYgL2Rldi9yZmtpbGwgMj4vZGV2L251bGwgfHwgdHJ1ZQpjaG1vZCA2NjYgL2Rldi91aGlkIDI+L2Rldi9udWxsIHx8IHRydWUKY2htb2QgNjY2IC9kZXYvaGlkZyogMj4vZGV2L251bGwgfHwgdHJ1ZQoKIyBDb3B5IGZpcm13YXJlIGZpbGVzIHRvIHJ1bnRpbWUgcGF0aHMgaWYgZGlyZWN0b3J5IGlzIHdyaXRhYmxlCmZvciBmd190YXJnZXQgaW4gL3ZlbmRvci9maXJtd2FyZSAvdmVuZG9yL2V0Yy9maXJtd2FyZSAvc3lzdGVtL2V0Yy9maXJtd2FyZTsgZG8KICBpZiBbIC1kICIkZndfdGFyZ2V0IiBdICYmIFsgLXcgIiRmd190YXJnZXQiIF0gJiYgWyAtZCAiJE1PRERJUi9zeXN0ZW0vZXRjL2Zpcm13YXJlIiBdOyB0aGVuCiAgICBjcCAtcmYgIiRNT0RESVIvc3lzdGVtL2V0Yy9maXJtd2FyZS8iKiAiJGZ3X3RhcmdldC8iIDI+L2Rldi9udWxsIHx8IHRydWUKICBmaQpkb25lCgojIExvYWQgQ29yZSBXaXJlbGVzcyAmIFN1YnN5c3RlbSBEZXBlbmRlbmNpZXMgRWFybHkKZm9yIGNvcmVfa28gaW4gY2ZnODAyMTEua28gbWFjODAyMTEua28gcnR3ODhfY29yZS5rbyBydHc4OF91c2Iua28gcnR3ODhfODgyMmIua28gcnR3ODhfODgyMmMua28gcnR3ODhfODgyMWMua28gcnR3ODcyM2Qua28gbXQ3Ni5rbyBtdDc2LXVzYi5rbyBtdDc2eDAyLWxpYi5rbyBtdDc2eDAyLXVzYi5rbyBtdDc2eDItY29tbW9uLmtvIGNhbi5rbyBjYW4tZGV2LmtvIGNhbi1yYXcua28gY2FuLWJjbS5rbyBjYW4tZ3cua287IGRvCiAgaWYgWyAtZiAiJE1PRERJUi9sa20vJGNvcmVfa28iIF07IHRoZW4KICAgIGluc21vZCAiJE1PRERJUi9sa20vJGNvcmVfa28iIDI+L2Rldi9udWxsIHx8IGtzdWQgaW5zbW9kICIkTU9ERElSL2xrbS8kY29yZV9rbyIgMj4vZGV2L251bGwgfHwgdHJ1ZQogIGVsaWYgWyAtZiAiJE1PRERJUi9zeXN0ZW0vbGliL21vZHVsZXMvJGNvcmVfa28iIF07IHRoZW4KICAgIGluc21vZCAiJE1PRERJUi9zeXN0ZW0vbGliL21vZHVsZXMvJGNvcmVfa28iIDI+L2Rldi9udWxsIHx8IGtzdWQgaW5zbW9kICIkTU9ERElSL3N5c3RlbS9saWIvbW9kdWxlcy8kY29yZV9rbyIgMj4vZGV2L251bGwgfHwgdHJ1ZQogIGZpCmRvbmUK' | base64 -d > "$STAGING_DIR/post-fs-data.sh"
+        cat << 'EOF' > "$STAGING_DIR/post-fs-data.sh"
+#!/system/bin/sh
+MODDIR=${0%/*}
+
+# Ensure /dev/net directory and tun device node exist for VPNs & packet manipulation
+mkdir -p /dev/net
+if [ ! -c /dev/net/tun ]; then
+  mknod /dev/net/tun c 10 200 2>/dev/null || true
+fi
+chmod 666 /dev/net/tun 2>/dev/null || true
+chmod 666 /dev/rfkill 2>/dev/null || true
+chmod 666 /dev/uhid 2>/dev/null || true
+chmod 666 /dev/hidg* 2>/dev/null || true
+
+# Copy firmware files to runtime paths if directory is writable
+for fw_target in /vendor/firmware /vendor/etc/firmware /system/etc/firmware; do
+  if [ -d "$fw_target" ] && [ -w "$fw_target" ] && [ -d "$MODDIR/system/etc/firmware" ]; then
+    cp -rf "$MODDIR/system/etc/firmware/"* "$fw_target/" 2>/dev/null || true
+  fi
+done
+
+# Load Core Wireless & Subsystem Dependencies Early
+for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
+  if [ -f "$MODDIR/lkm/$core_ko" ]; then
+    insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
+  elif [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
+    insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
+  fi
+done
+EOF
         chmod +x "$STAGING_DIR/post-fs-data.sh"
 
         # --- Native ueventd Hotplug Rules (0% CPU / 0 Battery Drain) ---
-        echo 'L2Rldi9oaWRnKiAgICAgICAgICAgICAgICAwNjY2ICAgcm9vdCAgIHJvb3QKL2Rldi91aGlkICAgICAgICAgICAgICAgICAwNjY2ICAgcm9vdCAgIHJvb3QKL2Rldi9yZmtpbGwgICAgICAgICAgICAgICAwNjY2ICAgcm9vdCAgIHJvb3QKL2Rldi9uZXQvdHVuICAgICAgICAgICAgICAwNjY2ICAgcm9vdCAgIHJvb3QKL2Rldi90dHlVU0IqICAgICAgICAgICAgICAwNjY2ICAgcm9vdCAgIHJvb3QKL2Rldi90dHlBQ00qICAgICAgICAgICAgICAwNjY2ICAgcm9vdCAgIHJvb3QKL2Rldi9yZmNvbW0qICAgICAgICAgICAgICAwNjY2ICAgcm9vdCAgIHJvb3QKL2Rldi9idXMvdXNiLyovKiAgICAgICAgICAwNjY2ICAgcm9vdCAgIHJvb3QK' | base64 -d > "$STAGING_DIR/system/etc/ueventd.rc"
+        cat << 'EOF' > "$STAGING_DIR/system/etc/ueventd.rc"
+/dev/hidg*                0666   root   root
+/dev/uhid                 0666   root   root
+/dev/rfkill               0666   root   root
+/dev/net/tun              0666   root   root
+/dev/ttyUSB*              0666   root   root
+/dev/ttyACM*              0666   root   root
+/dev/rfcomm*              0666   root   root
+/dev/bus/usb/*/*          0666   root   root
+EOF
         cp -vf "$STAGING_DIR/system/etc/ueventd.rc" "$STAGING_DIR/ueventd.rc" 2>/dev/null || true
 
         # --- Late Boot Service & Driver Loader (service.sh) ---
-        echo 'IyEvc3lzdGVtL2Jpbi9zaApNT0RESVI9JHswJS8qfQoKIyBTZXQgcGVybWlzc2lvbnMgZm9yIE5ldEh1bnRlciBCYWRVU0IsIFdpLUZpLCBTRFIsIFNlcmlhbCAmIFZQTiBkZXZpY2VzIG9uY2Ugb24gYm9vdApjaG1vZCA2NjYgL2Rldi9oaWRnKiAyPi9kZXYvbnVsbCB8fCB0cnVlCmNobW9kIDY2NiAvZGV2L3VoaWQgMj4vZGV2L251bGwgfHwgdHJ1ZQpjaG1vZCA2NjYgL2Rldi9yZmtpbGwgMj4vZGV2L251bGwgfHwgdHJ1ZQpjaG1vZCA2NjYgL2Rldi9uZXQvdHVuIDI+L2Rldi9udWxsIHx8IHRydWUKY2htb2QgNjY2IC9kZXYvdHR5VVNCKiAvZGV2L3R0eUFDTSogL2Rldi9yZmNvbW0qIDI+L2Rldi9udWxsIHx8IHRydWUKY2htb2QgLVIgNjY2IC9kZXYvYnVzL3VzYi8gMj4vZGV2L251bGwgfHwgdHJ1ZQoKIyBMb2FkIENvcmUgV2lyZWxlc3MgJiBTdWJzeXN0ZW0gRGVwZW5kZW5jaWVzCmZvciBjb3JlX2tvIGluIGNmZzgwMjExLmtvIG1hYzgwMjExLmtvIHJ0dzg4X2NvcmUua28gcnR3ODhfdXNiLmtvIHJ0dzg4Xzg4MjJiLmtvIHJ0dzg4Xzg4MjJjLmtvIHJ0dzg4Xzg4MjFjLmtvIHJ0dzg3MjNkLmtvIG10NzYua28gbXQ3Ni11c2Iua28gbXQ3NngwMi1saWIua28gbXQ3NngwMi11c2Iua28gbXQ3NngyLWNvbW1vbi5rbyBjYW4ua28gY2FuLWRldi5rbyBjYW4tcmF3LmtvIGNhbi1iY20ua28gY2FuLWd3LmtvOyBkbwogIGlmIFsgLWYgIiRNT0RESVIvbGttLyRjb3JlX2tvIiBdOyB0aGVuCiAgICBpbnNtb2QgIiRNT0RESVIvbGttLyRjb3JlX2tvIiAyPi9kZXYvbnVsbCB8fCBrc3VkIGluc21vZCAiJE1PRERJUi9sa20vJGNvcmVfa28iIDI+L2Rldi9udWxsIHx8IHRydWUK  ZWxpZiBbIC1mICIkTU9ERElSL3N5c3RlbS9saWIvbW9kdWxlcy8kY29yZV9rbyIgXTsgdGhlbgogICAgaW5zbW9kICIkTU9ERElSL3N5c3RlbS9saWIvbW9kdWxlcy8kY29yZV9rbyIgMj4vZGV2L251bGwgfHwga3N1ZCBpbnNtb2QgIiRNT0RESVIvc3lzdGVtL2xpYi9tb2R1bGVzLyRjb3JlX2tvIiAyPi9kZXYvbnVsbCB8fCB0cnVlCiAgZmkKZG9uZQoKIyBNdWx0aS1QYXNzIE1vZHVsZSBMb2FkZXIgKEF1dG9tYXRpY2FsbHkgUmVzb2x2ZXMgQ29tcGxleCBEZXBlbmRlbmN5IENoYWlucykKTU9EVUxFX1NSQz0iJE1PRERJUi9sa20iClsgLWQgIiRNT0RVTEVfU1JDIiBdICYmIFsgLW4gIiQobHMgLUEgIiRNT0RVTEVfU1JDIiAyPi9kZXYvbnVsbCkiIF0gfHwgTU9EVUxFX1NSQz0iJE1PRERJUi9zeXN0ZW0vbGliL21vZHVsZXMiCgpmb3IgcGFzcyBpbiAxIDIgMjsgZG8KICBmb3Iga28gaW4gJChscyAiJE1PRFVMRV9TUkMiLyoua28gMj4vZGV2L251bGwpOyBkbwogICAgbW9kbmFtZT0kKGJhc2VuYW1lICIkS28iKQogICAgbW9kYmFzZT0kKGVjaG8gIiR7bW9kbmFtZSUua299IiB8IHRyICctJyAnXycpCiAgICBpZiAhIGxzbW9kIDI+L2Rldi9udWxsIHwgZ3JlcCAtcSAiXiR7bW9kYmFzZX1bWzpzcGFjZTpdXSI7IHRoZW4KICAgICAgaW5zbW9kICIkS28iIDI+L2Rldi9udWxsIHx8IGtzdWQgaW5zbW9kICIkS28iIDI+L2Rldi9udWxsIHx8IHRydWUKICAgIGZpCiAgZG9uZQpkb25l' | base64 -d > "$STAGING_DIR/service.sh"
+        cat << 'EOF' > "$STAGING_DIR/service.sh"
+#!/system/bin/sh
+MODDIR=${0%/*}
+
+# Set permissions for NetHunter BadUSB, Wi-Fi, SDR, Serial & VPN devices once on boot
+chmod 666 /dev/hidg* 2>/dev/null || true
+chmod 666 /dev/uhid 2>/dev/null || true
+chmod 666 /dev/rfkill 2>/dev/null || true
+chmod 666 /dev/net/tun 2>/dev/null || true
+chmod 666 /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2>/dev/null || true
+chmod -R 666 /dev/bus/usb/ 2>/dev/null || true
+
+# Load Core Wireless & Subsystem Dependencies
+for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
+  if [ -f "$MODDIR/lkm/$core_ko" ]; then
+    insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
+  elif [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
+    insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
+  fi
+done
+
+# Multi-Pass Module Loader (Automatically Resolves Complex Dependency Chains)
+MODULE_SRC="$MODDIR/lkm"
+[ -d "$MODULE_SRC" ] && [ -n "$(ls -A "$MODULE_SRC" 2>/dev/null)" ] || MODULE_SRC="$MODDIR/system/lib/modules"
+
+for pass in 1 2 3; do
+  for ko in $(ls "$MODULE_SRC"/*.ko 2>/dev/null); do
+    modname=$(basename "$ko")
+    modbase=$(echo "${modname%.ko}" | tr '-' '_')
+    if ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
+      insmod "$ko" 2>/dev/null || ksud insmod "$ko" 2>/dev/null || true
+    fi
+  done
+done
+EOF
         chmod +x "$STAGING_DIR/service.sh"
 
         OUT_ZIP="${{ github.workspace }}/Nethunter-Wireless-Module.zip"
