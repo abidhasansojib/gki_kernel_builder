@@ -65,3 +65,9 @@
 * `.github/actions/` — Modular composite actions for kernel patching (SUSFS, NoMount, NetHunter, BBG, BBRv3, etc.).
 * `checker.sh` — On-device diagnostic shell script for auditing live NetHunter kernel configs and loaded DLKM modules.
 * `README.md` & `docs/ROOT_VARIANTS.md` — Project and root variant documentation.
+
+---
+
+## ⚠️ Operational Rules for AI Agents
+* **Log Retention:** **NEVER** delete GitHub Actions workflow run logs automatically. Only delete logs when explicitly commanded by the user.
+* **Documentation Integrity:** Preserve all existing comments and docstrings across files.
