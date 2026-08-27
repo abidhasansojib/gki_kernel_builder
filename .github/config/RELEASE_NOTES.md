@@ -65,7 +65,7 @@ Full kernel support for penetration testing and external wireless dongles:
 - **External USB WiFi Drivers**: Realtek (`rtw88`, `rtl8xxxu`, `rtl8187`), Atheros (`ath9k_htc`, `carl9170`), MediaTek (`mt76`), and Ralink (`rt2800usb`).
 - **USB Ethernet Adapters**: CDC-ECM, CDC-NCM, RTL8152, and ASIX AX88179.
 - **Bluetooth RFCOMM & SDR**: Native RFCOMM TTY and RTL2832U DVB SDR support.
-- **Flashable Module**: Flash the accompanying `Nethunter-Wireless-Module.zip` module in KernelSU/Magisk for plug-and-play driver and firmware auto-loading.
+- **Flashable Module**: Flash the accompanying `Nethunter-Wireless-Module.zip` module in KernelSU-Next, KernelSU, or ReSukiSU for plug-and-play driver and firmware auto-loading.
 
 ## [Baseband Guard (BBG)](https://github.com/vc-teahouse/Baseband-guard)
 

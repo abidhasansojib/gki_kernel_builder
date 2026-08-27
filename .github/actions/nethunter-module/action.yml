@@ -1,5 +1,5 @@
 name: 'Build NetHunter Wireless Module'
-description: 'Packages compiled wireless DLKM modules and firmware into a flashable KernelSU/Magisk module'
+description: 'Packages compiled wireless DLKM modules and firmware into a flashable KernelSU / KernelSU-Next / ReSukiSU module'
 inputs:
   file_name:
     description: 'Output filename prefix (optional)'

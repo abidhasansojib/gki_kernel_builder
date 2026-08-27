@@ -32,7 +32,7 @@ Please do thorough research and understand the features included before flashing
   - **USB WiFi Dongle Support**: Realtek (`rtw88` 802.11ac, `rtl8xxxu`, `rtl8187`), Atheros (`ath9k_htc`, `carl9170`), MediaTek (`mt7601u`, `mt76x0u`, `mt76x2u`), and Ralink (`rt2800usb`).
   - **USB Ethernet Adapters**: CDC-ECM, CDC-NCM, Realtek RTL8152, and ASIX AX88179.
   - **Bluetooth RFCOMM & SDR**: Native RFCOMM TTY and RTL-SDR (`rtl28xxu`) support.
-- 📦 **Flashable NetHunter Wireless Module**: Automatically packages compiled `.ko` driver modules and official Linux firmware into a flashable KernelSU/Magisk module (`Nethunter-Wireless-Module.zip`) for plug-and-play OTG WiFi support.
+- 📦 **Flashable NetHunter Wireless Module**: Automatically packages compiled `.ko` driver modules and official Linux firmware into a flashable KernelSU / KernelSU-Next / ReSukiSU module (`Nethunter-Wireless-Module.zip`) for plug-and-play OTG WiFi support.
 - 🛡️ **Baseband Guard (BBG)**: LSM security module for critical partition write protection.
 - 📦 **DroidSpaces-OSS**: Lightweight container runtime support with SYSVIPC kABI fixes.
 - 🚀 **Networking & Performance**: BBRv3, CAKE Qdisc, WireGuard, IP Set, TTL targets, CIFS.
@@ -117,7 +117,7 @@ This automated auditor tests:
 
 3. **External USB WiFi & NetHunter Tools (Optional)**:
    - Download the `Nethunter-Wireless-Module.zip` module from the release.
-   - Flash it in your KernelSU or Magisk manager to load external USB WiFi drivers and firmware blobs automatically on boot.
+   - Flash it in your KernelSU-Next, KernelSU, or ReSukiSU manager to load external USB WiFi drivers and firmware blobs automatically on boot.
 
 ---
 
