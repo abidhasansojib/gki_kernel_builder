@@ -23,6 +23,7 @@
 ## 📥 Required Downloads & Tools
 
 * **Root Manager App**: [Download {{ROOT_MANAGER_NAME}}]({{KSU_MANAGER}})
+* **SUSFS Module**: [Download susfs4ksu-module (by sidex15)](https://github.com/sidex15/susfs4ksu-module/releases)
 * **Kernel Flashing Tool**: [Download Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)
 
 ---
@@ -37,19 +38,12 @@ Before flashing, open **Settings $\to$ About Phone $\to$ Android Version** and v
 2. Select and flash **`*-AnyKernel3.zip`** to the active slot.
 3. 💡 **Recommendation:** Press the **Volume Up (`[VOL+]`)** key during flashing to install **Bypass-Image**. This bypasses OEM vendor module CRC/version mismatches and ensures smooth booting.
 
-### 📱 Step 3: Install Manager App
-* Install the matching **[{{ROOT_MANAGER_NAME}}]({{KSU_MANAGER}})** application to manage superuser permissions.
+### 📱 Step 3: Install Manager App & SUSFS
+* Install the matching **[{{ROOT_MANAGER_NAME}}]({{KSU_MANAGER}})** application.
+* Flash **[susfs4ksu-module](https://github.com/sidex15/susfs4ksu-module/releases)** in your Root Manager to activate kernel-level root hiding.
 
 ### 🔌 Step 4: Load NetHunter Drivers (Optional)
 * Flash **`Nethunter-Wireless-Modules.zip`** in your Root Manager to auto-load external USB WiFi, SDR, BadUSB HID, and SocketCAN drivers and firmware.
 
 ### 🔄 Step 5: Reboot
 * Reboot your device and verify root access in your manager app.
-
----
-
-### 🔍 On-Device Verification
-Audit active kernel configs and loaded drivers directly from Termux / root shell:
-```bash
-curl -sSL https://raw.githubusercontent.com/abidhasansojib/gki_kernel_builder/main/checker.sh | su -c "sh"
-```
