@@ -1,102 +1,107 @@
 # 🤖 AGENTS.md — Developer & AI Agent Guide
 
-## 📌 Project Overview
-* **Repository:** `gki_kernel_builder`
-* **Target Kernel:** Android 16 GKI (`6.12.30-android16`, 2025-07 patch level)
-* **Tested Device:** Redmi Note 14 4G (`tanzanite`) on Xiaomi HyperOS 3.0.302 (Android 16)
-* **Core Integrations:**
-  * **Root Solutions:** KernelSU-Next (default), SukiSU-Ultra, and ReSukiSU
-  * **Stealth & Root Hiding:** SUSFS v2.2.0 & NoMount VFS redirection metamodule
-  * **Penetration Testing:** Kali NetHunter (BadUSB HID, USB WiFi drivers, SDR, SocketCAN, Bluetooth, NFS/CIFS)
-  * **Performance & Hardening:** BBRv3, CAKE Qdisc, WireGuard, Baseband Guard (BBG), DroidSpaces-OSS, NTSync
+## 📌 Project Overview & Architecture
+* **Project Name:** `gki_kernel_builder`
+* **Target Kernel:** Android 16 GKI (`6.12.30-android16`, Sublevel `30`, OS Patch Level `2025-07`)
+* **Primary Build Platform:** **GitHub Actions CI/CD** &mdash; *Notice: The developer's local environment/device does NOT have local compilation toolchains (no Bazel, Clang, or AOSP cross-compilers). All kernel compilation, toolchains, and module packaging are strictly orchestrated in the cloud via GitHub Actions workflows.*
+* **Primary Tested Device:** Redmi Note 14 4G (`tanzanite`) on Xiaomi HyperOS 3.0.302 (Android 16).
 
 ---
 
-## 🏃 Current Sprint & Active State
-
-### ✅ What We Did (Completed)
-1. **NetHunter & Wireless Driver Enhancements:**
-   * Added `CONFIG_DVB_USB_V2=m`, `CONFIG_DVB_CORE=m`, and `CONFIG_DVB_DYNAMIC_MINORS=y` to enable in-kernel DVB-T / RTL-SDR demodulator modules (`dvb-usb-rtl28xxu.ko`, `rtl2832_sdr.ko`, etc.).
-   * Enabled hardware LED triggers (`CONFIG_LEDS_CLASS=y`, `CONFIG_LEDS_TRIGGERS=y`, `CONFIG_RTW88_LEDS=y`, `CONFIG_CAN_LEDS=y`).
-   * Added POSIX ACL support for NFS (`CONFIG_NFS_V3_ACL=y`, `CONFIG_NFSD_V3_ACL=y`).
-   * Cleaned out duplicate legacy aliases (`CONFIG_USB_NET_RTL8152`/`8150`).
-2. **NoMount Metamodule Packaging Fix:**
-   * Diagnosed and resolved the KernelSU-Next installation failure (`! KoLoader binary not found for architecture: arm64`).
-   * Integrated automated cloning and Zig compilation of **`ko-loader-arm64`** and **`ko-loader-arm`** into `bin/` inside `NoMount-*.zip`.
-3. **Diagnostics & Checker Audit (`checker.sh`):**
-   * Updated `check_config` in `checker.sh` to match `.ko` binary names against `lsmod` (e.g. `ch341`, `r8152`, `hackrf`, `asix`, `btusb`), ensuring active modules accurately display as `[ ✔ MODULE (LOADED) ]`.
-   * Corrected the Realtek RTL8822CU firmware path check to `rtw88/rtw8822c_fw.bin`, achieving 100% firmware presence verification.
-4. **Clean Kernel Flags Hardening:**
-   * Added fallback bot git credentials (`github-actions[bot]`) in `clean-kernel-flags/action.yml` to prevent commit failures on unconfigured runners.
-5. **Issue Templates & Documentation Overhaul:**
-   * Redesigned `bug_report.yml` into a structured, field-specific form.
-   * Removed legacy `dev_use_only.yml`.
-   * Updated `README.md` with raw GitHub URL for real-time `checker.sh` execution.
-6. **CI/CD & Modular Workflow Architecture:**
-   * Restored the clear, modular multi-job workflow graph: **`Resolve NoMount Commit`**, **`Build NoMount Metamodule`**, **`Build Kernel (6.12.30-android16)`**, **`Consolidated Build Summary`**, and **`Publish Release`**.
-   * Promoted `build-kernel` to a direct first-class job (no matrix dropdown nesting — shows all jobs directly in Actions UI).
-   * Removed `os_patch_level` input — permanently locked to `2025-07`.
-   * Simplified `feature_set` to 3 options only: `FULL`, `WITHOUT-NETHUNTER`, `NONE`.
-7. **NetHunter Module Metadata & Lightweight Single-Storage Packaging:**
-   * Module name: `Nethunter Wireless,HID Driver & Modules` | Author: `abidhasansojib`.
-   * **Single-Storage Architecture (`lkm/`):** Eliminated multi-folder `.ko` duplication across `vendor/lib/modules` and `vendor_dlkm/`. All 75+ drivers are packaged once in `lkm/` and firmware once in `system/etc/firmware/`, shrinking the ZIP from ~52 MB down to ~14 MB and device storage footprint from ~143 MB down to ~36 MB.
-   * **Smart Dynamic Loader:** `post-fs-data.sh` dynamically detects and populates active device firmware paths (`/vendor/firmware`, `/vendor/etc/firmware`, `/system/etc/firmware`) and loads core networking dependencies early. `service.sh` loads all remaining modules in a 3-pass loop with hyphen-to-underscore translation (`tr '-' '_'`) matching `lsmod`.
-   * Added `customize.sh` for rich flashing UI in KernelSU-Next / SukiSU-Ultra / ReSukiSU manager.
-8. **Root-Flavor Specific `static.patch` & `__nocfi` Linker Fix (`selinux_hide.c`):**
-   * **Root-Solution Specific Logic:** `static.patch` is applied selectively for `KernelSU-Next` only (skipped on `SukiSU-Ultra` and `ReSukiSU` to eliminate patch mismatch).
-   * **Comprehensive `__nocfi` Regex Fix:** Added `sed` patterns (`s/^static \(.*security_compute_av_user_with_policy\)/\1/g` and `s/static void __nocfi security_compute_av_user_with_policy/void __nocfi security_compute_av_user_with_policy/g`) in `kernelsu/action.yml` and `build.yml`. This guarantees both declarations and `__nocfi` definitions are non-static (`extern`), fixing the Clang compilation error across all 3 root variants with zero rejects.
-9. **CI Validator Enhancement:**
-   * Expanded `validate_workflows.py` to also parse and validate all **46 composite action YAML manifests** in `.github/actions/`, catching action.yml YAML parse errors on every push before a real build is triggered.
-10. **Linux 6.12 (Android 16 GKI) NetHunter Compatibility Audit & Refinement:**
-    * Performed on-device diagnostic audit of `checker.sh` (145 checks) against live kernel `6.12.30-android16`.
-    * **Obsolete / Inactive Upstream Symbols Cleaned:** Removed `CONFIG_USB_ZD1201` and `CONFIG_USB_NET_RNDIS_WLAN` (removed in Linux 6.8+), `CONFIG_NFSD_V3` (integrated into `CONFIG_NFSD=y`), `CONFIG_USB_SERIAL_CONSOLE=y`, `CONFIG_RTW88_LEDS`, and inactive DVB subdrivers (`CONFIG_DVB_USB_RTL28XXU`, `CONFIG_DVB_RTL2830`, `CONFIG_DVB_RTL2832`, `CONFIG_DVB_RTL2832_SDR`, `CONFIG_DVB_SI2168`).
-    * **Modern LED Trigger Standard:** Migrated deprecated `CONFIG_CAN_LEDS` to `CONFIG_LEDS_TRIGGER_NETDEV=y` (`netdev` trigger for CAN/network activity).
-    * **Demodulator Auto-Pruning Alignment:** Kept explicit checks for active DVB components `CONFIG_DVB_CORE`, `CONFIG_DVB_USB_V2`, and `CONFIG_DVB_ZD1301_DEMOD`.
-    * **Module & Firmware Instructions:** Confirmed that `[ ● MODULE (=m) ]` and `[ ● NOT FOUND / UNLOADED ]` firmware states resolve automatically upon flashing `Nethunter-Wireless-Modules.zip` in KernelSU-Next / SukiSU-Ultra / ReSukiSU.
+## ⚡ Critical Flashing Architecture: The Bypass Image
+> [!CAUTION]
+> **Why the Bypass Image is Mandatory:**
+> Modern OEM Android 16 skins (especially Xiaomi HyperOS 3, Samsung OneUI, etc.) enforce strict kernel module CRC and sublevel version verification against OEM vendor modules on boot. 
+> Flashing a standard compiled GKI `Image` directly without bypassing these vendor checks will result in an immediate **BOOTLOOP**.
+>
+> **How It Works in This Project:**
+> 1. The build pipeline generates two kernel binaries:
+>    * `Image` &mdash; Standard GKI kernel image.
+>    * `Bypass-Image` &mdash; Kernel image patched to bypass vendor module CRC and version verification.
+> 2. Both are packaged into **`*-AnyKernel3.zip`**.
+> 3. During flashing in **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** or Recovery, the user MUST press **Volume Up (`[VOL+]`)** to select and flash **Bypass-Image**.
 
 ---
 
-### 📋 What's Next (Upcoming Priorities)
-1. **Trigger a Fresh Kernel Build:**
-   * Run `Build Kernel` workflow with `FULL` feature set + `KernelSU-Next` to produce the updated kernel and `Nethunter-Wireless-Modules.zip` with zero rejects and updated DVB/LED drivers.
-2. **Live Device Verification:**
-   * **Kernel Flash:** Flash the newly built `*-AnyKernel3.zip` via Recovery / Kernel Flasher.
-   * **NetHunter Modules:** Flash `Nethunter-Wireless-Modules.zip` in KernelSU-Next Manager to load all 75 modular drivers and place all 11 firmware blobs.
-   * **Checker:** Run `checker.sh` on device and confirm 100% pass rate.
-3. **Upstream Monitoring & Maintenance:**
-   * Track upstream KernelSU-Next (`dev-susfs`), SUSFS v2.2.0, and NoMount (`dev`) commits for future Android 16 GKI revisions.
+## 🛠️ Comprehensive Feature Implementations
 
----
+### 1. Root Solutions & Coexistence (`root_flavor`)
+The project supports 3 independent root implementations with automated patch resolution:
+* **KernelSU-Next (`next` / `kernelsu-next`):**
+  * Cloned from upstream `dev-susfs` branch.
+  * Applied with `static.patch` to convert `static` functions in `selinux_hide.c` to `extern` for seamless coexistence with SUSFS.
+* **SukiSU-Ultra (`ultra` / `sukisu-ultra`):**
+  * Cloned from `SukiSU-Ultra` main branch.
+  * **Skips `static.patch`** to eliminate patch rejects.
+  * Patched with dynamic `__nocfi` regex (`s/static void __nocfi security_compute_av_user_with_policy/void __nocfi security_compute_av_user_with_policy/g`) to resolve Clang CFI linkage conflicts.
+* **ReSukiSU (`resukisu`):**
+  * Cloned from `ReSukiSU` main branch.
+  * **Skips `static.patch`** as ReSukiSU already provides native extern declarations.
 
-## 🛠️ Repository Architecture & Key Directories
-* `.github/workflows/build.yml` — Main kernel build pipeline (5 modular jobs: resolve-nomount, build-nomount-module, build-kernel, summary, release).
-* `.github/workflows/validate.yml` — Static YAML + shell script (`bash -n`) + Python syntax validator (runs on every push).
-* `.github/actions/` — 46 modular composite actions (SUSFS, NoMount, NetHunter, BBG, BBRv3, NTSync, kernelsu, etc.).
-* `.github/actions/nethunter-module/action.yml` — Builds & packages the Nethunter Wireless,HID Driver & Modules zip using heredocs (no base64).
-* `.github/actions/kernelsu/action.yml` — Downloads & configures KernelSU-Next / SukiSU-Ultra / ReSukiSU. Stale static.patch removed.
-* `.github/scripts/validate_workflows.py` — Validates both workflows and all action manifests on every commit.
-* `checker.sh` — On-device diagnostic script for auditing live NetHunter kernel configs and loaded DLKM modules.
-* `README.md` & `docs/ROOT_VARIANTS.md` — Project and root variant documentation.
+### 2. Stealth & Root Hiding Stack
+* **SUSFS v2.2.0:**
+  * In-tree kernel patches applied to `fs/`, `kernel/`, and `security/` for kernel-level mount isolation, process masking, and symbol hiding.
+* **NoMount VFS Redirection Metamodule:**
+  * Auto-cloned and compiled with Zig compiler in GitHub Actions to produce architecture-native **`ko-loader-arm64`** and **`ko-loader-arm`** binaries inside `bin/`.
+
+### 3. Kali NetHunter & Penetration Testing Stack
+* **BadUSB / Rubber Ducky HID:**
+  * Enabled `/dev/hidg0` USB gadget keyboard/mouse emulation for DuckHunter payloads.
+* **75+ Modular Wireless WiFi Drivers (`=m`):**
+  * **Realtek:** `rtw88` (8822bu, 8822cu, 8821cu, 8723du), `rtl8xxxu` (8188eus, 8192eu), `rtl8187`.
+  * **Atheros:** `ath9k_htc` (AR9271 / TP-Link WN722N v1), `carl9170`.
+  * **MediaTek / Ralink:** `mt76x2u` (Alfa AWUS036ACM), `mt76x0u` (Alfa AWUS036ACHM), `mt7601u`, `rt2800usb` (Alfa AWUS036NH / RT3070).
+* **Software Defined Radio (SDR):**
+  * RTL-SDR / RTL2832U (`dvb_usb_rtl28xxu`, `rtl2832_sdr`), HackRF One (`hackrf.ko`), AirSpy (`airspy.ko`), Mirics (`msi2500.ko`).
+* **Automotive & Hardware Hacking:**
+  * SocketCAN framework (`can.ko`, `can-raw.ko`, `can-bcm.ko`, `vcan.ko`, `slcan.ko`, `peak_usb.ko`, `kvaser_usb.ko`, `ems_usb.ko`).
+  * USB Serial dongles: FTDI (`ftdi_sio.ko`), WCH (`ch341.ko`), Silicon Labs (`cp210x.ko`), Prolific (`pl2303.ko`), CDC-ACM.
+* **Bluetooth Attacks:**
+  * USB Bluetooth dongles via `btusb.ko` with RFCOMM TTY (`rfcomm.ko`), BNEP, and HIDP.
+* **Single-Storage Packaging (`Nethunter-Wireless-Modules.zip`):**
+  * Module ID: `nethunter_wireless_modules` | Name: `Nethunter Wireless,HID Driver & Modules` | Author: `abidhasansojib`.
+  * Packaged in a lightweight single `lkm/` storage directory and firmware in `system/etc/firmware/` (reduced ZIP from 52 MB to 14 MB).
+  * `post-fs-data.sh`: Dynamically auto-populates firmware paths (`/vendor/firmware`, `/vendor/etc/firmware`, `/system/etc/firmware`) and loads core networking modules early.
+  * `service.sh`: Loads all remaining drivers on boot in a 3-pass loop with underscore-hyphen normalization matching `lsmod`.
+
+### 4. Performance, Networking & Security Enhancements
+* **Baseband Guard (BBG):** LSM protection module preventing unauthorized writes to radio/modem partitions.
+* **DroidSpaces-OSS:** Lightweight container runtime support with SYSVIPC compatibility.
+* **BBRv3 & CAKE Qdisc:** Modern TCP congestion control and network packet queuing algorithms.
+* **WireGuard & IP Set:** High-speed in-kernel VPN and firewall rule acceleration.
+* **NTSync:** Low-latency NT synchronization primitives for high-performance wine/gaming emulation.
+* **BTF / eBPF & FUSE-BPF:** In-tree BTF metadata generation and standalone userspace `fuse-bpf-arm64` daemon.
 
 ---
 
 ## 📦 Build Artifacts Guide
 | Artifact | Flash? | Purpose |
 |---|---|---|
-| `*-AnyKernel3.zip` | ✅ Flash via Recovery / Kernel Flasher | Kernel image (Normal + Bypass Image for HyperOS 3) |
-| `Nethunter-Wireless-Modules.zip` | ✅ Flash via KSU Manager | USB WiFi, BadUSB HID, SDR, SocketCAN drivers & firmware |
-| `NoMount-*.zip` | ✅ Flash via KSU Manager | Root-hiding VFS metamodule (ko-loader + nm binaries) |
-| `*-Rejects.zip` | ❌ Do NOT flash | Diagnostic only — shows which patches failed to apply |
+| `*-AnyKernel3.zip` | ✅ Flash via Recovery / Kernel Flasher | Kernel image (Normal + **Bypass Image** for HyperOS/OEMs) |
+| `Nethunter-Wireless-Modules.zip` | ✅ Flash via Root Manager | USB WiFi, BadUSB HID, SDR, SocketCAN drivers & firmware |
+| `NoMount-*.zip` | ✅ Flash via Root Manager | Root-hiding VFS metamodule (ko-loader + nm binaries) |
+| `*-Rejects.zip` | ❌ Do NOT flash | Diagnostic only &mdash; shows which patches failed to apply |
 | `*-Summary.md` | ❌ Do NOT flash | Build metadata summary (versions, commits, status) |
 | `NoMount-Metamodule` | ❌ Internal artifact | Raw metamodule binary, packaged into NoMount zip |
 
 ---
 
-## ⚠️ Operational Rules for AI Agents
-* **Log Retention:** **NEVER** delete GitHub Actions workflow run logs automatically. Only delete logs when **explicitly commanded** by the user.
-* **Documentation Integrity:** Preserve all existing comments and docstrings across files unless instructed otherwise.
-* **No Matrix Jobs:** Do NOT use `strategy: matrix:` in `build.yml` — the single `build-kernel` job must remain a direct first-class job so all jobs are visible directly in the GitHub Actions UI without any "Show all jobs" dropdown.
-* **No `os_patch_level` Input:** The patch level is permanently locked to `2025-07`. Do not add it back as a workflow input.
-* **Feature Set Options:** Only 3 allowed: `FULL`, `WITHOUT-NETHUNTER`, `NONE`. Do not add more options without user approval.
-* **NetHunter Module Name:** Always `Nethunter Wireless,HID Driver & Modules`. Author: `abidhasansojib`. Do not change without user approval.
-* **Heredocs in action.yml:** When writing shell scripts inline in composite actions, always use `cat << 'EOF' > file` style heredocs with proper 8-space YAML indentation + trailing `sed -i 's/^[[:space:]]*//' file` to strip indent. Never use base64-encoded strings.
+## ⚠️ Strict Operational Rules for AI Agents
+
+1. **Zero-Tolerance for Errors & Bootloop Prevention:**
+   * Kernel modifications directly affect hardware stability. A bad patch or syntax error will break the build or cause a **device bootloop**.
+   * Always verify shell syntax with `bash -n <script>`, validate workflow manifests with `python3 .github/scripts/validate_workflows.py`, and inspect git diffs thoroughly before committing.
+2. **Online Research & Upstream Documentation:**
+   * When dealing with unfamiliar kernel configs, compiler warnings, upstream symbol deprecations, or toolchain changes, **search the internet and consult official documentation** (kernel.org, AOSP, LLVM Clang, KernelSU/SUSFS repos).
+3. **Ask for Clarification When Uncertain:**
+   * Never guess or make unverified assumptions about user preferences or critical build settings. **Ask the user first** if anything is ambiguous.
+4. **Log Retention:**
+   * **NEVER** delete GitHub Actions workflow run logs automatically. Only delete logs when **explicitly commanded** by the user.
+5. **Continuous Documentation & AGENTS.md Updates:**
+   * Keep `AGENTS.md` continuously updated with all chat decisions, completed milestones, technical fixes, and workflow structural changes.
+6. **Workflow & Repository Architecture Constraints:**
+   * **No Matrix Nesting:** `build.yml` must keep `build-kernel` as a single first-class job (no `strategy: matrix:`) so all steps show directly in the GitHub Actions UI.
+   * **Permanent Patch Level:** The patch level is locked to `2025-07`. Do NOT re-add `os_patch_level` input.
+   * **Feature Sets:** Strictly 3 options: `FULL`, `WITHOUT-NETHUNTER`, `NONE`.
+   * **NetHunter Module Metadata:** Name must always be `Nethunter Wireless,HID Driver & Modules`, ID `nethunter_wireless_modules`, ZIP `Nethunter-Wireless-Modules.zip`, and author `abidhasansojib`.
+   * **Heredocs in Composite Actions:** Always write inline scripts via clean heredocs (`cat << 'EOF' > file`) with 8-space YAML indentation and trailing `sed -i 's/^[[:space:]]*//' file`. Never use base64 encoding.
