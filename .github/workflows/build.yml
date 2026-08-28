@@ -655,6 +655,9 @@ jobs:
         run: |
           set -e
 
+          # Generate dynamic commit changelog
+          export CHANGELOG="$(git log -n 15 --pretty=format:'* %h - %s (%cr)' 2>/dev/null || echo '* Initial automated build release')"
+
           RELEASE_NOTES_PATH="$RELEASE_NOTES"
           : > release_body.md
 

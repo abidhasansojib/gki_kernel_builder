@@ -1,53 +1,55 @@
 # GKI Kernel Release (6.12.30-android16)
 
 > [!CAUTION]
-> This software is provided for testing and educational purposes only. Use at your own risk. Ensure you have backups of your current `boot.img` before installation.
+> This kernel is built exclusively for devices running **Android 16 GKI (`6.12.30-android16`)**. Ensure you have a backup of your stock `boot.img` before installation.
 
 ---
 
 ## 🔐 Root & Build Metadata
 
 * **Root Solution**: **{{ROOT_IMPL}}**
-* **Manager**: {{KSU_MANAGER}}
 * **Root Version**: `{{KSU_VERSION}}` (Tag: `{{KSU_GIT_TAG}}`)
 * **Branch / Commit**: `{{KSUN_BRANCH}}` (`{{KSUN_COMMIT}}`)
 {{SUSFS_BRANCHES}}
 
 ---
 
-## ✨ Features Summary
+## 📜 Commit Changelog
 
-* 🛡️ **[SUSFS v2.2.0](https://gitlab.com/simonpunk/susfs4ksu)**: Advanced kernel-level root hiding & VFS redirection coexistence with NoMount. Recommended module: [susfs4ksu-module by sidex15](https://github.com/sidex15/susfs4ksu-module).
-* 🐉 **[Kali NetHunter & Wireless Stack](https://www.kali.org/docs/nethunter/)**: Monitor mode, frame injection (`mac80211`/`cfg80211`), BadUSB HID (`/dev/hidg0`), RTL-SDR, SocketCAN, and 75+ modular USB WiFi drivers.
-* 🛡️ **[Baseband Guard (BBG)](https://github.com/vc-teahouse/Baseband-guard)**: LSM protection preventing unauthorized writes to baseband/modem partitions.
-* 📦 **[DroidSpaces-OSS](https://github.com/ravindu644/Droidspaces-OSS)**: Container runtime support with SYSVIPC compatibility.
-* 🚀 **Networking & Performance**: BBRv3, CAKE Qdisc, WireGuard VPN, IP Set, CIFS/SMB, and NTSync synchronization.
-
-> 📖 *For complete technical details, driver chipsets, and feature matrices, visit the [Project README](https://github.com/abidhasansojib/gki_kernel_builder#readme).*
+{{CHANGELOG}}
 
 ---
 
-## 📲 Quick Installation Guide
+## 📥 Required Downloads & Tools
 
-### Prerequisites
-* Unlocked bootloader on stock `6.12.30-android16` GKI.
-* Backup of stock `boot.img`.
-* Flashing tool: [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher) or Custom Recovery.
-
-### Installation Steps
-1. **Flash Kernel**:
-   * Open **Kernel Flasher** and flash `*-AnyKernel3.zip` to the active slot.
-   * **Xiaomi HyperOS 3 (e.g. Redmi Note 14 4G `tanzanite`)**: Press **Volume Up (`[VOL+]`)** during flashing to install **Bypass-Image** and bypass vendor module CRC verification.
-2. **Install Root Manager**:
-   * Install the matching Manager app for **{{ROOT_IMPL}}** (KernelSU-Next, SukiSU-Ultra, or ReSukiSU).
-3. **Load NetHunter Drivers (Optional)**:
-   * Flash `Nethunter-Wireless-Modules.zip` in your Root Manager to auto-load external USB WiFi/SDR drivers and firmware.
-4. **Reboot** and verify root and features.
+* **Root Manager App**: [Download {{ROOT_MANAGER_NAME}}]({{KSU_MANAGER}})
+* **Kernel Flashing Tool**: [Download Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)
 
 ---
 
-### 🔍 Verification Direct on Device
-Run the automated auditor script in Termux / root shell:
+## 📲 Installation Instructions
+
+### ⚠️ Step 1: Verify Kernel Version
+Before flashing, open **Settings $\to$ About Phone $\to$ Android Version** and verify that your device's stock kernel is based on **`6.12.30-android16`**.
+
+### ⚡ Step 2: Flash Kernel
+1. Open **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** (or your custom recovery).
+2. Select and flash **`*-AnyKernel3.zip`** to the active slot.
+3. 💡 **Recommendation:** Press the **Volume Up (`[VOL+]`)** key during flashing to install **Bypass-Image**. This bypasses OEM vendor module CRC/version mismatches and ensures smooth booting.
+
+### 📱 Step 3: Install Manager App
+* Install the matching **[{{ROOT_MANAGER_NAME}}]({{KSU_MANAGER}})** application to manage superuser permissions.
+
+### 🔌 Step 4: Load NetHunter Drivers (Optional)
+* Flash **`Nethunter-Wireless-Modules.zip`** in your Root Manager to auto-load external USB WiFi, SDR, BadUSB HID, and SocketCAN drivers and firmware.
+
+### 🔄 Step 5: Reboot
+* Reboot your device and verify root access in your manager app.
+
+---
+
+### 🔍 On-Device Verification
+Audit active kernel configs and loaded drivers directly from Termux / root shell:
 ```bash
 curl -sSL https://raw.githubusercontent.com/abidhasansojib/gki_kernel_builder/main/checker.sh | su -c "sh"
 ```

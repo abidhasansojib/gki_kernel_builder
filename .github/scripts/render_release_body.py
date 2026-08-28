@@ -14,6 +14,7 @@ PLACEHOLDERS = {
     "{{KSU_MANAGER}}": lambda: os.environ.get("KSU_MANAGER", "Placeholder"),
     "{{SUSFS_BRANCHES}}": lambda: os.environ.get("SUSFS_COMMIT", "latest on auto-derived gki-{version} branch"),
     "{{SUSFS_BRANCHS}}": lambda: os.environ.get("SUSFS_COMMIT", "latest on auto-derived gki-{version} branch"),
+    "{{CHANGELOG}}": lambda: os.environ.get("CHANGELOG", "* Dynamic changelog generated on release"),
 }
 
 
