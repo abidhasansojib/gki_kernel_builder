@@ -26,14 +26,10 @@
 ## 🛠️ Comprehensive Feature Implementations
 
 ### 1. Root Solutions & Coexistence (`root_flavor`)
-The project supports 3 independent root implementations with automated patch resolution:
+The project supports 2 independent root implementations with automated patch resolution:
 * **KernelSU-Next (`next` / `kernelsu-next`):**
   * Cloned from upstream `dev-susfs` branch.
   * Applied with `static.patch` to convert `static` functions in `selinux_hide.c` to `extern` for seamless coexistence with SUSFS.
-* **SukiSU-Ultra (`ultra` / `sukisu-ultra`):**
-  * Cloned from `SukiSU-Ultra` main branch.
-  * **Skips `static.patch`** to eliminate patch rejects.
-  * Patched with dynamic `__nocfi` regex (`s/static void __nocfi security_compute_av_user_with_policy/void __nocfi security_compute_av_user_with_policy/g`) to resolve Clang CFI linkage conflicts.
 * **ReSukiSU (`resukisu`):**
   * Cloned from `ReSukiSU` main branch.
   * **Skips `static.patch`** as ReSukiSU already provides native extern declarations.

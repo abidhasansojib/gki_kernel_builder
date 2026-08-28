@@ -20,7 +20,6 @@ on:
         type: choice
         options:
           - KernelSU-Next
-          - SukiSU-Ultra
           - ReSukiSU
         default: KernelSU-Next
       feature_set:
@@ -574,15 +573,6 @@ jobs:
 
           RAW_FLAVOR="${{ inputs.root_flavor }}"
           case "$(echo "$RAW_FLAVOR" | tr '[:upper:]' '[:lower:]')" in
-            *next*)
-              FLAVOR_NAME="KernelSU-Next"
-              KSU_REPO="https://github.com/pershoot/KernelSU-Next.git"
-              OFFICIAL_KSU_REPO="https://github.com/KernelSU-Next/KernelSU-Next.git"
-              DEFAULT_REF="dev-susfs"
-              OFFICIAL_SYNC_BRANCH="dev"
-              MANAGER_WORKFLOW="build-manager-ci.yml"
-              MANAGER_REPO="KernelSU-Next/KernelSU-Next"
-              ;;
             *resukisu*)
               FLAVOR_NAME="ReSukiSU"
               KSU_REPO="https://github.com/ReSukiSU/ReSukiSU.git"
@@ -592,14 +582,14 @@ jobs:
               MANAGER_WORKFLOW="build-manager.yml"
               MANAGER_REPO="ReSukiSU/ReSukiSU"
               ;;
-            *ultra*|*sukisu*|*suki*|*)
-              FLAVOR_NAME="SukiSU-Ultra"
-              KSU_REPO="https://github.com/SukiSU-Ultra/SukiSU-Ultra.git"
-              OFFICIAL_KSU_REPO="https://github.com/SukiSU-Ultra/SukiSU-Ultra.git"
-              DEFAULT_REF="main"
-              OFFICIAL_SYNC_BRANCH="main"
-              MANAGER_WORKFLOW="build-manager.yml"
-              MANAGER_REPO="SukiSU-Ultra/SukiSU-Ultra"
+            *next*|*)
+              FLAVOR_NAME="KernelSU-Next"
+              KSU_REPO="https://github.com/pershoot/KernelSU-Next.git"
+              OFFICIAL_KSU_REPO="https://github.com/KernelSU-Next/KernelSU-Next.git"
+              DEFAULT_REF="dev-susfs"
+              OFFICIAL_SYNC_BRANCH="dev"
+              MANAGER_WORKFLOW="build-manager-ci.yml"
+              MANAGER_REPO="KernelSU-Next/KernelSU-Next"
               ;;
           esac
 

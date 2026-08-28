@@ -439,5 +439,5 @@ echo -e "${CYAN}${BOLD}=========================================================
 if [ "$FAILED_COUNT" -eq 0 ]; then
     echo -e "${GREEN}${BOLD}🎉 EXCELLENT: Your kernel has 100% Kali NetHunter feature coverage!${NC}\n"
 else
-    echo -e "${YELLOW}${BOLD}⚠ NOTE: Flash Nethunter-Wireless-Modules.zip in KernelSU-Next / SukiSU-Ultra / ReSukiSU to load modular drivers.${NC}\n"
+    echo -e "${YELLOW}${BOLD}⚠ NOTE: Flash Nethunter-Wireless-Modules.zip in KernelSU-Next / ReSukiSU to load modular drivers.${NC}\n"
 fi

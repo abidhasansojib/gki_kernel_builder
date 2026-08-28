@@ -1,8 +1,8 @@
-name: Setup Root Implementation (KernelSU-Next / SukiSU-Ultra / ReSukiSU)
+name: Setup Root Implementation (KernelSU-Next / ReSukiSU)
 description: Download and configure selected root implementation with version tracking
 inputs:
   flavor:
-    description: 'Root flavor: next, sukisu-ultra, or resukisu'
+    description: 'Root flavor: next or resukisu'
     required: false
     default: 'next'
   ksu_branch:
@@ -33,14 +33,6 @@ runs:
         # Normalize flavor name
         RAW_FLAVOR="${{ inputs.flavor }}"
         case "$(echo "$RAW_FLAVOR" | tr '[:upper:]' '[:lower:]')" in
-          *next*)
-            FLAVOR="next"
-            REPO="https://github.com/pershoot/KernelSU-Next.git"
-            SETUP_URL="https://raw.githubusercontent.com/pershoot/KernelSU-Next/dev-susfs/kernel/setup.sh"
-            DEFAULT_REF="dev-susfs"
-            DIR_NAME="KernelSU-Next"
-            MANAGER_NAME="KernelSU Next Manager"
-            ;;
           *resukisu*)
             FLAVOR="resukisu"
             REPO="https://github.com/ReSukiSU/ReSukiSU.git"
@@ -49,13 +41,13 @@ runs:
             DIR_NAME="ReSukiSU"
             MANAGER_NAME="ReSukiSU Manager"
             ;;
-          *ultra*|*sukisu*|*suki*|*)
-            FLAVOR="sukisu-ultra"
-            REPO="https://github.com/SukiSU-Ultra/SukiSU-Ultra.git"
-            SETUP_URL="https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh"
-            DEFAULT_REF="main"
-            DIR_NAME="SukiSU-Ultra"
-            MANAGER_NAME="SukiSU-Ultra Manager"
+          *next*|*)
+            FLAVOR="next"
+            REPO="https://github.com/pershoot/KernelSU-Next.git"
+            SETUP_URL="https://raw.githubusercontent.com/pershoot/KernelSU-Next/dev-susfs/kernel/setup.sh"
+            DEFAULT_REF="dev-susfs"
+            DIR_NAME="KernelSU-Next"
+            MANAGER_NAME="KernelSU Next Manager"
             ;;
         esac
 
@@ -78,8 +70,6 @@ runs:
           TARGET_DIR="$DIR_NAME"
         elif [ -d "KernelSU-Next" ]; then
           TARGET_DIR="KernelSU-Next"
-        elif [ -d "SukiSU-Ultra" ]; then
-          TARGET_DIR="SukiSU-Ultra"
         elif [ -d "ReSukiSU" ]; then
           TARGET_DIR="ReSukiSU"
         elif [ -d "KernelSU" ]; then
@@ -158,7 +148,7 @@ runs:
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
       run: |
-        for candidate in KernelSU-Next SukiSU-Ultra ReSukiSU KernelSU common/drivers/kernelsu drivers/kernelsu; do
+        for candidate in KernelSU-Next ReSukiSU KernelSU common/drivers/kernelsu drivers/kernelsu; do
           if [ -d "$candidate/.git" ] || [ -f "$candidate/.git" ]; then
             cd "$candidate"
             BASE_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | sed 's:-.*::' || echo "main")
@@ -198,9 +188,6 @@ runs:
                 fi
               done
             fi
-            ;;
-          ultra|sukisu-ultra|sukisu)
-            echo "[INFO] SukiSU-Ultra detected: skipping static.patch, applying native symbol linkage fixes..."
             ;;
           resukisu)
             echo "[INFO] ReSukiSU detected: skipping static.patch..."
