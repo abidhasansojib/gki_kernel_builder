@@ -20,7 +20,7 @@ on:
         type: choice
         options:
           - KernelSU-Next
-          - KernelSU
+          - SukiSU-Ultra
           - ReSukiSU
         default: KernelSU-Next
       feature_set:
@@ -587,14 +587,14 @@ jobs:
               MANAGER_WORKFLOW="build-manager.yml"
               MANAGER_REPO="ReSukiSU/ReSukiSU"
               ;;
-            *classic*|*kernelsu*|*)
-              FLAVOR_NAME="KernelSU"
-              KSU_REPO="https://github.com/tiann/KernelSU.git"
-              OFFICIAL_KSU_REPO="https://github.com/tiann/KernelSU.git"
+            *ultra*|*sukisu*|*suki*|*)
+              FLAVOR_NAME="SukiSU-Ultra"
+              KSU_REPO="https://github.com/SukiSU-Ultra/SukiSU-Ultra.git"
+              OFFICIAL_KSU_REPO="https://github.com/SukiSU-Ultra/SukiSU-Ultra.git"
               DEFAULT_REF="main"
               OFFICIAL_SYNC_BRANCH="main"
               MANAGER_WORKFLOW="build-manager.yml"
-              MANAGER_REPO="tiann/KernelSU"
+              MANAGER_REPO="SukiSU-Ultra/SukiSU-Ultra"
               ;;
           esac
 

@@ -1,8 +1,8 @@
-name: Setup Root Implementation (KernelSU / Next / ReSukiSU)
+name: Setup Root Implementation (KernelSU-Next / SukiSU-Ultra / ReSukiSU)
 description: Download and configure selected root implementation with version tracking
 inputs:
   flavor:
-    description: 'Root flavor: next, kernelsu, or resukisu'
+    description: 'Root flavor: next, sukisu-ultra, or resukisu'
     required: false
     default: 'next'
   ksu_branch:
@@ -49,13 +49,13 @@ runs:
             DIR_NAME="ReSukiSU"
             MANAGER_NAME="ReSukiSU Manager"
             ;;
-          *classic*|*kernelsu*|*)
-            FLAVOR="kernelsu"
-            REPO="https://github.com/tiann/KernelSU.git"
-            SETUP_URL="https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh"
+          *ultra*|*sukisu*|*suki*|*)
+            FLAVOR="sukisu-ultra"
+            REPO="https://github.com/SukiSU-Ultra/SukiSU-Ultra.git"
+            SETUP_URL="https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh"
             DEFAULT_REF="main"
-            DIR_NAME="KernelSU"
-            MANAGER_NAME="KernelSU Manager"
+            DIR_NAME="SukiSU-Ultra"
+            MANAGER_NAME="SukiSU-Ultra Manager"
             ;;
         esac
 
@@ -76,12 +76,14 @@ runs:
         TARGET_DIR=""
         if [ -d "$DIR_NAME" ]; then
           TARGET_DIR="$DIR_NAME"
-        elif [ -d "KernelSU" ]; then
-          TARGET_DIR="KernelSU"
         elif [ -d "KernelSU-Next" ]; then
           TARGET_DIR="KernelSU-Next"
+        elif [ -d "SukiSU-Ultra" ]; then
+          TARGET_DIR="SukiSU-Ultra"
         elif [ -d "ReSukiSU" ]; then
           TARGET_DIR="ReSukiSU"
+        elif [ -d "KernelSU" ]; then
+          TARGET_DIR="KernelSU"
         fi
 
         if [ -z "$TARGET_DIR" ] || [ ! -d "$TARGET_DIR" ]; then
@@ -156,7 +158,7 @@ runs:
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
       run: |
-        for candidate in KernelSU-Next ReSukiSU KernelSU common/drivers/kernelsu drivers/kernelsu; do
+        for candidate in KernelSU-Next SukiSU-Ultra ReSukiSU KernelSU common/drivers/kernelsu drivers/kernelsu; do
           if [ -d "$candidate/.git" ] || [ -f "$candidate/.git" ]; then
             cd "$candidate"
             BASE_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | sed 's:-.*::' || echo "main")
@@ -182,7 +184,7 @@ runs:
       run: |
         set -euo pipefail
         if [ -f "${{ github.action_path }}/patches/static.patch" ]; then
-          for candidate in KernelSU-Next ReSukiSU KernelSU common/drivers/kernelsu drivers/kernelsu; do
+          for candidate in KernelSU-Next SukiSU-Ultra ReSukiSU KernelSU common/drivers/kernelsu drivers/kernelsu; do
             if [ -d "$candidate" ]; then
               cp "${{ github.action_path }}/patches/static.patch" "$candidate/static.patch"
               (cd "$candidate" && patch -p1 < static.patch) || true

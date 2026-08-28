@@ -5,7 +5,7 @@
 * **Target Kernel:** Android 16 GKI (`6.12.30-android16`, 2025-07 patch level)
 * **Tested Device:** Redmi Note 14 4G (`tanzanite`) on Xiaomi HyperOS 3.0.302 (Android 16)
 * **Core Integrations:**
-  * **Root Solutions:** KernelSU-Next (default), official KernelSU, and ReSukiSU
+  * **Root Solutions:** KernelSU-Next (default), SukiSU-Ultra, and ReSukiSU
   * **Stealth & Root Hiding:** SUSFS v2.2.0 & NoMount VFS redirection metamodule
   * **Penetration Testing:** Kali NetHunter (BadUSB HID, USB WiFi drivers, SDR, SocketCAN, Bluetooth, NFS/CIFS)
   * **Performance & Hardening:** BBRv3, CAKE Qdisc, WireGuard, Baseband Guard (BBG), DroidSpaces-OSS, NTSync
@@ -73,7 +73,7 @@
 * `.github/workflows/validate.yml` — Static YAML + shell script (`bash -n`) + Python syntax validator (runs on every push).
 * `.github/actions/` — 46 modular composite actions (SUSFS, NoMount, NetHunter, BBG, BBRv3, NTSync, kernelsu, etc.).
 * `.github/actions/nethunter-module/action.yml` — Builds & packages the Nethunter Wireless,HID & Driver Modules zip using heredocs (no base64).
-* `.github/actions/kernelsu/action.yml` — Downloads & configures KernelSU-Next / KernelSU / ReSukiSU. Stale static.patch removed.
+* `.github/actions/kernelsu/action.yml` — Downloads & configures KernelSU-Next / SukiSU-Ultra / ReSukiSU. Stale static.patch removed.
 * `.github/scripts/validate_workflows.py` — Validates both workflows and all action manifests on every commit.
 * `checker.sh` — On-device diagnostic script for auditing live NetHunter kernel configs and loaded DLKM modules.
 * `README.md` & `docs/ROOT_VARIANTS.md` — Project and root variant documentation.

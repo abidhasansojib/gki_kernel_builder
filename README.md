@@ -22,7 +22,7 @@ Please do thorough research and understand the features included before flashing
 
 ## ✨ Features
 
-- 🔐 **Multi-Root Support**: Choose between **KernelSU-Next**, **KernelSU** (tiann official), and **ReSukiSU** with automated SUSFS patch integration.
+- 🔐 **Multi-Root Support**: Choose between **KernelSU-Next**, **SukiSU-Ultra**, and **ReSukiSU** with automated SUSFS patch integration.
 - 🛡️ **SUSFS**: Advanced root-hiding kernel patches and userspace integration.
 - 🪝 **NoMount VFS Hooks**: Advanced VFS mounting hiding and stealth capabilities with automated hook collision avoidance.
 - 🐉 **Kali NetHunter Support**:
@@ -31,7 +31,7 @@ Please do thorough research and understand the features included before flashing
   - **USB WiFi Dongle Support**: Realtek (`rtw88` 802.11ac, `rtl8xxxu`, `rtl8187`), Atheros (`ath9k_htc`, `carl9170`), MediaTek (`mt7601u`, `mt76x0u`, `mt76x2u`), and Ralink (`rt2800usb`).
   - **USB Ethernet Adapters**: CDC-ECM, CDC-NCM, Realtek RTL8152, and ASIX AX88179.
   - **Bluetooth RFCOMM & SDR**: Native RFCOMM TTY and RTL-SDR (`rtl28xxu`) support.
-- 📦 **Flashable NetHunter Wireless Module**: Automatically packages compiled `.ko` driver modules and official Linux firmware into a flashable KernelSU / KernelSU-Next / ReSukiSU module (`Nethunter-Wireless-Module.zip`) for plug-and-play OTG WiFi support.
+- 📦 **Flashable NetHunter Wireless Module**: Automatically packages compiled `.ko` driver modules and official Linux firmware into a flashable KernelSU-Next / SukiSU-Ultra / ReSukiSU module (`Nethunter-Wireless-Module.zip`) for plug-and-play OTG WiFi support.
 - 🛡️ **Baseband Guard (BBG)**: LSM security module for critical partition write protection.
 - 📦 **DroidSpaces-OSS**: Lightweight container runtime support with SYSVIPC kABI fixes.
 - 🚀 **Networking & Performance**: BBRv3, CAKE Qdisc, WireGuard, IP Set, TTL targets, CIFS.
@@ -118,21 +118,22 @@ This automated auditor tests:
    - Press **Volume Up (`[VOL+]`)** during flashing to select **Bypass Image**.
    - Install the matching Manager app for your selected root flavor:
      - [KernelSU-Next Manager](https://github.com/KernelSU-Next/KernelSU-Next/releases) *(for KernelSU-Next)*
-     - [KernelSU Manager](https://github.com/tiann/KernelSU/releases) *(for official KernelSU)*
+     - [SukiSU-Ultra Manager](https://github.com/SukiSU-Ultra/SukiSU-Ultra/releases) *(for SukiSU-Ultra)*
      - [ReSukiSU Manager](https://github.com/ReSukiSU/ReSukiSU/releases) *(for ReSukiSU)*
    - Reboot device.
 
 3. **External USB WiFi & NetHunter Tools (Optional)**:
    - Download the `Nethunter-Wireless-Module.zip` module from the release.
-   - Flash it in your KernelSU-Next, KernelSU, or ReSukiSU manager to load external USB WiFi drivers and firmware blobs automatically on boot.
+   - Flash it in your KernelSU-Next, SukiSU-Ultra, or ReSukiSU manager to load external USB WiFi drivers and firmware blobs automatically on boot.
 
 ---
 
 ## 🏆 Credits
 
 - 🏗️ **GKI KernelSU SUSFS**: Based on work by [WildKernels](https://github.com/WildKernels/GKI_KernelSU_SUSFS)
-- 🔐 **KernelSU**: Developed by [tiann](https://github.com/tiann/KernelSU)
+- 🔐 **SukiSU-Ultra**: Developed by [SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra)
 - 🚀 **KernelSU-Next**: Developed by [rifsxd](https://github.com/KernelSU-Next/KernelSU-Next) and [pershoot](https://github.com/pershoot/KernelSU-Next)
+- 💫 **ReSukiSU**: Developed by [ReSukiSU](https://github.com/ReSukiSU/ReSukiSU)
 - 🛡️ **SUSFS**: Developed by [simonpunk](https://gitlab.com/simonpunk/susfs4ksu.git)
 - 🐉 **Kali NetHunter**: Developed by the [Offensive Security / Kali NetHunter Team](https://www.kali.org/docs/nethunter/)
 - 🪝 **NoMount**: Developed by [maxsteeel](https://github.com/maxsteeel/nomount)
