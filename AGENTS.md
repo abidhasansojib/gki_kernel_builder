@@ -37,11 +37,11 @@
    * Promoted `build-kernel` to a direct first-class job (no matrix dropdown nesting — shows all jobs directly in Actions UI).
    * Removed `os_patch_level` input — permanently locked to `2025-07`.
    * Simplified `feature_set` to 3 options only: `FULL`, `WITHOUT-NETHUNTER`, `NONE`.
-7. **NetHunter Module Metadata & Robust Shell Scripting:**
+7. **NetHunter Module Metadata & Lightweight Single-Storage Packaging:**
    * Module name: `Nethunter Wireless,HID & Driver Modules` | Author: `abidhasansojib`.
-   * Replaced broken base64 decoding in `nethunter-module/action.yml` with plain-text heredocs (`cat << 'EOF'`) + `sed -i 's/^[[:space:]]*//'` to strip YAML indentation — eliminates `base64: invalid input` and `YAML scanning simple key` errors.
-   * Added hyphen-to-underscore translation (`tr '-' '_'`) in `service.sh` for accurate `lsmod` multi-pass module checking.
-   * Handled `feature_set: NONE` gracefully in the release pipeline (exports `ROOT_IMPL=None (Vanilla Stock GKI)`, skips all KSU git ops).
+   * **Single-Storage Architecture (`lkm/`):** Eliminated multi-folder `.ko` duplication across `vendor/lib/modules` and `vendor_dlkm/`. All 75+ drivers are packaged once in `lkm/` and firmware once in `system/etc/firmware/`, shrinking the ZIP from ~52 MB down to ~14 MB and device storage footprint from ~143 MB down to ~36 MB.
+   * **Smart Dynamic Loader:** `post-fs-data.sh` dynamically detects and populates active device firmware paths (`/vendor/firmware`, `/vendor/etc/firmware`, `/system/etc/firmware`) and loads core networking dependencies early. `service.sh` loads all remaining modules in a 3-pass loop with hyphen-to-underscore translation (`tr '-' '_'`) matching `lsmod`.
+   * Added `customize.sh` for rich flashing UI in KernelSU-Next / SukiSU-Ultra / ReSukiSU manager.
 8. **`static.patch` Restoration & Linker Fix (`selinux_hide.c`):**
    * **Root Cause of Build Failure (Run `33063924512`):** Removing `static.patch` caused the linker to fail with `undefined symbol: security_context_to_sid_with_policy`, `security_sid_to_context_with_policy`, and `security_compute_av_user_with_policy` because upstream `KernelSU-Next` still forward-declared those functions as `static` in `kernel/feature/selinux_hide.c` (giving them internal linkage), while SUSFS in `security/selinux/selinuxfs.c` called them as `extern`.
    * **Dual-Layer Fix:** Restored `static.patch` at `.github/actions/kernelsu/patches/static.patch` AND added dual-layer `sed` regex replacement in `kernelsu/action.yml` and `build.yml` (`s/^static int security_context_to_sid_with_policy/int security_context_to_sid_with_policy/g`, etc.) with automatic `.rej` cleanup. This guarantees external symbol visibility and produces zero rejects across all root variants.

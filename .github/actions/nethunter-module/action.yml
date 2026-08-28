@@ -18,14 +18,9 @@ runs:
         STAGING_DIR="${{ github.workspace }}/nethunter-module-staging"
         rm -rf "$STAGING_DIR"
         mkdir -p "$STAGING_DIR/lkm"
-        mkdir -p "$STAGING_DIR/system/lib/modules"
-        mkdir -p "$STAGING_DIR/vendor/lib/modules"
-        mkdir -p "$STAGING_DIR/vendor_dlkm/lib/modules"
         mkdir -p "$STAGING_DIR/system/etc/firmware"
-        mkdir -p "$STAGING_DIR/vendor/etc/firmware"
-        mkdir -p "$STAGING_DIR/vendor/firmware"
 
-        echo "=== Collecting compiled .ko modules ==="
+        echo "=== Collecting compiled .ko modules into single lkm/ storage ==="
         KO_COUNT=0
         for search_path in "${{ github.workspace }}/kernel" "/home/runner/.cache/bazel" "/home/runner/out"; do
           if [ -d "$search_path" ]; then
@@ -34,9 +29,6 @@ runs:
               if [ -f "$ko" ]; then
                 modname=$(basename "$ko")
                 echo "Found module: $modname ($ko)"
-                cp -vf "$ko" "$STAGING_DIR/system/lib/modules/" 2>/dev/null || true
-                cp -vf "$ko" "$STAGING_DIR/vendor/lib/modules/" 2>/dev/null || true
-                cp -vf "$ko" "$STAGING_DIR/vendor_dlkm/lib/modules/" 2>/dev/null || true
                 cp -vf "$ko" "$STAGING_DIR/lkm/" 2>/dev/null || true
                 KO_COUNT=$((KO_COUNT+1))
               fi
@@ -47,9 +39,7 @@ runs:
         echo "Total modules collected: $KO_COUNT"
 
         echo "=== Fetching Wireless & SDR Firmware ==="
-        FIRMWARE_DIR="/tmp/linux-firmware-dl"
-        rm -rf "$FIRMWARE_DIR"
-        mkdir -p "$FIRMWARE_DIR"
+        FIRMWARE_DIR="$STAGING_DIR/system/etc/firmware"
 
         # Download standard Realtek, Atheros, MediaTek, Ralink, and ZyDAS firmware
         curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/rt2870.bin" \
@@ -59,61 +49,64 @@ runs:
         curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/carl9170-1.fw" \
           "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/carl9170-1.fw" 2>/dev/null || true
 
-        mkdir -p "$STAGING_DIR/system/etc/firmware/mediatek" "$STAGING_DIR/vendor/etc/firmware/mediatek" "$STAGING_DIR/vendor/firmware/mediatek"
+        mkdir -p "$FIRMWARE_DIR/mediatek"
         for fw in mt7662u.bin mt7662u_rom_patch.bin mt7610u.bin; do
-          curl -LSs --retry 5 --retry-delay 5 -o "$STAGING_DIR/system/etc/firmware/mediatek/$fw" \
+          curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/mediatek/$fw" \
             "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/mediatek/$fw" 2>/dev/null || true
-          cp -vf "$STAGING_DIR/system/etc/firmware/mediatek/$fw" "$STAGING_DIR/vendor/etc/firmware/mediatek/" 2>/dev/null || true
-          cp -vf "$STAGING_DIR/system/etc/firmware/mediatek/$fw" "$STAGING_DIR/vendor/firmware/mediatek/" 2>/dev/null || true
-          cp -vf "$STAGING_DIR/system/etc/firmware/mediatek/$fw" "$FIRMWARE_DIR/" 2>/dev/null || true
         done
 
-        mkdir -p "$STAGING_DIR/system/etc/firmware/rtw88" "$STAGING_DIR/vendor/etc/firmware/rtw88" "$STAGING_DIR/vendor/firmware/rtw88"
+        mkdir -p "$FIRMWARE_DIR/rtw88"
         for fw in rtw8822c_fw.bin rtw8822b_fw.bin rtw8821c_fw.bin rtw8723d_fw.bin; do
-          curl -LSs --retry 5 --retry-delay 5 -o "$STAGING_DIR/system/etc/firmware/rtw88/$fw" \
+          curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/rtw88/$fw" \
             "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtw88/$fw" 2>/dev/null || true
-          cp -vf "$STAGING_DIR/system/etc/firmware/rtw88/$fw" "$STAGING_DIR/vendor/etc/firmware/rtw88/" 2>/dev/null || true
-          cp -vf "$STAGING_DIR/system/etc/firmware/rtw88/$fw" "$STAGING_DIR/vendor/firmware/rtw88/" 2>/dev/null || true
         done
 
-        mkdir -p "$STAGING_DIR/system/etc/firmware/rtlwifi" "$STAGING_DIR/vendor/etc/firmware/rtlwifi" "$STAGING_DIR/vendor/firmware/rtlwifi"
+        mkdir -p "$FIRMWARE_DIR/rtlwifi"
         for fw in rtl8192cufw.bin rtl8188eufw.bin rtl8723aufw_B.bin rtl8192eu_nic.bin rtl8723bu_nic.bin rtl8188eu_nic.bin; do
-          curl -LSs --retry 5 --retry-delay 5 -o "$STAGING_DIR/system/etc/firmware/rtlwifi/$fw" \
+          curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/rtlwifi/$fw" \
             "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtlwifi/$fw" 2>/dev/null || true
-          cp -vf "$STAGING_DIR/system/etc/firmware/rtlwifi/$fw" "$STAGING_DIR/vendor/etc/firmware/rtlwifi/" 2>/dev/null || true
-          cp -vf "$STAGING_DIR/system/etc/firmware/rtlwifi/$fw" "$STAGING_DIR/vendor/firmware/rtlwifi/" 2>/dev/null || true
         done
 
-        mkdir -p "$STAGING_DIR/system/etc/firmware/ath9k_htc" "$STAGING_DIR/vendor/etc/firmware/ath9k_htc" "$STAGING_DIR/vendor/firmware/ath9k_htc"
+        mkdir -p "$FIRMWARE_DIR/ath9k_htc"
         for fw in htc_9271.fw htc_7010.fw htc_9271-1.4.0.fw htc_7010-1.4.0.fw; do
-          curl -LSs --retry 5 --retry-delay 5 -o "$STAGING_DIR/system/etc/firmware/ath9k_htc/$fw" \
+          curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/ath9k_htc/$fw" \
             "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/ath9k_htc/$fw" 2>/dev/null || true
-          cp -vf "$STAGING_DIR/system/etc/firmware/ath9k_htc/$fw" "$STAGING_DIR/vendor/etc/firmware/ath9k_htc/" 2>/dev/null || true
-          cp -vf "$STAGING_DIR/system/etc/firmware/ath9k_htc/$fw" "$STAGING_DIR/vendor/firmware/ath9k_htc/" 2>/dev/null || true
         done
 
-        mkdir -p "$STAGING_DIR/system/etc/firmware/zd1211" "$STAGING_DIR/vendor/etc/firmware/zd1211" "$STAGING_DIR/vendor/firmware/zd1211"
+        mkdir -p "$FIRMWARE_DIR/zd1211"
         for fw in zd1211_ub zd1211_uphr zd1211_ur zd1211b_ub zd1211b_uphr zd1211b_ur; do
-          curl -LSs --retry 5 --retry-delay 5 -o "$STAGING_DIR/system/etc/firmware/zd1211/$fw" \
+          curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/zd1211/$fw" \
             "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/zd1211/$fw" 2>/dev/null || true
-          cp -vf "$STAGING_DIR/system/etc/firmware/zd1211/$fw" "$STAGING_DIR/vendor/etc/firmware/zd1211/" 2>/dev/null || true
-          cp -vf "$STAGING_DIR/system/etc/firmware/zd1211/$fw" "$STAGING_DIR/vendor/firmware/zd1211/" 2>/dev/null || true
         done
-
-        cp -v "$FIRMWARE_DIR"/* "$STAGING_DIR/system/etc/firmware/" 2>/dev/null || true
-        cp -v "$FIRMWARE_DIR"/* "$STAGING_DIR/vendor/etc/firmware/" 2>/dev/null || true
-        cp -v "$FIRMWARE_DIR"/* "$STAGING_DIR/vendor/firmware/" 2>/dev/null || true
 
         echo "=== Creating Module Metadata & Scripts ==="
         printf 'id=gki_nethunter_wireless\n' > "$STAGING_DIR/module.prop"
         printf 'name=Nethunter Wireless,HID & Driver Modules\n' >> "$STAGING_DIR/module.prop"
-        printf 'version=v1.1\n' >> "$STAGING_DIR/module.prop"
-        printf 'versionCode=110\n' >> "$STAGING_DIR/module.prop"
+        printf 'version=v1.2\n' >> "$STAGING_DIR/module.prop"
+        printf 'versionCode=120\n' >> "$STAGING_DIR/module.prop"
         printf 'author=abidhasansojib\n' >> "$STAGING_DIR/module.prop"
         printf 'description=External USB WiFi (RTW88, RTL8xxxu, ATH9K-HTC, CARL9170, RT2800, MT76, ZD1211), BadUSB HID Gadget permissions, SDR, CAN-Bus, and NetHunter drivers for Android 16 (6.12) GKI\n' >> "$STAGING_DIR/module.prop"
 
+        # --- Flashing Script (customize.sh) ---
+        cat << 'EOF' > "$STAGING_DIR/customize.sh"
+        #!/system/bin/sh
+        SKIPUNZIP=0
+
+        ui_print "************************************************"
+        ui_print "    Nethunter Wireless, HID & Driver Modules    "
+        ui_print "    Android 16 GKI (Linux 6.12) Driver Stack    "
+        ui_print "    Author: abidhasansojib                      "
+        ui_print "************************************************"
+        ui_print "- Installing unified driver stack into lkm/..."
+        ui_print "- Configuring dynamic firmware detection..."
+
+        set_perm_recursive "$MODPATH" 0 0 0755 0644
+        set_perm "$MODPATH/service.sh" 0 0 0755
+        set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
+        EOF
+        sed -i 's/^[[:space:]]*//' "$STAGING_DIR/customize.sh"
+
         # --- SELinux Policy Rules (sepolicy.rule) ---
-        # Restricts hardware node access to root/su and shell (ADB/terminal) only, blocking regular non-root apps
         cat << 'EOF' > "$STAGING_DIR/sepolicy.rule"
         allow shell hidraw_device chr_file { read write open ioctl getattr }
         allow shell uhid_device chr_file { read write open ioctl getattr }
@@ -137,24 +130,22 @@ runs:
         if [ ! -c /dev/net/tun ]; then
           mknod /dev/net/tun c 10 200 2>/dev/null || true
         fi
-        chmod 666 /dev/net/tun 2>/dev/null || true
-        chmod 666 /dev/rfkill 2>/dev/null || true
-        chmod 666 /dev/uhid 2>/dev/null || true
-        chmod 666 /dev/hidg* 2>/dev/null || true
+        chmod 666 /dev/net/tun /dev/rfkill /dev/uhid /dev/hidg* 2>/dev/null || true
 
-        # Copy firmware files to runtime paths if directory is writable
+        # Dynamically detect and populate runtime firmware paths
         for fw_target in /vendor/firmware /vendor/etc/firmware /system/etc/firmware; do
           if [ -d "$fw_target" ] && [ -w "$fw_target" ] && [ -d "$MODDIR/system/etc/firmware" ]; then
             cp -rf "$MODDIR/system/etc/firmware/"* "$fw_target/" 2>/dev/null || true
           fi
         done
 
-        # Load Core Wireless & Subsystem Dependencies Early
+        # Early load core wireless & CAN dependencies from lkm/
         for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
           if [ -f "$MODDIR/lkm/$core_ko" ]; then
-            insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
-          elif [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
-            insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
+            modbase=$(echo "${core_ko%.ko}" | tr '-' '_')
+            if ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
+              insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
+            fi
           fi
         done
         EOF
@@ -181,35 +172,35 @@ runs:
         MODDIR=${0%/*}
 
         # Set permissions for NetHunter BadUSB, Wi-Fi, SDR, Serial & VPN devices once on boot
-        chmod 666 /dev/hidg* 2>/dev/null || true
-        chmod 666 /dev/uhid 2>/dev/null || true
-        chmod 666 /dev/rfkill 2>/dev/null || true
-        chmod 666 /dev/net/tun 2>/dev/null || true
+        chmod 666 /dev/hidg* /dev/uhid /dev/rfkill /dev/net/tun 2>/dev/null || true
         chmod 666 /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2>/dev/null || true
         chmod -R 666 /dev/bus/usb/ 2>/dev/null || true
 
-        # Load Core Wireless & Subsystem Dependencies
-        for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
-          if [ -f "$MODDIR/lkm/$core_ko" ]; then
-            insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
-          elif [ -f "$MODDIR/system/lib/modules/$core_ko" ]; then
-            insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/system/lib/modules/$core_ko" 2>/dev/null || true
-          fi
-        done
-
-        # Multi-Pass Module Loader (Automatically Resolves Complex Dependency Chains)
+        # Multi-Pass Module Loader from single lkm/ directory
         MODULE_SRC="$MODDIR/lkm"
-        [ -d "$MODULE_SRC" ] && [ -n "$(ls -A "$MODULE_SRC" 2>/dev/null)" ] || MODULE_SRC="$MODDIR/system/lib/modules"
-
-        for pass in 1 2 3; do
-          for ko in $(ls "$MODULE_SRC"/*.ko 2>/dev/null); do
-            modname=$(basename "$ko")
-            modbase=$(echo "${modname%.ko}" | tr '-' '_')
-            if ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
-              insmod "$ko" 2>/dev/null || ksud insmod "$ko" 2>/dev/null || true
+        if [ -d "$MODULE_SRC" ]; then
+          # Priority 1: Core dependencies
+          for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
+            if [ -f "$MODULE_SRC/$core_ko" ]; then
+              modbase=$(echo "${core_ko%.ko}" | tr '-' '_')
+              if ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
+                insmod "$MODULE_SRC/$core_ko" 2>/dev/null || ksud insmod "$MODULE_SRC/$core_ko" 2>/dev/null || true
+              fi
             fi
           done
-        done
+
+          # Priority 2: Multi-Pass Loader for all remaining drivers
+          for pass in 1 2 3; do
+            for ko in "$MODULE_SRC"/*.ko; do
+              [ -f "$ko" ] || continue
+              modname=$(basename "$ko")
+              modbase=$(echo "${modname%.ko}" | tr '-' '_')
+              if ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
+                insmod "$ko" 2>/dev/null || ksud insmod "$ko" 2>/dev/null || true
+              fi
+            done
+          done
+        fi
         EOF
         sed -i 's/^[[:space:]]*//' "$STAGING_DIR/service.sh"
         chmod +x "$STAGING_DIR/service.sh"
