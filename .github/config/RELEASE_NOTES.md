@@ -22,9 +22,9 @@
 
 ## 📥 Required Downloads & Tools
 
+* **Kernel Flashing Tool**: [Download Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)
 * **Root Manager App**: [Download {{ROOT_MANAGER_NAME}}]({{KSU_MANAGER}})
 * **SUSFS Module**: [Download susfs4ksu-module (by sidex15)](https://github.com/sidex15/susfs4ksu-module/releases)
-* **Kernel Flashing Tool**: [Download Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)
 
 ---
 
