@@ -49,10 +49,10 @@
    * Expanded `validate_workflows.py` to also parse and validate all **46 composite action YAML manifests** in `.github/actions/`, catching action.yml YAML parse errors on every push before a real build is triggered.
 10. **Linux 6.12 (Android 16 GKI) NetHunter Compatibility Audit & Refinement:**
     * Performed on-device diagnostic audit of `checker.sh` (145 checks) against live kernel `6.12.30-android16`.
-    * **Obsolete / Removed Upstream Symbols Cleaned:** Removed `CONFIG_USB_ZD1201` and `CONFIG_USB_NET_RNDIS_WLAN` (removed in Linux 6.8+), `CONFIG_NFSD_V3` (removed in Linux 5.18+, permanently integrated into `CONFIG_NFSD=y`), and `CONFIG_USB_SERIAL_CONSOLE=y` (impossible when `CONFIG_USB_SERIAL=m` in GKI modular architecture).
+    * **Obsolete / Inactive Upstream Symbols Cleaned:** Removed `CONFIG_USB_ZD1201` and `CONFIG_USB_NET_RNDIS_WLAN` (removed in Linux 6.8+), `CONFIG_NFSD_V3` (integrated into `CONFIG_NFSD=y`), `CONFIG_USB_SERIAL_CONSOLE=y`, `CONFIG_RTW88_LEDS`, and inactive DVB subdrivers (`CONFIG_DVB_USB_RTL28XXU`, `CONFIG_DVB_RTL2830`, `CONFIG_DVB_RTL2832`, `CONFIG_DVB_RTL2832_SDR`, `CONFIG_DVB_SI2168`).
     * **Modern LED Trigger Standard:** Migrated deprecated `CONFIG_CAN_LEDS` to `CONFIG_LEDS_TRIGGER_NETDEV=y` (`netdev` trigger for CAN/network activity).
-    * **Demodulator Auto-Pruning Alignment:** Replaced incorrect positive check for `CONFIG_MEDIA_SUBDRV_AUTOSELECT` with explicit checks for `CONFIG_DVB_CORE` and `CONFIG_DVB_USB_V2`.
-    * **Module & Firmware Instructions:** Confirmed that `[ ● MODULE (=m) ]` and `[ ● NOT FOUND / UNLOADED ]` firmware states resolve automatically upon flashing `Nethunter-Wireless-Module.zip` in KernelSU-Next.
+    * **Demodulator Auto-Pruning Alignment:** Kept explicit checks for active DVB components `CONFIG_DVB_CORE`, `CONFIG_DVB_USB_V2`, and `CONFIG_DVB_ZD1301_DEMOD`.
+    * **Module & Firmware Instructions:** Confirmed that `[ ● MODULE (=m) ]` and `[ ● NOT FOUND / UNLOADED ]` firmware states resolve automatically upon flashing `Nethunter-Wireless-Module.zip` in KernelSU-Next / SukiSU-Ultra / ReSukiSU.
 
 ---
 

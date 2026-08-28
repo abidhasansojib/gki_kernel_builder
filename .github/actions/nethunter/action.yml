@@ -69,7 +69,6 @@ runs:
           CONFIG_RTW88_8822CU=m
           CONFIG_RTW88_8723DU=m
           CONFIG_RTW88_8821CU=m
-          CONFIG_RTW88_LEDS=y
           CONFIG_RTL8187=m
           CONFIG_RTL8XXXU=m
           CONFIG_RTL8XXXU_UNTESTED=y
@@ -129,8 +128,6 @@ runs:
           CONFIG_LEDS_TRIGGER_CPU=y
           CONFIG_LEDS_TRIGGER_DEFAULT_ON=y
           CONFIG_LEDS_TRIGGER_NETDEV=y
-          CONFIG_RTW88_LEDS=y
-          CONFIG_CAN_LEDS=y
 
           # --- Bluetooth & Bluetooth Arsenal (=m) ---
           CONFIG_BT=m
@@ -153,15 +150,9 @@ runs:
           CONFIG_MEDIA_DIGITAL_TV_SUPPORT=y
           CONFIG_MEDIA_SDR_SUPPORT=y
           CONFIG_MEDIA_USB_SUPPORT=y
-          CONFIG_MEDIA_SUBDRV_AUTOSELECT=n
           CONFIG_DVB_CORE=m
           CONFIG_DVB_DYNAMIC_MINORS=y
           CONFIG_DVB_USB_V2=m
-          CONFIG_DVB_USB_RTL28XXU=m
-          CONFIG_DVB_RTL2830=m
-          CONFIG_DVB_RTL2832=m
-          CONFIG_DVB_RTL2832_SDR=m
-          CONFIG_DVB_SI2168=m
           CONFIG_DVB_ZD1301_DEMOD=m
           CONFIG_USB_HACKRF=m
           CONFIG_USB_AIRSPY=m
