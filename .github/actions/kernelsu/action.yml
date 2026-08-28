@@ -183,19 +183,39 @@ runs:
       working-directory: ${{ github.workspace }}/kernel
       run: |
         set -euo pipefail
-        if [ -f "${{ github.action_path }}/patches/static.patch" ]; then
-          for candidate in KernelSU-Next SukiSU-Ultra ReSukiSU KernelSU common/drivers/kernelsu drivers/kernelsu; do
-            if [ -d "$candidate" ]; then
-              cp "${{ github.action_path }}/patches/static.patch" "$candidate/static.patch"
-              (cd "$candidate" && patch -p1 < static.patch) || true
-              rm -f "$candidate/static.patch" "$candidate"/*.rej "$candidate"/kernel/*.rej "$candidate"/kernel/feature/*.rej 2>/dev/null || true
+        FLAVOR="${ROOT_IMPLEMENTATION:-kernelsu-next}"
+        echo "Applying selinux_hide patches for root implementation: $FLAVOR"
+
+        case "$FLAVOR" in
+          next|ksun|kernelsu-next)
+            echo "[INFO] Applying static.patch for KernelSU-Next..."
+            if [ -f "${{ github.action_path }}/patches/static.patch" ]; then
+              for candidate in KernelSU-Next KernelSU common/drivers/kernelsu drivers/kernelsu; do
+                if [ -d "$candidate" ]; then
+                  cp "${{ github.action_path }}/patches/static.patch" "$candidate/static.patch"
+                  (cd "$candidate" && patch -p1 < static.patch) || true
+                  rm -f "$candidate/static.patch" "$candidate"/*.rej "$candidate"/kernel/*.rej "$candidate"/kernel/feature/*.rej 2>/dev/null || true
+                fi
+              done
             fi
-          done
-        fi
+            ;;
+          ultra|sukisu-ultra|sukisu)
+            echo "[INFO] SukiSU-Ultra detected: skipping static.patch, applying native symbol linkage fixes..."
+            ;;
+          resukisu)
+            echo "[INFO] ReSukiSU detected: skipping static.patch..."
+            ;;
+        esac
+
         for f in $(find . -name "selinux_hide.c" 2>/dev/null); do
-          sed -i 's/^static int security_context_to_sid_with_policy/int security_context_to_sid_with_policy/g' "$f"
-          sed -i 's/^static int security_sid_to_context_with_policy/int security_sid_to_context_with_policy/g' "$f"
-          sed -i 's/^static void security_compute_av_user_with_policy/void security_compute_av_user_with_policy/g' "$f"
+          echo "Patching $f for extern linkage across all root solutions..."
+          sed -i 's/^static \(.*security_context_to_sid_with_policy\)/\1/g' "$f"
+          sed -i 's/^static \(.*security_sid_to_context_with_policy\)/\1/g' "$f"
+          sed -i 's/^static \(.*security_compute_av_user_with_policy\)/\1/g' "$f"
+          sed -i 's/static void __nocfi security_compute_av_user_with_policy/void __nocfi security_compute_av_user_with_policy/g' "$f"
+          sed -i 's/static void security_compute_av_user_with_policy/void security_compute_av_user_with_policy/g' "$f"
+          sed -i 's/static int security_context_to_sid_with_policy/int security_context_to_sid_with_policy/g' "$f"
+          sed -i 's/static int security_sid_to_context_with_policy/int security_sid_to_context_with_policy/g' "$f"
         done
 
     - name: Enable Kernel Configs
