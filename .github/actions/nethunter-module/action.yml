@@ -80,8 +80,8 @@ runs:
         done
 
         echo "=== Creating Module Metadata & Scripts ==="
-        printf 'id=gki_nethunter_wireless\n' > "$STAGING_DIR/module.prop"
-        printf 'name=Nethunter Wireless,HID & Driver Modules\n' >> "$STAGING_DIR/module.prop"
+        printf 'id=nethunter_wireless\n' > "$STAGING_DIR/module.prop"
+        printf 'name=Nethunter Wireless,HID Driver & Modules\n' >> "$STAGING_DIR/module.prop"
         printf 'version=v1.2\n' >> "$STAGING_DIR/module.prop"
         printf 'versionCode=120\n' >> "$STAGING_DIR/module.prop"
         printf 'author=abidhasansojib\n' >> "$STAGING_DIR/module.prop"
@@ -93,7 +93,7 @@ runs:
         SKIPUNZIP=0
 
         ui_print "************************************************"
-        ui_print "    Nethunter Wireless, HID & Driver Modules    "
+        ui_print "   Nethunter Wireless, HID Driver & Modules     "
         ui_print "    Android 16 GKI (Linux 6.12) Driver Stack    "
         ui_print "    Author: abidhasansojib                      "
         ui_print "************************************************"

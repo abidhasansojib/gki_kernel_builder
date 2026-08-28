@@ -116,7 +116,9 @@ check_config() {
             ;;
         module_file)
             local mod_found=0
-            for dir in /data/adb/modules/gki_nethunter_wireless/lkm \
+            for dir in /data/adb/modules/nethunter_wireless/lkm \
+                       /data/adb/modules/nethunter_wireless/system/lib/modules \
+                       /data/adb/modules/gki_nethunter_wireless/lkm \
                        /data/adb/modules/gki_nethunter_wireless/system/lib/modules \
                        /vendor_dlkm/lib/modules \
                        /vendor/lib/modules \
@@ -372,7 +374,11 @@ check_firmware() {
     local fw_rel="$1"
     local fw_desc="$2"
     local found=0
-    for prefix in /vendor/firmware /vendor/etc/firmware /system/etc/firmware /data/adb/modules/gki_nethunter_wireless/vendor/firmware /data/adb/modules/gki_nethunter_wireless/system/etc/firmware; do
+    for prefix in /vendor/firmware /vendor/etc/firmware /system/etc/firmware \
+                  /data/adb/modules/nethunter_wireless/system/etc/firmware \
+                  /data/adb/modules/nethunter_wireless/vendor/firmware \
+                  /data/adb/modules/gki_nethunter_wireless/vendor/firmware \
+                  /data/adb/modules/gki_nethunter_wireless/system/etc/firmware; do
         if [ -f "$prefix/$fw_rel" ]; then
             found=1
             break

@@ -38,7 +38,7 @@
    * Removed `os_patch_level` input — permanently locked to `2025-07`.
    * Simplified `feature_set` to 3 options only: `FULL`, `WITHOUT-NETHUNTER`, `NONE`.
 7. **NetHunter Module Metadata & Lightweight Single-Storage Packaging:**
-   * Module name: `Nethunter Wireless,HID & Driver Modules` | Author: `abidhasansojib`.
+   * Module name: `Nethunter Wireless,HID Driver & Modules` | Author: `abidhasansojib`.
    * **Single-Storage Architecture (`lkm/`):** Eliminated multi-folder `.ko` duplication across `vendor/lib/modules` and `vendor_dlkm/`. All 75+ drivers are packaged once in `lkm/` and firmware once in `system/etc/firmware/`, shrinking the ZIP from ~52 MB down to ~14 MB and device storage footprint from ~143 MB down to ~36 MB.
    * **Smart Dynamic Loader:** `post-fs-data.sh` dynamically detects and populates active device firmware paths (`/vendor/firmware`, `/vendor/etc/firmware`, `/system/etc/firmware`) and loads core networking dependencies early. `service.sh` loads all remaining modules in a 3-pass loop with hyphen-to-underscore translation (`tr '-' '_'`) matching `lsmod`.
    * Added `customize.sh` for rich flashing UI in KernelSU-Next / SukiSU-Ultra / ReSukiSU manager.
@@ -72,7 +72,7 @@
 * `.github/workflows/build.yml` — Main kernel build pipeline (5 modular jobs: resolve-nomount, build-nomount-module, build-kernel, summary, release).
 * `.github/workflows/validate.yml` — Static YAML + shell script (`bash -n`) + Python syntax validator (runs on every push).
 * `.github/actions/` — 46 modular composite actions (SUSFS, NoMount, NetHunter, BBG, BBRv3, NTSync, kernelsu, etc.).
-* `.github/actions/nethunter-module/action.yml` — Builds & packages the Nethunter Wireless,HID & Driver Modules zip using heredocs (no base64).
+* `.github/actions/nethunter-module/action.yml` — Builds & packages the Nethunter Wireless,HID Driver & Modules zip using heredocs (no base64).
 * `.github/actions/kernelsu/action.yml` — Downloads & configures KernelSU-Next / SukiSU-Ultra / ReSukiSU. Stale static.patch removed.
 * `.github/scripts/validate_workflows.py` — Validates both workflows and all action manifests on every commit.
 * `checker.sh` — On-device diagnostic script for auditing live NetHunter kernel configs and loaded DLKM modules.
@@ -98,5 +98,5 @@
 * **No Matrix Jobs:** Do NOT use `strategy: matrix:` in `build.yml` — the single `build-kernel` job must remain a direct first-class job so all jobs are visible directly in the GitHub Actions UI without any "Show all jobs" dropdown.
 * **No `os_patch_level` Input:** The patch level is permanently locked to `2025-07`. Do not add it back as a workflow input.
 * **Feature Set Options:** Only 3 allowed: `FULL`, `WITHOUT-NETHUNTER`, `NONE`. Do not add more options without user approval.
-* **NetHunter Module Name:** Always `Nethunter Wireless,HID & Driver Modules`. Author: `abidhasansojib`. Do not change without user approval.
+* **NetHunter Module Name:** Always `Nethunter Wireless,HID Driver & Modules`. Author: `abidhasansojib`. Do not change without user approval.
 * **Heredocs in action.yml:** When writing shell scripts inline in composite actions, always use `cat << 'EOF' > file` style heredocs with proper 8-space YAML indentation + trailing `sed -i 's/^[[:space:]]*//' file` to strip indent. Never use base64-encoded strings.
