@@ -41,7 +41,7 @@
 2. **Install Root Manager**:
    * Install the matching Manager app for **{{ROOT_IMPL}}** (KernelSU-Next, SukiSU-Ultra, or ReSukiSU).
 3. **Load NetHunter Drivers (Optional)**:
-   * Flash `Nethunter-Wireless-Module.zip` in your Root Manager to auto-load external USB WiFi/SDR drivers and firmware.
+   * Flash `Nethunter-Wireless-Modules.zip` in your Root Manager to auto-load external USB WiFi/SDR drivers and firmware.
 4. **Reboot** and verify root and features.
 
 ---

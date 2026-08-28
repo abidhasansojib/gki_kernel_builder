@@ -76,7 +76,7 @@ The kernel integrates full Kali NetHunter capabilities natively into the 6.12 GK
 * **Automotive Hacking (CARsenal)**: SocketCAN (`CONFIG_CAN=m`, `CONFIG_CAN_RAW=m`, `CONFIG_CAN_DEV=m`, `CONFIG_CAN_BCM=m`, `CONFIG_CAN_GW=m`), `vcan`, `slcan`, `PEAK PCAN-USB`, `Kvaser`, `EMS USB`.
 * **Network File Systems**: NFS client/server (`CONFIG_NFS_FS=y`, `CONFIG_NFSD=y`) and CIFS/SMB (`CONFIG_CIFS=y`).
 * **Flashable Wireless & Driver Module**:
-  All compiled `.ko` driver modules, official Linux firmware blobs, and HID permission daemons are packaged into a standalone KernelSU-Next / SukiSU-Ultra / ReSukiSU module (`Nethunter-Wireless-Module.zip`) with an automated boot-time `service.sh` driver loader.
+  All compiled `.ko` driver modules, official Linux firmware blobs, and HID permission daemons are packaged into a standalone KernelSU-Next / SukiSU-Ultra / ReSukiSU module (`Nethunter-Wireless-Modules.zip`) with an automated boot-time `service.sh` driver loader.
 
 ---
 
@@ -85,6 +85,6 @@ The kernel integrates full Kali NetHunter capabilities natively into the 6.12 GK
 Every completed build workflow produces structured release and testing assets:
 
 1. **`AnyKernel3.zip`**: Flashable kernel installer containing both `Image` and `Bypass-Image`.
-2. **`Nethunter-Wireless-Module.zip`**: Flashable KernelSU-Next / SukiSU-Ultra / ReSukiSU module for external USB WiFi dongles and firmware.
+2. **`Nethunter-Wireless-Modules.zip`**: Flashable KernelSU-Next / SukiSU-Ultra / ReSukiSU module for external USB WiFi dongles and firmware.
 3. **`NoMount-Metamodule.zip`**: Standalone NoMount companion module matching the kernel's exact commit SHA.
 4. **`Build-Summary.md`**: Detailed provenance metadata containing compiler strings, KSU tag, commit SHAs, and active feature flags.

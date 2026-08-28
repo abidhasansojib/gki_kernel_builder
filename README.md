@@ -31,7 +31,7 @@ Please do thorough research and understand the features included before flashing
   - **USB WiFi Dongle Support**: Realtek (`rtw88` 802.11ac, `rtl8xxxu`, `rtl8187`), Atheros (`ath9k_htc`, `carl9170`), MediaTek (`mt7601u`, `mt76x0u`, `mt76x2u`), and Ralink (`rt2800usb`).
   - **USB Ethernet Adapters**: CDC-ECM, CDC-NCM, Realtek RTL8152, and ASIX AX88179.
   - **Bluetooth RFCOMM & SDR**: Native RFCOMM TTY and RTL-SDR (`rtl28xxu`) support.
-- 📦 **Flashable NetHunter Wireless Module**: Automatically packages compiled `.ko` driver modules and official Linux firmware into a flashable KernelSU-Next / SukiSU-Ultra / ReSukiSU module (`Nethunter-Wireless-Module.zip`) for plug-and-play OTG WiFi support.
+- 📦 **Flashable NetHunter Wireless Module**: Automatically packages compiled `.ko` driver modules and official Linux firmware into a flashable KernelSU-Next / SukiSU-Ultra / ReSukiSU module (`Nethunter-Wireless-Modules.zip`) for plug-and-play OTG WiFi support.
 - 🛡️ **Baseband Guard (BBG)**: LSM security module for critical partition write protection.
 - 📦 **DroidSpaces-OSS**: Lightweight container runtime support with SYSVIPC kABI fixes.
 - 🚀 **Networking & Performance**: BBRv3, CAKE Qdisc, WireGuard, IP Set, TTL targets, CIFS.
@@ -42,7 +42,7 @@ Please do thorough research and understand the features included before flashing
 
 ## 🐉 Supported NetHunter Hardware & WiFi Adapters
 
-The kernel and accompanying flashable `Nethunter-Wireless-Module.zip` module provide plug-and-play driver and firmware support for packet injection, monitor mode, AP mode, BadUSB, RTL-SDR, and Bluetooth attacks:
+The kernel and accompanying flashable `Nethunter-Wireless-Modules.zip` module provide plug-and-play driver and firmware support for packet injection, monitor mode, AP mode, BadUSB, RTL-SDR, and Bluetooth attacks:
 
 <details>
 <summary><b>📡 Supported Wireless WiFi Adapters (Click to Expand)</b></summary>
@@ -123,7 +123,7 @@ This automated auditor tests:
    - Reboot device.
 
 3. **External USB WiFi & NetHunter Tools (Optional)**:
-   - Download the `Nethunter-Wireless-Module.zip` module from the release.
+   - Download the `Nethunter-Wireless-Modules.zip` module from the release.
    - Flash it in your KernelSU-Next, SukiSU-Ultra, or ReSukiSU manager to load external USB WiFi drivers and firmware blobs automatically on boot.
 
 ---

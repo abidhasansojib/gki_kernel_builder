@@ -205,16 +205,16 @@ runs:
         sed -i 's/^[[:space:]]*//' "$STAGING_DIR/service.sh"
         chmod +x "$STAGING_DIR/service.sh"
 
-        OUT_ZIP="${{ github.workspace }}/Nethunter-Wireless-Module.zip"
+        OUT_ZIP="${{ github.workspace }}/Nethunter-Wireless-Modules.zip"
         echo "Creating flashable module zip at: $OUT_ZIP"
         (cd "$STAGING_DIR" && zip -r -q -9 "$OUT_ZIP" .)
 
-        mkdir -p "${{ github.workspace }}/artifacts/nethunter-module"
-        cp -v "$OUT_ZIP" "${{ github.workspace }}/artifacts/nethunter-module/"
+        mkdir -p "${{ github.workspace }}/artifacts/nethunter-modules"
+        cp -v "$OUT_ZIP" "${{ github.workspace }}/artifacts/nethunter-modules/"
 
     - name: Upload NetHunter Wireless Module Artifact
       uses: actions/upload-artifact@v7
       with:
-        name: Nethunter-Wireless-Module
-        path: ${{ github.workspace }}/artifacts/nethunter-module/
+        name: Nethunter-Wireless-Modules
+        path: ${{ github.workspace }}/artifacts/nethunter-modules/
         if-no-files-found: warn

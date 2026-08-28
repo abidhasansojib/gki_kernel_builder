@@ -52,16 +52,16 @@
     * **Obsolete / Inactive Upstream Symbols Cleaned:** Removed `CONFIG_USB_ZD1201` and `CONFIG_USB_NET_RNDIS_WLAN` (removed in Linux 6.8+), `CONFIG_NFSD_V3` (integrated into `CONFIG_NFSD=y`), `CONFIG_USB_SERIAL_CONSOLE=y`, `CONFIG_RTW88_LEDS`, and inactive DVB subdrivers (`CONFIG_DVB_USB_RTL28XXU`, `CONFIG_DVB_RTL2830`, `CONFIG_DVB_RTL2832`, `CONFIG_DVB_RTL2832_SDR`, `CONFIG_DVB_SI2168`).
     * **Modern LED Trigger Standard:** Migrated deprecated `CONFIG_CAN_LEDS` to `CONFIG_LEDS_TRIGGER_NETDEV=y` (`netdev` trigger for CAN/network activity).
     * **Demodulator Auto-Pruning Alignment:** Kept explicit checks for active DVB components `CONFIG_DVB_CORE`, `CONFIG_DVB_USB_V2`, and `CONFIG_DVB_ZD1301_DEMOD`.
-    * **Module & Firmware Instructions:** Confirmed that `[ ● MODULE (=m) ]` and `[ ● NOT FOUND / UNLOADED ]` firmware states resolve automatically upon flashing `Nethunter-Wireless-Module.zip` in KernelSU-Next / SukiSU-Ultra / ReSukiSU.
+    * **Module & Firmware Instructions:** Confirmed that `[ ● MODULE (=m) ]` and `[ ● NOT FOUND / UNLOADED ]` firmware states resolve automatically upon flashing `Nethunter-Wireless-Modules.zip` in KernelSU-Next / SukiSU-Ultra / ReSukiSU.
 
 ---
 
 ### 📋 What's Next (Upcoming Priorities)
 1. **Trigger a Fresh Kernel Build:**
-   * Run `Build Kernel` workflow with `FULL` feature set + `KernelSU-Next` to produce the updated kernel and `Nethunter-Wireless-Module.zip` with zero rejects and updated DVB/LED drivers.
+   * Run `Build Kernel` workflow with `FULL` feature set + `KernelSU-Next` to produce the updated kernel and `Nethunter-Wireless-Modules.zip` with zero rejects and updated DVB/LED drivers.
 2. **Live Device Verification:**
    * **Kernel Flash:** Flash the newly built `*-AnyKernel3.zip` via Recovery / Kernel Flasher.
-   * **NetHunter Modules:** Flash `Nethunter-Wireless-Module.zip` in KernelSU-Next Manager to load all 75 modular drivers and place all 11 firmware blobs.
+   * **NetHunter Modules:** Flash `Nethunter-Wireless-Modules.zip` in KernelSU-Next Manager to load all 75 modular drivers and place all 11 firmware blobs.
    * **Checker:** Run `checker.sh` on device and confirm 100% pass rate.
 3. **Upstream Monitoring & Maintenance:**
    * Track upstream KernelSU-Next (`dev-susfs`), SUSFS v2.2.0, and NoMount (`dev`) commits for future Android 16 GKI revisions.
@@ -84,7 +84,7 @@
 | Artifact | Flash? | Purpose |
 |---|---|---|
 | `*-AnyKernel3.zip` | ✅ Flash via Recovery / Kernel Flasher | Kernel image (Normal + Bypass Image for HyperOS 3) |
-| `Nethunter-Wireless-Module.zip` | ✅ Flash via KSU Manager | USB WiFi, BadUSB HID, SDR, SocketCAN drivers & firmware |
+| `Nethunter-Wireless-Modules.zip` | ✅ Flash via KSU Manager | USB WiFi, BadUSB HID, SDR, SocketCAN drivers & firmware |
 | `NoMount-*.zip` | ✅ Flash via KSU Manager | Root-hiding VFS metamodule (ko-loader + nm binaries) |
 | `*-Rejects.zip` | ❌ Do NOT flash | Diagnostic only — shows which patches failed to apply |
 | `*-Summary.md` | ❌ Do NOT flash | Build metadata summary (versions, commits, status) |
