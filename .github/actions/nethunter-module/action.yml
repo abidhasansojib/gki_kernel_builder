@@ -80,7 +80,7 @@ runs:
         done
 
         echo "=== Creating Module Metadata & Scripts ==="
-        printf 'id=nethunter_wireless\n' > "$STAGING_DIR/module.prop"
+        printf 'id=nethunter_wireless_modules\n' > "$STAGING_DIR/module.prop"
         printf 'name=Nethunter Wireless,HID Driver & Modules\n' >> "$STAGING_DIR/module.prop"
         printf 'version=v1.2\n' >> "$STAGING_DIR/module.prop"
         printf 'versionCode=120\n' >> "$STAGING_DIR/module.prop"
