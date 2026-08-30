@@ -78,22 +78,6 @@ The kernel and accompanying flashable `Nethunter-Wireless-Modules.zip` module pr
 
 ---
 
-## 🔍 Instant Kernel & Driver Verification (`checker.sh`)
-
-You can instantly audit and verify all NetHunter features, compiled `.ko` drivers, firmware blobs, and `/dev` permissions directly on your rooted Android phone (Termux / NetHunter terminal / ADB root shell):
-
-```bash
-curl -sSL https://raw.githubusercontent.com/abidhasansojib/gki_kernel_builder/main/checker.sh | su -c "sh"
-```
-
-This automated auditor tests:
-- ✅ **Kernel Configs**: Audits `/proc/config.gz` for all 80+ NetHunter configs.
-- ✅ **Live Drivers & Modules**: Verifies loaded `.ko` modules via `lsmod`.
-- ✅ **Firmware Blobs**: Checks firmware presence in `/vendor/firmware` and `/system/etc/firmware`.
-- ✅ **Device Nodes & Permissions**: Tests read/write access to `/dev/hidg*`, `/dev/uhid`, `/dev/rfkill`, `/dev/net/tun`, and `/dev/bus/usb/`.
-
----
-
 ## 📱 Tested Device & Compatibility
 
 * **Tested Device**: **Redmi Note 14 4G (`tanzanite`)** &mdash; everything is fully working!
