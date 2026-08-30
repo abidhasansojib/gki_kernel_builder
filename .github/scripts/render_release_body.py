@@ -12,8 +12,8 @@ PLACEHOLDERS = {
     "{{KSUN_BRANCH}}": lambda: os.environ.get("KSUN_BRANCH", "dev"),
     "{{KSUN_COMMIT}}": lambda: os.environ.get("KSUN_COMMIT", "unknown"),
     "{{KSU_MANAGER}}": lambda: os.environ.get("KSU_MANAGER", "Placeholder"),
-    "{{SUSFS_BRANCHES}}": lambda: os.environ.get("SUSFS_COMMIT", "latest on auto-derived gki-{version} branch"),
-    "{{SUSFS_BRANCHS}}": lambda: os.environ.get("SUSFS_COMMIT", "latest on auto-derived gki-{version} branch"),
+    "{{SUSFS_BRANCHES}}": lambda: os.environ.get("SUSFS_COMMIT", "gki-android16-6.12 (v2.2.0)"),
+    "{{SUSFS_BRANCHS}}": lambda: os.environ.get("SUSFS_COMMIT", "gki-android16-6.12 (v2.2.0)"),
     "{{CHANGELOG}}": lambda: os.environ.get("CHANGELOG", "* Dynamic changelog generated on release"),
 }
 

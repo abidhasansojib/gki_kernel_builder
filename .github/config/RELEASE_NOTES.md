@@ -10,7 +10,7 @@
 * **Root Solution**: **{{ROOT_IMPL}}**
 * **Root Version**: `{{KSU_VERSION}}` (Tag: `{{KSU_GIT_TAG}}`)
 * **Branch / Commit**: `{{KSUN_BRANCH}}` (`{{KSUN_COMMIT}}`)
-{{SUSFS_BRANCHES}}
+* **SUSFS Branch**: `{{SUSFS_BRANCHES}}`
 
 ---
 

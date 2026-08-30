@@ -646,6 +646,14 @@ jobs:
           echo "KSU_GIT_TAG=$KSU_GIT_TAG" >> "$GITHUB_ENV"
           echo "KSU_MANAGER=$KSU_MANAGER" >> "$GITHUB_ENV"
 
+          SUSFS_INPUT="${{ inputs.susfs_commit_android16-6-12 }}"
+          if [ -n "$SUSFS_INPUT" ]; then
+            SUSFS_INFO="$SUSFS_INPUT"
+          else
+            SUSFS_INFO="gki-android16-6.12 (latest branch tip)"
+          fi
+          echo "SUSFS_COMMIT=$SUSFS_INFO" >> "$GITHUB_ENV"
+
       - name: Set release body
         run: |
           set -e

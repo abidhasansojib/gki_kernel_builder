@@ -82,9 +82,8 @@ The kernel and accompanying flashable `Nethunter-Wireless-Modules.zip` module pr
 
 * **Tested Device**: **Redmi Note 14 4G (`tanzanite`)** &mdash; everything is fully working!
 * **Target Kernel**: **Android 16 (`6.12.30-android16`)** GKI only.
-* **Warning**:For Redmi Note 14 4g flash this kernel only on Hyperos 3.Always check kernel version before flashing.
-*  
-  * When flashing `AnyKernel3.zip`, press the **Volume Up (`[VOL+]`)** button to flash **Bypass-Image** and bypass vendor module CRC checks.Else you will face bootloop.
+* **Warning**: For Redmi Note 14 4G, flash this kernel only on Xiaomi HyperOS 3. Always check your kernel version before flashing.
+  * When flashing `AnyKernel3.zip`, press the **Volume Up (`[VOL+]`)** button to flash **Bypass-Image** and bypass vendor module CRC checks, otherwise you will face a bootloop.
 
 ---
 
