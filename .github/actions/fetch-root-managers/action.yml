@@ -1,0 +1,96 @@
+name: 'Fetch Root Manager APKs'
+description: 'Download the matching root manager APKs for KernelSU-Next, SukiSU-Ultra, or ReSukiSU'
+inputs:
+  flavor:
+    description: 'Root flavor (KernelSU-Next, SukiSU-Ultra, ReSukiSU, or All)'
+    required: false
+    default: 'KernelSU-Next'
+  output_dir:
+    description: 'Absolute path of directory to place downloaded APKs'
+    required: false
+    default: '${{ github.workspace }}/root-managers'
+  token:
+    description: 'GitHub token for API authentication'
+    required: false
+    default: '${{ github.token }}'
+
+runs:
+  using: composite
+  steps:
+    - name: Download Root Manager APKs
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        FLAVOR="${{ inputs.flavor }}"
+        OUT_DIR="${{ inputs.output_dir }}"
+        GH_TOKEN="${{ inputs.token }}"
+
+        mkdir -p "$OUT_DIR" /tmp/manager-dl
+        cd /tmp/manager-dl
+
+        fetch_repo_release_apks() {
+          local owner="$1"
+          local repo="$2"
+          local prefix="$3"
+
+          echo "[+] Fetching latest release for ${owner}/${repo}..."
+          local auth_header=()
+          if [ -n "$GH_TOKEN" ]; then
+            auth_header=(-H "Authorization: Bearer $GH_TOKEN")
+          fi
+
+          local rel_json
+          rel_json=$(curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors "${auth_header[@]}" \
+            "https://api.github.com/repos/${owner}/${repo}/releases/latest" 2>/dev/null || true)
+
+          if [ -z "$rel_json" ] || ! echo "$rel_json" | grep -q '"browser_download_url"'; then
+            echo "[!] No latest release found directly, querying releases list for ${owner}/${repo}..."
+            rel_json=$(curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors "${auth_header[@]}" \
+              "https://api.github.com/repos/${owner}/${repo}/releases" 2>/dev/null | jq '.[0]' 2>/dev/null || true)
+          fi
+
+          if [ -n "$rel_json" ] && echo "$rel_json" | grep -q '"browser_download_url"'; then
+            local urls
+            urls=$(echo "$rel_json" | grep -o '"browser_download_url": *"[^"]*\.apk"' | sed -e 's/"browser_download_url": *"//' -e 's/"$//' || true)
+
+            for url in $urls; do
+              local fname="${url##*/}"
+              echo "Downloading: $fname from $url"
+              curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors -o "/tmp/manager-dl/${fname}" "$url"
+              cp -f "/tmp/manager-dl/${fname}" "${OUT_DIR}/${fname}"
+              echo "[✓] Saved ${OUT_DIR}/${fname}"
+            done
+          else
+            echo "[-] Warning: Could not find APK release assets for ${owner}/${repo}"
+          fi
+        }
+
+        case "$(echo "$FLAVOR" | tr '[:upper:]' '[:lower:]')" in
+          *ultra*|*sukisu*)
+            fetch_repo_release_apks "SukiSU-Ultra" "SukiSU-Ultra" "sukisu-ultra"
+            ;;
+          *resukisu*)
+            fetch_repo_release_apks "ReSukiSU" "ReSukiSU" "resukisu"
+            ;;
+          *next*)
+            fetch_repo_release_apks "KernelSU-Next" "KernelSU-Next" "kernelsu-next"
+            ;;
+          *all*)
+            fetch_repo_release_apks "KernelSU-Next" "KernelSU-Next" "kernelsu-next"
+            fetch_repo_release_apks "SukiSU-Ultra" "SukiSU-Ultra" "sukisu-ultra"
+            fetch_repo_release_apks "ReSukiSU" "ReSukiSU" "resukisu"
+            ;;
+          *)
+            fetch_repo_release_apks "KernelSU-Next" "KernelSU-Next" "kernelsu-next"
+            ;;
+        esac
+
+        rm -rf /tmp/manager-dl
+
+    - name: List Fetched Manager APKs
+      shell: bash
+      run: |
+        echo "::group::Fetched Manager APKs"
+        find "${{ inputs.output_dir }}" -maxdepth 2 -type f -name "*.apk" -ls 2>/dev/null || echo "No APK files found"
+        echo "::endgroup::"

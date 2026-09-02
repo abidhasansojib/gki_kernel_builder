@@ -8,39 +8,45 @@
 
 ---
 
-## ⚡ Critical Flashing Architecture: The Bypass Image
-> [!CAUTION]
-> **Why the Bypass Image is Mandatory:**
+## ⚡ Flashing Architecture: Default Vendor Module Version Bypass
+> [!IMPORTANT]
+> **Vendor Module Version-Check Bypass Baked In:**
 > Modern OEM Android 16 skins (especially Xiaomi HyperOS 3, Samsung OneUI, etc.) enforce strict kernel module CRC and sublevel version verification against OEM vendor modules on boot. 
-> Flashing a standard compiled GKI `Image` directly without bypassing these vendor checks will result in an immediate **BOOTLOOP**.
+> In this project, the **kernel version-check bypass hack (`bad_version: return 1;`) is applied automatically by default** during compilation.
 >
-> **How It Works in This Project:**
-> 1. The build pipeline generates two kernel binaries:
->    * `Image` &mdash; Standard GKI kernel image.
->    * `Bypass-Image` &mdash; Kernel image patched to bypass vendor module CRC and version verification.
-> 2. Both are packaged into **`*-AnyKernel3.zip`**.
-> 3. During flashing in **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** or Recovery, the user MUST press **Volume Up (`[VOL+]`)** to select and flash **Bypass-Image**.
+> **How It Works:**
+> 1. The build pipeline generates a single, fully bypassed kernel binary: `Image`.
+> 2. `Image` is packaged directly into **`*-AnyKernel3.zip`**.
+> 3. Flashing in **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** or Recovery flashes directly without requiring dual images or interactive volume button prompts.
 
 ---
 
 ## 🛠️ Comprehensive Feature Implementations
 
 ### 1. Root Solutions & Coexistence (`root_flavor`)
-The project supports 2 independent root implementations with automated patch resolution:
+The project supports 3 independent root implementations with automated patch resolution (strictly NO official KernelSU):
 * **KernelSU-Next (`next` / `kernelsu-next`):**
   * Cloned from upstream `dev-susfs` branch.
   * Applied with `static.patch` to convert `static` functions in `selinux_hide.c` to `extern` for seamless coexistence with SUSFS.
+* **SukiSU-Ultra (`ultra` / `sukisu-ultra`):**
+  * Cloned from `SukiSU-Ultra` main branch.
+  * **Skips `static.patch`** and applies native symbol linkage fixes.
 * **ReSukiSU (`resukisu`):**
   * Cloned from `ReSukiSU` main branch.
   * **Skips `static.patch`** as ReSukiSU already provides native extern declarations.
 
 ### 2. Stealth & Root Hiding Stack
-* **SUSFS v2.2.0:**
-  * In-tree kernel patches applied to `fs/`, `kernel/`, and `security/` for kernel-level mount isolation, process masking, and symbol hiding.
+* **SUSFS v2.3.0:**
+  * In-tree kernel patches applied to `fs/`, `kernel/`, and `security/` for kernel-level mount isolation, process masking, and symbol hiding. Pinned to latest verified commit `7d91da2d2ce056d1abf378d9199aaf1072d37ab0`.
 * **NoMount VFS Redirection Metamodule:**
   * Auto-cloned and compiled with Zig compiler in GitHub Actions to produce architecture-native **`ko-loader-arm64`** and **`ko-loader-arm`** binaries inside `bin/`.
 
-### 3. Kali NetHunter & Penetration Testing Stack
+### 3. Automated Root Manager App Fetching
+* **`fetch-root-managers` Action & `managers.yml` Workflow:**
+  * Automatically fetches official manager APKs for KernelSU-Next, SukiSU-Ultra, or ReSukiSU during the kernel build or via standalone dispatch workflow.
+  * Uploads the manager APK artifact directly alongside build releases.
+
+### 4. Kali NetHunter & Penetration Testing Stack
 * **BadUSB / Rubber Ducky HID:**
   * Enabled `/dev/hidg0` USB gadget keyboard/mouse emulation for DuckHunter payloads.
 * **75+ Modular Wireless WiFi Drivers (`=m`):**
@@ -60,22 +66,28 @@ The project supports 2 independent root implementations with automated patch res
   * `post-fs-data.sh`: Dynamically auto-populates firmware paths (`/vendor/firmware`, `/vendor/etc/firmware`, `/system/etc/firmware`) and loads core networking modules early.
   * `service.sh`: Loads all remaining drivers on boot in a 3-pass loop with underscore-hyphen normalization matching `lsmod`.
 
-### 4. Performance, Networking & Security Enhancements
+### 5. Performance, Networking & Security Enhancements
+* **Performance Patch Suite (`performance/action.yml`):**
+  * 17+ low-overhead memory, caching, scheduler, and filesystem optimizations (optimized memory operations, memory prefetch, 16-byte clear page alignment, memcmp optimization, cache pressure reduction, F2FS congestion reduction, ext4 commit age increase, wake attempt reductions).
+* **Instant Background Disk Cleanup (`disk-cleanup/action.yml`):**
+  * Sub-2-second folder relocation into background trash followed by low-priority disowned background purge, speeding up CI builds.
 * **Baseband Guard (BBG):** LSM protection module preventing unauthorized writes to radio/modem partitions.
 * **DroidSpaces-OSS:** Lightweight container runtime support with SYSVIPC compatibility.
 * **BBRv3 & CAKE Qdisc:** Modern TCP congestion control and network packet queuing algorithms.
 * **WireGuard & IP Set:** High-speed in-kernel VPN and firewall rule acceleration.
 * **NTSync:** Low-latency NT synchronization primitives for high-performance wine/gaming emulation.
-* **BTF / eBPF & FUSE-BPF:** In-tree BTF metadata generation and standalone userspace `fuse-bpf-arm64` daemon.
+* **BTF / eBPF & FUSE-BPF:** In-tree BTF metadata generation, in-kernel eBPF kprobe/uprobe events, and standalone userspace `fuse-bpf-arm64` daemon.
 
 ---
 
 ## 📦 Build Artifacts Guide
 | Artifact | Flash? | Purpose |
 |---|---|---|
-| `*-AnyKernel3.zip` | ✅ Flash via Recovery / Kernel Flasher | Kernel image (Normal + **Bypass Image** for HyperOS/OEMs) |
+| `*-Bundle.zip` | 📦 All-in-One Release | Complete root-flavor bundle containing `AnyKernel3.zip`, matching Manager `APK`, NetHunter & NoMount modules |
+| `*-AnyKernel3.zip` | ✅ Flash via Recovery / Kernel Flasher | Single flashable kernel image (`Image`) with vendor bypass baked in |
 | `Nethunter-Wireless-Modules.zip` | ✅ Flash via Root Manager | USB WiFi, BadUSB HID, SDR, SocketCAN drivers & firmware |
 | `NoMount-*.zip` | ✅ Flash via Root Manager | Root-hiding VFS metamodule (ko-loader + nm binaries) |
+| `*-Manager.apk` | 📲 Install on Android | Matching Root Manager APK for the selected root flavor |
 | `*-Rejects.zip` | ❌ Do NOT flash | Diagnostic only &mdash; shows which patches failed to apply |
 | `*-Summary.md` | ❌ Do NOT flash | Build metadata summary (versions, commits, status) |
 | `NoMount-Metamodule` | ❌ Internal artifact | Raw metamodule binary, packaged into NoMount zip |
@@ -96,8 +108,9 @@ The project supports 2 independent root implementations with automated patch res
 5. **Continuous Documentation & AGENTS.md Updates:**
    * Keep `AGENTS.md` continuously updated with all chat decisions, completed milestones, technical fixes, and workflow structural changes.
 6. **Workflow & Repository Architecture Constraints:**
-   * **No Matrix Nesting:** `build.yml` must keep `build-kernel` as a single first-class job (no `strategy: matrix:`) so all steps show directly in the GitHub Actions UI.
-   * **Permanent Patch Level:** The patch level is locked to `2025-07`. Do NOT re-add `os_patch_level` input.
-   * **Feature Sets:** Strictly 3 options: `FULL`, `WITHOUT-NETHUNTER`, `NONE`.
+   * **Root Flavors:** `KernelSU-Next`, `SukiSU-Ultra`, `ReSukiSU`, `All` (concurrent multi-flavor matrix build) (strictly NO official KernelSU).
+   * **Commit Modes:** `verified` (audited pins in `commits.json`), `latest` (branch tips), and `update` (builds latest then auto-promotes pins on success).
+   * **Feature Toggles:** Granular boolean checkboxes for `NoMount`, `Baseband Guard`, `Networking`, `DroidSpaces`, `NTSync`, `Ptrace Patch`, `Unicode Fix`, `BPF Stack`, `Performance`, `Kali NetHunter`, `CIFS`, and `Cache`.
+   * **Vendor Module Bypass:** Built-in by default as a single bypassed kernel image (`Image`) without requiring a separate bypass checkbox.
    * **NetHunter Module Metadata:** Name must always be `Nethunter Wireless,HID Driver & Modules`, ID `nethunter_wireless_modules`, ZIP `Nethunter-Wireless-Modules.zip`, and author `abidhasansojib`.
    * **Heredocs in Composite Actions:** Always write inline scripts via clean heredocs (`cat << 'EOF' > file`) with 8-space YAML indentation and trailing `sed -i 's/^[[:space:]]*//' file`. Never use base64 encoding.

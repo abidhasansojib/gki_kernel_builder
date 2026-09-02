@@ -22,7 +22,7 @@ Please do thorough research and understand the features included before flashing
 
 ## ✨ Features
 
-- 🔐 **Multi-Root Support**: Choose between **KernelSU-Next** and **ReSukiSU** with automated SUSFS patch integration.
+- 🔐 **Multi-Root Support**: Choose between **KernelSU-Next**, **SukiSU-Ultra**, and **ReSukiSU** with automated SUSFS patch integration and automatic Root Manager APK fetching.
 - 🛡️ **SUSFS**: Advanced root-hiding kernel patches and userspace integration.
 - 🪝 **NoMount VFS Hooks**: Advanced VFS mounting hiding and stealth capabilities with automated hook collision avoidance.
 - 🐉 **Kali NetHunter Support**:
@@ -31,12 +31,12 @@ Please do thorough research and understand the features included before flashing
   - **USB WiFi Dongle Support**: Realtek (`rtw88` 802.11ac, `rtl8xxxu`, `rtl8187`), Atheros (`ath9k_htc`, `carl9170`), MediaTek (`mt7601u`, `mt76x0u`, `mt76x2u`), and Ralink (`rt2800usb`).
   - **USB Ethernet Adapters**: CDC-ECM, CDC-NCM, Realtek RTL8152, and ASIX AX88179.
   - **Bluetooth RFCOMM & SDR**: Native RFCOMM TTY and RTL-SDR (`rtl28xxu`) support.
-- 📦 **Flashable NetHunter Wireless Module**: Automatically packages compiled `.ko` driver modules and official Linux firmware into a flashable KernelSU-Next / ReSukiSU module (`Nethunter-Wireless-Modules.zip`) for plug-and-play OTG WiFi support.
+- 📦 **Flashable NetHunter Wireless Module**: Automatically packages compiled `.ko` driver modules and official Linux firmware into a flashable KernelSU-Next / SukiSU-Ultra / ReSukiSU module (`Nethunter-Wireless-Modules.zip`) for plug-and-play OTG WiFi support.
 - 🛡️ **Baseband Guard (BBG)**: LSM security module for critical partition write protection.
 - 📦 **DroidSpaces-OSS**: Lightweight container runtime support with SYSVIPC kABI fixes.
-- 🚀 **Networking & Performance**: BBRv3, CAKE Qdisc, WireGuard, IP Set, TTL targets, CIFS.
+- 🚀 **Networking & Performance**: BBRv3, CAKE Qdisc, WireGuard, IP Set, TTL targets, CIFS, and in-tree memory/caching/IO performance optimization patches.
 - ⚡ **NTSync**: Low-latency NT synchronization primitives.
-- 🔍 **BTF / eBPF**: BTF generation, eBPF tooling, and FUSE-BPF support.
+- 🔍 **BTF / eBPF / FUSE-BPF**: Full in-kernel eBPF kprobe/tracepoint events, CO-RE BTF generation, and FUSE-BPF support.
 
 ---
 
@@ -82,8 +82,7 @@ The kernel and accompanying flashable `Nethunter-Wireless-Modules.zip` module pr
 
 * **Tested Device**: **Redmi Note 14 4G (`tanzanite`)** &mdash; everything is fully working!
 * **Target Kernel**: **Android 16 (`6.12.30-android16`)** GKI only.
-* **Warning**: For Redmi Note 14 4G, flash this kernel only on Xiaomi HyperOS 3. Always check your kernel version before flashing.
-  * When flashing `AnyKernel3.zip`, press the **Volume Up (`[VOL+]`)** button to flash **Bypass-Image** and bypass vendor module CRC checks, otherwise you will face a bootloop.
+* **Compatibility**: Optimized for Xiaomi HyperOS 3.0.302 (Android 16). The kernel automatically integrates the vendor module version-check bypass hack, ensuring OEM hardware drivers (touchscreen, display, modem, sensors) load seamlessly without bootloops.
 
 ---
 
@@ -93,20 +92,20 @@ The kernel and accompanying flashable `Nethunter-Wireless-Modules.zip` module pr
    - Unlocked bootloader.
    - Backup of your current boot image (`boot.img`).
    - Stock kernel based on `6.12.30-android16`.
-   - Flashing utility (e.g. [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher)).
+   - Flashing utility (e.g. [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher) or custom recovery).
 
-2. **Flashing Kernel (Bypass Mode)**:
+2. **Flashing Kernel**:
    - Download the generated `AnyKernel3.zip` artifact from Releases or Actions.
-   - Flash the ZIP using Kernel Flasher or custom recovery.
-   - Press **Volume Up (`[VOL+]`)** during flashing to select **Bypass Image**.
+   - Flash the ZIP using Kernel Flasher or custom recovery (vendor module version bypass is applied automatically).
    - Install the matching Manager app for your selected root flavor:
      - [KernelSU-Next Manager](https://github.com/KernelSU-Next/KernelSU-Next/releases) *(for KernelSU-Next)*
+     - [SukiSU-Ultra Manager](https://github.com/SukiSU-Ultra/SukiSU-Ultra/releases) *(for SukiSU-Ultra)*
      - [ReSukiSU Manager](https://github.com/ReSukiSU/ReSukiSU/releases) *(for ReSukiSU)*
    - Reboot device.
 
 3. **External USB WiFi & NetHunter Tools (Optional)**:
    - Download the `Nethunter-Wireless-Modules.zip` module from the release.
-   - Flash it in your KernelSU-Next or ReSukiSU manager to load external USB WiFi drivers and firmware blobs automatically on boot.
+   - Flash it in your KernelSU-Next, SukiSU-Ultra, or ReSukiSU manager to load external USB WiFi drivers and firmware blobs automatically on boot.
 
 ---
 
@@ -114,6 +113,7 @@ The kernel and accompanying flashable `Nethunter-Wireless-Modules.zip` module pr
 
 - 🏗️ **GKI KernelSU SUSFS**: Based on work by [WildKernels](https://github.com/WildKernels/GKI_KernelSU_SUSFS)
 - 🚀 **KernelSU-Next**: Developed by [rifsxd](https://github.com/KernelSU-Next/KernelSU-Next) and [pershoot](https://github.com/pershoot/KernelSU-Next)
+- 🔐 **SukiSU-Ultra**: Developed by [SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra)
 - 💫 **ReSukiSU**: Developed by [ReSukiSU](https://github.com/ReSukiSU/ReSukiSU)
 - 🛡️ **SUSFS**: Developed by [simonpunk](https://gitlab.com/simonpunk/susfs4ksu.git)
 - 🐉 **Kali NetHunter**: Developed by the [Offensive Security / Kali NetHunter Team](https://www.kali.org/docs/nethunter/)

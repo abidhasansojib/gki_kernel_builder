@@ -1,0 +1,40 @@
+name: Fetch Root Managers
+
+permissions:
+  contents: write
+  actions: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      root_flavor:
+        description: "Root flavor to fetch manager APK for"
+        type: choice
+        options:
+          - All
+          - KernelSU-Next
+          - SukiSU-Ultra
+          - ReSukiSU
+        default: All
+
+jobs:
+  fetch-managers:
+    name: "Fetch Root Manager APKs"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Fetch Root Manager APKs
+        uses: ./.github/actions/fetch-root-managers
+        with:
+          flavor: ${{ inputs.root_flavor }}
+          output_dir: ${{ github.workspace }}/root-managers
+
+      - name: Upload Manager APKs
+        uses: actions/upload-artifact@v7
+        with:
+          name: Root-Manager-APKs
+          path: ${{ github.workspace }}/root-managers/
+          if-no-files-found: warn
+          compression-level: 0

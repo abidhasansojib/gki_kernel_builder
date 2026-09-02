@@ -15,57 +15,187 @@ on:
           - Pre-Release
           - Release
         default: Action
+      commit_mode:
+        description: "latest = branch tips, verified = audited pins, update = build latest then promote verified pins on success"
+        required: false
+        type: choice
+        options:
+          - verified
+          - latest
+          - update
+        default: verified
       root_flavor:
         description: "Root Flavor"
         type: choice
         options:
           - KernelSU-Next
+          - SukiSU-Ultra
           - ReSukiSU
+          - All
         default: KernelSU-Next
-      feature_set:
-        description: "Feature Set"
-        type: choice
-        options:
-          - FULL
-          - WITHOUT-NETHUNTER
-          - NONE
-        default: FULL
       ksu_branch:
-        description: "KernelSU branch or commit (empty = default for selected flavor)"
+        description: "Custom Branch / Tag for Root Flavor (empty = default)"
         type: string
         required: false
         default: ""
-      susfs_commit_android16-6-12:
-        description: "SUSFS commit for android16-6.12 (empty = latest branch tip)"
-        type: string
-        required: false
-        default: ""
+      use_nomount:
+        description: "NoMount"
+        type: boolean
+        default: true
+      use_bbg:
+        description: "Baseband Guard"
+        type: boolean
+        default: true
+      use_net:
+        description: "Networking"
+        type: boolean
+        default: true
+      use_droidspaces:
+        description: "DroidSpaces"
+        type: boolean
+        default: true
+      use_ntsync:
+        description: "NTSync"
+        type: boolean
+        default: true
+      use_ptrace:
+        description: "Ptrace Patch"
+        type: boolean
+        default: true
+      use_unicode:
+        description: "Unicode Fix"
+        type: boolean
+        default: true
+      use_bpf:
+        description: "BPF Stack (BTF + eBPF + FUSE-BPF)"
+        type: boolean
+        default: true
+      use_perf:
+        description: "Performance"
+        type: boolean
+        default: true
+      use_nethunter:
+        description: "Kali NetHunter"
+        type: boolean
+        default: true
+      use_cifs:
+        description: "CIFS"
+        type: boolean
+        default: true
+      use_cache:
+        description: "Use ccache/bazel cache (restore/save)"
+        type: boolean
+        default: true
 
 jobs:
-  resolve-nomount:
-    name: "Resolve NoMount Commit"
-    if: ${{ inputs.feature_set != 'NONE' }}
+  resolve-sources:
+    name: "Resolve Component Commits"
     runs-on: ubuntu-latest
     outputs:
       nomount_commit: ${{ steps.resolve.outputs.nomount_commit }}
+      susfs_commit: ${{ steps.resolve.outputs.susfs_commit }}
+      root_matrix: ${{ steps.resolve.outputs.root_matrix }}
+      ksun_commit: ${{ steps.resolve.outputs.ksun_commit }}
+      ultra_commit: ${{ steps.resolve.outputs.ultra_commit }}
+      resukisu_commit: ${{ steps.resolve.outputs.resukisu_commit }}
     steps:
-      - name: Resolve latest NoMount dev commit
+      - uses: actions/checkout@v7
+
+      - name: Resolve commits per commit_mode
         id: resolve
         shell: bash
         run: |
           set -euo pipefail
-          sha="$(git ls-remote https://github.com/maxsteeel/nomount.git refs/heads/dev | awk '{print $1}')"
-          if [ -z "$sha" ] || ! [[ "$sha" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "Failed to resolve NoMount dev branch tip." >&2
-            exit 1
-          fi
-          echo "nomount_commit=$sha" >> "$GITHUB_OUTPUT"
-          echo "Resolved NoMount dev commit: $sha"
+          COMMIT_MODE="${{ inputs.commit_mode }}"
+          echo "Commit Mode: $COMMIT_MODE"
+
+          retry() {
+            local n=0
+            until [ "$n" -ge 5 ]; do
+              "$@" && return 0
+              n=$((n+1))
+              echo "retry $n/5 failed for: $*" >&2
+              sleep 5
+            done
+            return 1
+          }
+
+          resolve_sha() {
+            retry git ls-remote "$1" "$2" | awk '{print $1; exit}'
+          }
+
+          emit() {
+            if [ -z "$2" ] || ! [[ "$2" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "Failed to resolve $1 (got: ${2:-empty})" >&2
+              exit 1
+            fi
+            echo "$1=$2" >> "$GITHUB_OUTPUT"
+            echo "  $1=$2"
+          }
+
+          # Read verified pins from config
+          COMMITS_FILE=".github/config/commits.json"
+          PIN_NOMOUNT=$(jq -r '.nomount.dev // empty' "$COMMITS_FILE" 2>/dev/null || echo "9a1431782f390453de54610fb91bdad03eab5b43")
+          PIN_SUSFS=$(jq -r '."susfs"."gki-android16-6.12" // empty' "$COMMITS_FILE" 2>/dev/null || echo "7d91da2d2ce056d1abf378d9199aaf1072d37ab0")
+          PIN_KSUN=$(jq -r '."kernelsu_next"."dev-susfs" // empty' "$COMMITS_FILE" 2>/dev/null || echo "5a4a71874caaad06aa126f761c93391de1d32361")
+          PIN_ULTRA=$(jq -r '."sukisu_ultra"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "d160166668ce7565d3ec85a210f9e9cf2996ca65")
+          PIN_RESUKISU=$(jq -r '."resukisu"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "0b5efe9e0102c43ca5c41174d500f5a7080cd0c7")
+
+          pick() {
+            local pinned="$1" repo="$2" ref="$3"
+            if [ "$COMMIT_MODE" = "verified" ] && [ -n "$pinned" ]; then
+              echo "$pinned"
+            else
+              resolve_sha "$repo" "$ref"
+            fi
+          }
+
+          echo "Resolving dependencies..."
+          emit nomount_commit "$(pick "$PIN_NOMOUNT" https://github.com/maxsteeel/nomount.git refs/heads/dev)"
+          emit susfs_commit "$(pick "$PIN_SUSFS" https://gitlab.com/simonpunk/susfs4ksu.git refs/heads/gki-android16-6.12)"
+          emit ksun_commit "$(pick "$PIN_KSUN" https://github.com/pershoot/KernelSU-Next.git refs/heads/dev-susfs)"
+          emit ultra_commit "$(pick "$PIN_ULTRA" https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/main)"
+          emit resukisu_commit "$(pick "$PIN_RESUKISU" https://github.com/ReSukiSU/ReSukiSU.git refs/heads/main)"
+
+          KSUN_SHA="$(pick "$PIN_KSUN" https://github.com/pershoot/KernelSU-Next.git refs/heads/dev-susfs)"
+          ULTRA_SHA="$(pick "$PIN_ULTRA" https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/main)"
+          RESUKISU_SHA="$(pick "$PIN_RESUKISU" https://github.com/ReSukiSU/ReSukiSU.git refs/heads/main)"
+
+          mk_entry() {
+            printf '{"flavor":"%s","ref":"%s","commit":"%s"}' "$1" "$2" "$3"
+          }
+
+          ROOT="${{ inputs.root_flavor }}"
+          CUSTOM_REF="${{ inputs.ksu_branch }}"
+
+          case "$ROOT" in
+            All)
+              ROOT_MATRIX="[$(mk_entry KernelSU-Next dev-susfs "$KSUN_SHA"),$(mk_entry SukiSU-Ultra main "$ULTRA_SHA"),$(mk_entry ReSukiSU main "$RESUKISU_SHA")]"
+              ;;
+            SukiSU-Ultra)
+              REF="${CUSTOM_REF:-main}"
+              ROOT_MATRIX="[$(mk_entry SukiSU-Ultra "$REF" "$ULTRA_SHA")]"
+              ;;
+            ReSukiSU)
+              REF="${CUSTOM_REF:-main}"
+              ROOT_MATRIX="[$(mk_entry ReSukiSU "$REF" "$RESUKISU_SHA")]"
+              ;;
+            KernelSU-Next)
+              REF="${CUSTOM_REF:-dev-susfs}"
+              ROOT_MATRIX="[$(mk_entry KernelSU-Next "$REF" "$KSUN_SHA")]"
+              ;;
+            *)
+              ROOT_MATRIX="[$(mk_entry KernelSU-Next dev-susfs "$KSUN_SHA")]"
+              ;;
+          esac
+
+          echo "root_matrix=$ROOT_MATRIX" >> "$GITHUB_OUTPUT"
+          echo "Generated Root Matrix: $ROOT_MATRIX"
 
   build-nomount-module:
     name: "Build NoMount Metamodule"
-    needs: [resolve-nomount]
-    if: ${{ inputs.feature_set != 'NONE' }}
+    needs: [resolve-sources]
+    if: ${{ inputs.use_nomount }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -74,7 +204,7 @@ jobs:
         id: nomount-metamodule
         uses: ./.github/actions/nomount-metamodule
         with:
-          commit: ${{ needs.resolve-nomount.outputs.nomount_commit }}
+          commit: ${{ needs.resolve-sources.outputs.nomount_commit }}
 
       - name: Upload NoMount metamodule
         uses: actions/upload-artifact@v7
@@ -85,11 +215,15 @@ jobs:
           compression-level: 0
 
   build-kernel:
-    name: "Build Kernel (6.12.30-android16)"
-    needs: [resolve-nomount]
-    if: ${{ always() && (needs.resolve-nomount.result == 'success' || needs.resolve-nomount.result == 'skipped') }}
+    name: "Build Kernel (${{ matrix.flavor }})"
+    needs: [resolve-sources]
+    if: ${{ always() && (needs.resolve-sources.result == 'success') }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.resolve-sources.outputs.root_matrix) }}
     env:
       VERSION: "android16-6.12"
       ANDROID_VERSION: "android16"
@@ -103,19 +237,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Free Disk Space
-        if: true
-        uses: endersonmenezes/free-disk-space@v3
-        with:
-          remove_android: true
-          remove_dotnet: true
-          remove_haskell: true
-          remove_tool_cache: true
-          remove_packages: "azure-cli google-cloud-cli microsoft-edge-stable google-chrome-stable firefox postgresql* temurin-* *llvm* mysql* dotnet-sdk-*"
-          remove_packages_one_command: true
-          remove_folders: "/usr/share/swift /usr/share/miniconda /usr/share/az* /usr/local/lib/node_modules /usr/local/share/chromium /usr/local/share/powershell /usr/local/julia /usr/local/aws-cli /usr/local/aws-sam-cli /usr/share/gradle"
-          rm_cmd: "rmz"
-          rmz_version: "3.1.1"
-          testing: false
+        uses: ./.github/actions/disk-cleanup
 
       - name: Setup more Swap (for LTO)
         uses: pierotofy/set-swap-space@master
@@ -139,6 +261,7 @@ jobs:
           os_patch_level: "2025-07"
 
       - name: Build FUSE-BPF Userspace Daemon
+        if: ${{ inputs.use_bpf }}
         continue-on-error: true
         uses: ./.github/actions/fuse-bpf
         with:
@@ -180,27 +303,24 @@ jobs:
           os_patch_level: "2025-07"
 
       - name: Setup Root Implementation
-        if: ${{ inputs.feature_set != 'NONE' }}
         uses: ./.github/actions/kernelsu
         with:
-          flavor: ${{ inputs.root_flavor }}
-          ksu_branch: ${{ inputs.ksu_branch }}
+          flavor: ${{ matrix.flavor }}
+          ksu_branch: ${{ matrix.ref }}
 
       - name: SUSFS
-        if: ${{ inputs.feature_set != 'NONE' }}
         uses: ./.github/actions/susfs
         with:
-          susfs_commit: ${{ inputs.susfs_commit_android16-6-12 }}
+          susfs_commit: ${{ needs.resolve-sources.outputs.susfs_commit }}
           version: "android16-6.12"
           android_version: "android16"
           kernel_version: "6.12"
           os_patch_level: "2025-07"
           sublevel: ${{ steps.extract.outputs.sublevel }}
-          root_flavor: ${{ inputs.root_flavor }}
-          nomount_enabled: ${{ inputs.feature_set != 'NONE' }}
+          root_flavor: ${{ matrix.flavor }}
+          nomount_enabled: ${{ inputs.use_nomount }}
 
       - name: Fix selinux_hide static declarations & pointer-bool-conversion on 6.12
-        if: ${{ inputs.feature_set != 'NONE' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -227,11 +347,11 @@ jobs:
           done
 
       - name: Baseband Guard
-        if: ${{ inputs.feature_set != 'NONE' }}
+        if: ${{ inputs.use_bbg }}
         uses: ./.github/actions/bbg
 
       - name: Setup Networking
-        if: ${{ inputs.feature_set != 'NONE' }}
+        if: ${{ inputs.use_net }}
         uses: ./.github/actions/networking
         with:
           version: "android16-6.12"
@@ -240,19 +360,20 @@ jobs:
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
       - name: Setup NetHunter & Wireless Drivers
-        if: ${{ inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.use_nethunter }}
         uses: ./.github/actions/nethunter
         with:
           version: "android16-6.12"
 
       - name: DroidSpaces-OSS Patches
-        if: ${{ inputs.feature_set != 'NONE' }}
+        if: ${{ inputs.use_droidspaces }}
         uses: ./.github/actions/droidspaces
         with:
           version: "android16-6.12"
           kernel_version: "6.12"
 
       - name: Apply NTSync Patches
+        if: ${{ inputs.use_ntsync }}
         uses: ./.github/actions/ntsync
         with:
           version: "android16-6.12"
@@ -260,19 +381,32 @@ jobs:
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
       - name: Apply Ptrace Patch
+        if: ${{ inputs.use_ptrace }}
         uses: ./.github/actions/ptrace
         with:
           kernel_version: "6.12"
 
       - name: Apply Unicode Fix Patch
+        if: ${{ inputs.use_unicode }}
         uses: ./.github/actions/unicode-fix
         with:
           kernel_version: "6.12"
+
+      - name: Apply Performance Patches
+        if: ${{ inputs.use_perf }}
+        uses: ./.github/actions/performance
+        with:
+          kernel_version: "6.12"
+
+      - name: Setup CIFS
+        if: ${{ inputs.use_cifs }}
+        uses: ./.github/actions/cifs
 
       - name: Setup Misc Configs
         uses: ./.github/actions/misc
 
       - name: Enable BTF
+        if: ${{ inputs.use_bpf }}
         uses: ./.github/actions/btf
         with:
           version: "android16-6.12"
@@ -286,10 +420,10 @@ jobs:
           kernel_version: "6.12"
 
       - name: Integrate NoMount
-        if: ${{ inputs.feature_set != 'NONE' }}
+        if: ${{ inputs.use_nomount }}
         uses: ./.github/actions/nomount
         with:
-          commit: ${{ needs.resolve-nomount.outputs.nomount_commit }}
+          commit: ${{ needs.resolve-sources.outputs.nomount_commit }}
           kernel_version: "6.12"
 
       - name: Apply Kernel Branding
@@ -316,12 +450,13 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ steps.extract.outputs.file_name }}-Rejects
+          name: ${{ steps.extract.outputs.file_name }}-${{ matrix.flavor }}-Rejects
           path: patch-rejects/
           if-no-files-found: ignore
           compression-level: 9
 
       - name: 'Setup Cache and Build Environment'
+        if: ${{ inputs.use_cache }}
         uses: ./.github/actions/cache-setup
         with:
           version: "android16-6.12"
@@ -332,398 +467,231 @@ jobs:
       - name: Initialize Config Fragment
         run: touch "${{ github.workspace }}/gki.fragment"
 
-      - name: Build Normal Kernel
+      - name: Build Kernel (with Vendor Module Bypass)
         env:
           SOURCE_DATE_EPOCH: ${{ env.SOURCE_DATE_EPOCH }}
           KBUILD_BUILD_TIMESTAMP: ${{ env.KBUILD_BUILD_TIMESTAMP }}
         uses: ./.github/actions/build-kernel
         with:
-          version: "android16-6.12"
-          bypass: false
-
-      - name: Build Bypass Kernel
-        env:
-          SOURCE_DATE_EPOCH: ${{ env.SOURCE_DATE_EPOCH }}
-          KBUILD_BUILD_TIMESTAMP: ${{ env.KBUILD_BUILD_TIMESTAMP }}
-        uses: ./.github/actions/build-kernel
-        with:
-          bypass: true
           version: "android16-6.12"
 
       - name: 📦 Build NetHunter Wireless Module
-        if: ${{ inputs.feature_set == 'FULL' }}
+        if: ${{ inputs.use_nethunter }}
         uses: ./.github/actions/nethunter-module
         with:
           file_name: ${{ steps.extract.outputs.file_name }}
+
+      - name: 📱 Fetch Matching Root Manager APK
+        uses: ./.github/actions/fetch-root-managers
+        with:
+          flavor: ${{ matrix.flavor }}
+          output_dir: ${{ github.workspace }}/root-managers
+
+      - name: Upload Root Manager APK Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.extract.outputs.file_name }}-${{ matrix.flavor }}-Manager
+          path: ${{ github.workspace }}/root-managers/
+          if-no-files-found: warn
+          compression-level: 0
 
       - name: 📋 Generate Build Summary
         if: ${{ always() }}
         shell: bash
         run: |
-          SUMMARY_BASE="${{ steps.extract.outputs.file_name }}"
-          if [ -z "${SUMMARY_BASE}" ]; then
-            SUMMARY_BASE="6.12.30-android16-2025-07"
-          fi
+          SUMMARY_BASE="${{ steps.extract.outputs.file_name }}-${{ matrix.flavor }}"
           SUMMARY_FILE="/tmp/build-summary-${SUMMARY_BASE}.md"
           echo "SUMMARY_BASE=${SUMMARY_BASE}" >> "$GITHUB_ENV"
 
           if [ "${{ job.status }}" = "success" ]; then
-            STATUS="✅ Success"
+            STATUS="[+] Success"
           else
-            STATUS="❌ Failed"
+            STATUS="[-] Failed"
           fi
 
-          KERNEL_VER_STR=""
-          if [ -f "${{ github.workspace }}/AnyKernel3/Image" ]; then
-            KERNEL_VER_STR=$(strings "${{ github.workspace }}/AnyKernel3/Image" | grep -m1 "^Linux version " | sed 's/Linux version //' || echo "")
-          fi
+          cat << 'EOF' > "$SUMMARY_FILE"
+          # GKI Kernel Build Summary
 
-          KSU_VER="${KSU_VERSION:-N/A}"
-          KSU_TAG="${KSU_GIT_TAG:-N/A}"
-          ROOT_IMPL="${ROOT_IMPLEMENTATION:-${{ inputs.root_flavor }}}"
-          ROOT_MANAGER="${ROOT_MANAGER:-${ROOT_IMPL} Manager}"
-          ROOT_VERSION="${KSU_TAG}"
-          ROOT_SHA="${KSU_COMMIT:-N/A}"
-          NOMOUNT_SHA="${{ needs.resolve-nomount.outputs.nomount_commit || 'N/A' }}"
-          SUSFS_SHA="${SUSFS_COMMIT:-N/A}"
+          ## Status: __STATUS__
+          - **Kernel Version:** 6.12.30-android16
+          - **OS Patch Level:** 2025-07
+          - **Root Flavor:** __ROOT_FLAVOR__
+          - **Vendor Bypass:** Baked In (Default)
+          - **Commit Mode:** __COMMIT_MODE__
+          - **NoMount Metamodule:** __NOMOUNT_STATUS__
+          - **NetHunter Module:** __NETHUNTER_STATUS__
+          - **Performance Patches:** __PERF_STATUS__
+          - **BPF Stack:** __BPF_STATUS__
+          EOF
+          sed -i 's/^[[:space:]]*//' "$SUMMARY_FILE"
 
-          SUSFS_VER="N/A"
-          if [ -f "${{ github.workspace }}/kernel/common/include/linux/susfs.h" ]; then
-            SUSFS_VER=$(grep '#define SUSFS_VERSION' "${{ github.workspace }}/kernel/common/include/linux/susfs.h" | awk -F'"' '{print $2}' || echo "N/A")
-          fi
+          sed -i "s/__STATUS__/${STATUS}/g" "$SUMMARY_FILE"
+          sed -i "s/__ROOT_FLAVOR__/${{ matrix.flavor }}/g" "$SUMMARY_FILE"
+          sed -i "s/__COMMIT_MODE__/${{ inputs.commit_mode }}/g" "$SUMMARY_FILE"
+          sed -i "s/__NOMOUNT_STATUS__/${{ inputs.use_nomount }}/g" "$SUMMARY_FILE"
+          sed -i "s/__NETHUNTER_STATUS__/${{ inputs.use_nethunter }}/g" "$SUMMARY_FILE"
+          sed -i "s/__PERF_STATUS__/${{ inputs.use_perf }}/g" "$SUMMARY_FILE"
+          sed -i "s/__BPF_STATUS__/${{ inputs.use_bpf }}/g" "$SUMMARY_FILE"
 
-          {
-            echo "## android16 6.12.30 (Normal) — ${STATUS}"
-            echo
-            echo "| Metric | Value |"
-            echo "|--------|-------|"
-            echo "| **Status** | ${STATUS} |"
-            echo "| **Kernel** | 6.12.30-android16-2025-07 |"
-            if [ -n "$KERNEL_VER_STR" ]; then
-              echo "| **Version String** | \`${KERNEL_VER_STR}\` |"
-            fi
-            echo "| **KSU Version** | ${KSU_VER} |"
-            echo "| **KSU Tag** | ${KSU_TAG} |"
-            echo "| **Root Implementation** | ${ROOT_IMPL} |"
-            echo "| **Root Manager** | ${ROOT_MANAGER} |"
-            echo "| **Root Version** | ${ROOT_VERSION} |"
-            echo "| **Root Commit** | ${ROOT_SHA} |"
-            echo "| **SUSFS Version** | ${SUSFS_VER} |"
-            echo "| **SUSFS Commit** | ${SUSFS_SHA} |"
-            echo "| **NoMount Commit** | ${NOMOUNT_SHA} |"
-            echo "| **Feature Set** | ${{ inputs.feature_set }} |"
-            echo "| **Variant** | Normal |"
-            echo
+          cat "$SUMMARY_FILE" >> "$GITHUB_STEP_SUMMARY"
 
-            if [ -f /tmp/kernel-fixes-summary.md ]; then
-              echo "### 🔧 Kernel Fixes"
-              cat /tmp/kernel-fixes-summary.md
-              echo
-            fi
-          } > "$SUMMARY_FILE"
-
-      - name: Upload Build Summary Artifact
+      - name: Upload Summary Artifact
         if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ env.SUMMARY_BASE }}-Summary
-          path: /tmp/build-summary-${{ env.SUMMARY_BASE }}.md
+          path: /tmp/build-summary-*.md
           if-no-files-found: ignore
           compression-level: 9
 
-      - name: 📦 Package AnyKernel3 Flashable ZIP
+      - name: Upload AnyKernel3 Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.extract.outputs.file_name }}-${{ matrix.flavor }}-AnyKernel3
+          path: AnyKernel3/
+          if-no-files-found: error
+          compression-level: 9
+
+      - name: Package NoMount Module
+        if: ${{ inputs.use_nomount }}
         shell: bash
         run: |
           set -euo pipefail
-          ZIP_NAME="${{ steps.extract.outputs.file_name }}-AnyKernel3.zip"
-          cd "${{ github.workspace }}/AnyKernel3"
-          rm -rf .git .github .gitignore
-          zip -r -q -9 "${{ github.workspace }}/${ZIP_NAME}" . -x ".git*" -x "*/.git*"
-          echo "Successfully created flashable ZIP: ${ZIP_NAME}"
-          ls -lh "${{ github.workspace }}/${ZIP_NAME}"
+          NOMOUNT_DIR="${{ github.workspace }}/nomount-dist"
+          mkdir -p "$NOMOUNT_DIR"
+          if [ -d "${{ github.workspace }}/AnyKernel3/tools" ]; then
+            cp -f ${{ github.workspace }}/AnyKernel3/tools/ak3-core.sh "$NOMOUNT_DIR/" 2>/dev/null || true
+          fi
+          cd "${{ github.workspace }}/nomount" 2>/dev/null || cd "${{ github.workspace }}"
+          zip -r9 "$NOMOUNT_DIR/NoMount-${{ steps.extract.outputs.file_name }}.zip" . -x "*.git*" "out/*" 2>/dev/null || true
 
-      - name: Upload AnyKernel3 ZIP Artifact
-        id: kernel-artifact
+      - name: Upload NoMount Module Artifact
+        if: ${{ inputs.use_nomount }}
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ steps.extract.outputs.file_name }}-AnyKernel3
-          path: ${{ github.workspace }}/${{ steps.extract.outputs.file_name }}-AnyKernel3.zip
+          name: ${{ steps.extract.outputs.file_name }}-NoMount
+          path: ${{ github.workspace }}/nomount-dist/
+          if-no-files-found: ignore
+          compression-level: 0
+
+      - name: 📦 Package Root-Flavor Release Bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUNDLE_DIR="/tmp/bundle-${{ matrix.flavor }}"
+          rm -rf "$BUNDLE_DIR"
+          mkdir -p "$BUNDLE_DIR"
+
+          # 1. Package AnyKernel3 Zip
+          echo "[+] Adding AnyKernel3 zip to flavor bundle..."
+          (cd "${{ github.workspace }}/AnyKernel3" && zip -r9 "$BUNDLE_DIR/${{ steps.extract.outputs.file_name }}-${{ matrix.flavor }}-AnyKernel3.zip" . -x "*.git*")
+
+          # 2. Add Matching Root Manager APK
+          if [ -d "${{ github.workspace }}/root-managers" ]; then
+            echo "[+] Adding matching Root Manager APKs..."
+            cp -f "${{ github.workspace }}/root-managers/"*.apk "$BUNDLE_DIR/" 2>/dev/null || true
+          fi
+
+          # 3. Add NetHunter Wireless Module (if enabled)
+          if [ -f "${{ github.workspace }}/Nethunter-Wireless-Modules.zip" ]; then
+            echo "[+] Adding NetHunter Wireless Module..."
+            cp -f "${{ github.workspace }}/Nethunter-Wireless-Modules.zip" "$BUNDLE_DIR/"
+          fi
+
+          # 4. Add NoMount Metamodule (if enabled)
+          if [ -d "${{ github.workspace }}/nomount-dist" ]; then
+            echo "[+] Adding NoMount Metamodule..."
+            cp -f "${{ github.workspace }}/nomount-dist/"*.zip "$BUNDLE_DIR/" 2>/dev/null || true
+          fi
+
+          # 5. Add Summary Markdown
+          if [ -f "/tmp/build-summary-${{ env.SUMMARY_BASE }}.md" ]; then
+            cp -f "/tmp/build-summary-${{ env.SUMMARY_BASE }}.md" "$BUNDLE_DIR/"
+          fi
+
+          # Create the All-In-One Flavor Package ZIP
+          PKG_NAME="${{ steps.extract.outputs.file_name }}-${{ matrix.flavor }}-Bundle.zip"
+          (cd "$BUNDLE_DIR" && zip -r9 "${{ github.workspace }}/$PKG_NAME" .)
+
+          echo "[✓] Successfully created Flavor Bundle: $PKG_NAME"
+          ls -la "$BUNDLE_DIR"
+
+      - name: Upload Flavor Release Bundle Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.extract.outputs.file_name }}-${{ matrix.flavor }}-Bundle
+          path: ${{ steps.extract.outputs.file_name }}-${{ matrix.flavor }}-Bundle.zip
           if-no-files-found: error
           compression-level: 0
 
-  summary:
-    name: "Consolidated Build Summary"
-    runs-on: ubuntu-latest
-    if: ${{ always() }}
-    needs: [build-kernel]
-    steps:
-      - name: 📥 Download Build Summaries
-        uses: actions/download-artifact@v7
-        with:
-          path: ./summaries
-          pattern: "*-Summary"
-          merge-multiple: true
-
-      - name: 📋 Merge Summaries
+      - name: Promote Verified Pins (Update Mode)
+        if: ${{ success() && inputs.commit_mode == 'update' }}
+        shell: bash
+        env:
+          NOMOUNT_SHA: ${{ needs.resolve-sources.outputs.nomount_commit }}
+          SUSFS_SHA: ${{ needs.resolve-sources.outputs.susfs_commit }}
+          KERNELSU_NEXT_SHA: ${{ needs.resolve-sources.outputs.ksun_commit }}
+          SUKISU_ULTRA_SHA: ${{ needs.resolve-sources.outputs.ultra_commit }}
+          RESUKISU_SHA: ${{ needs.resolve-sources.outputs.resukisu_commit }}
+          APPROVE_NOMOUNT: ${{ inputs.use_nomount }}
+          APPROVE_SUSFS: 'true'
+          APPROVE_KERNELSU_NEXT: ${{ matrix.flavor == 'KernelSU-Next' || inputs.root_flavor == 'All' }}
+          APPROVE_SUKISU_ULTRA: ${{ matrix.flavor == 'SukiSU-Ultra' || inputs.root_flavor == 'All' }}
+          APPROVE_RESUKISU: ${{ matrix.flavor == 'ReSukiSU' || inputs.root_flavor == 'All' }}
         run: |
-          {
-            echo "# 📋 Consolidated Build Summary"
-            echo
-            for f in ./summaries/*.md; do
-              if [ -f "$f" ]; then
-                cat "$f"
-                echo
-                echo "---"
-                echo
-              fi
-            done
-          } >> "$GITHUB_STEP_SUMMARY"
+          set -euo pipefail
+          echo "Promoting verified pins on successful build..."
+          python3 .github/scripts/update_verified_pins.py
+          if ! git diff --quiet .github/config/commits.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .github/config/commits.json .github/pins/history/
+            git commit -m "chore(pins): promote verified dependency pins [skip ci]"
+            git push origin HEAD:${{ github.ref }} || true
+          fi
 
   release:
-    name: "Publish Release"
+    name: "Create Release"
+    needs: [build-kernel, resolve-sources]
+    if: ${{ inputs.release_type != 'Action' && needs.build-kernel.result == 'success' }}
     runs-on: ubuntu-latest
-    if: ${{ always() && github.event_name == 'workflow_dispatch' && (inputs.release_type == 'Pre-Release' || inputs.release_type == 'Release') && (needs.build-kernel.result == 'success') }}
     permissions:
       contents: write
-    needs:
-      - build-kernel
-      - summary
-      - build-nomount-module
-
-    env:
-      GH_TOKEN: ${{ github.token }}
-      RELEASE_NOTES: .github/config/RELEASE_NOTES.md
-    outputs:
-      new_tag: ${{ steps.tag.outputs.new_tag }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v7
 
-      - name: Generate New Tag
-        id: tag
-        if: inputs.release_type != 'Action'
-        run: |
-          mapfile -t RELEASE_TAGS < <(gh api --paginate "repos/${{ github.repository }}/tags?per_page=100" --jq '.[].name' 2>/dev/null | grep -E '^r[0-9]+$' || true)
-
-          LATEST_REV=0
-          for TAG in "${RELEASE_TAGS[@]}"; do
-            REV="${TAG#r}"
-            if [[ "$REV" =~ ^[0-9]+$ && "$REV" -gt "$LATEST_REV" ]]; then
-              LATEST_REV="$REV"
-            fi
-          done
-
-          if [[ "$LATEST_REV" -gt 0 ]]; then
-            NEW_TAG="r$((LATEST_REV + 1))"
-          else
-            NEW_TAG="r1"
-          fi
-
-          if [[ ${#RELEASE_TAGS[@]} -gt 0 ]]; then
-            echo "Latest r-tag: r${LATEST_REV}"
-          else
-            echo "No existing r-tags found; starting at r1"
-          fi
-          echo "New tag: $NEW_TAG"
-          echo "NEW_TAG=${NEW_TAG}" >> $GITHUB_ENV
-          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
-
-      - name: Set Release Title
-        id: release_meta
-        run: |
-          set -euo pipefail
-
-          if [[ "${NEW_TAG}" =~ ^r([0-9]+)$ ]]; then
-            REV_NUM="${BASH_REMATCH[1]}"
-            release_title="Release ${REV_NUM}"
-          else
-            release_title="Release ${NEW_TAG}"
-          fi
-
-          echo "release_title=$release_title" >> "$GITHUB_OUTPUT"
-
-      - name: Extract Root Implementation Version Info
-        id: ksu_version
-        run: |
-          set -euo pipefail
-
-          if [ "${{ inputs.feature_set }}" = "NONE" ]; then
-            echo "Building vanilla stock GKI release (no root)."
-            echo "ROOT_IMPL=None (Vanilla Stock GKI)" >> "$GITHUB_ENV"
-            echo "ROOT_MANAGER_NAME=None" >> "$GITHUB_ENV"
-            echo "KSUN_BRANCH=N/A" >> "$GITHUB_ENV"
-            echo "KSUN_COMMIT=N/A" >> "$GITHUB_ENV"
-            echo "KSU_COMMITS_COUNT=0" >> "$GITHUB_ENV"
-            echo "KSU_VERSION=N/A" >> "$GITHUB_ENV"
-            echo "KSU_GIT_TAG=N/A" >> "$GITHUB_ENV"
-            echo "KSU_MANAGER=N/A" >> "$GITHUB_ENV"
-            exit 0
-          fi
-
-          retry() {
-            local n=0
-            until [ "$n" -ge 5 ]; do
-              "$@" && return 0
-              n=$((n+1))
-              echo "retry $n/5 failed for: $*" >&2
-              sleep 5
-            done
-            return 1
-          }
-
-          RAW_FLAVOR="${{ inputs.root_flavor }}"
-          case "$(echo "$RAW_FLAVOR" | tr '[:upper:]' '[:lower:]')" in
-            *resukisu*)
-              FLAVOR_NAME="ReSukiSU"
-              KSU_REPO="https://github.com/ReSukiSU/ReSukiSU.git"
-              OFFICIAL_KSU_REPO="https://github.com/ReSukiSU/ReSukiSU.git"
-              DEFAULT_REF="main"
-              OFFICIAL_SYNC_BRANCH="main"
-              MANAGER_WORKFLOW="build-manager.yml"
-              MANAGER_REPO="ReSukiSU/ReSukiSU"
-              ;;
-            *next*|*)
-              FLAVOR_NAME="KernelSU-Next"
-              KSU_REPO="https://github.com/pershoot/KernelSU-Next.git"
-              OFFICIAL_KSU_REPO="https://github.com/KernelSU-Next/KernelSU-Next.git"
-              DEFAULT_REF="dev-susfs"
-              OFFICIAL_SYNC_BRANCH="dev"
-              MANAGER_WORKFLOW="build-manager-ci.yml"
-              MANAGER_REPO="KernelSU-Next/KernelSU-Next"
-              ;;
-          esac
-
-          KSU_INPUT="${{ inputs.ksu_branch }}"
-          if [ -z "$KSU_INPUT" ]; then
-            KSU_INPUT="$DEFAULT_REF"
-          fi
-
-          echo "Resolving root flavor: $FLAVOR_NAME ($KSU_REPO)"
-          echo "Target ref: $KSU_INPUT"
-
-          if git ls-remote --heads "$KSU_REPO" "$KSU_INPUT" | grep -q .; then
-            echo "Cloning $FLAVOR_NAME from branch: $KSU_INPUT"
-            git clone --branch "$KSU_INPUT" "$KSU_REPO" /tmp/kernelsu-repo
-            cd /tmp/kernelsu-repo
-            KSUN_COMMIT=$(git rev-parse HEAD)
-          else
-            echo "Cloning $FLAVOR_NAME from default branch $DEFAULT_REF, checking out commit: $KSU_INPUT"
-            git clone --branch "$DEFAULT_REF" "$KSU_REPO" /tmp/kernelsu-repo
-            cd /tmp/kernelsu-repo
-            git fetch --depth=50 origin "$KSU_INPUT" || true
-            git checkout "$KSU_INPUT" || true
-            KSUN_COMMIT="$KSU_INPUT"
-          fi
-
-          retry git fetch "$OFFICIAL_KSU_REPO" "$OFFICIAL_SYNC_BRANCH"
-          STOCK_COMMIT=$(git merge-base HEAD FETCH_HEAD 2>/dev/null || git rev-parse HEAD)
-          echo "Root stock commit (official sync point): $STOCK_COMMIT"
-
-          COMMITS_COUNT=$(git rev-list --count "$STOCK_COMMIT" 2>/dev/null || echo "0")
-          BASE_VERSION=30000
-          KSU_VERSION=$(expr $COMMITS_COUNT "+" $BASE_VERSION)
-
-          KSU_GIT_TAG=$(git describe --tags --abbrev=0 "$STOCK_COMMIT" 2>/dev/null || echo "no-tag")
-
-          MANAGER_RUN_ID=$(curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors -H "Authorization: Bearer ${GH_TOKEN}" "https://api.github.com/repos/${MANAGER_REPO}/actions/workflows/${MANAGER_WORKFLOW}/runs?head_sha=${STOCK_COMMIT}" | jq -r '.workflow_runs[0].id // empty' 2>/dev/null || echo "")
-          if [[ -n "${MANAGER_RUN_ID:-}" ]]; then
-            KSU_MANAGER="https://github.com/${MANAGER_REPO}/actions/runs/${MANAGER_RUN_ID}"
-          else
-            KSU_MANAGER="https://github.com/${MANAGER_REPO}/releases"
-          fi
-
-          echo "Commits count: $COMMITS_COUNT"
-          echo "KSU Version: $KSU_VERSION"
-          echo "KSU Git Tag: $KSU_GIT_TAG"
-          echo "KSU Manager: $KSU_MANAGER"
-
-          echo "ROOT_IMPL=$FLAVOR_NAME" >> "$GITHUB_ENV"
-          echo "ROOT_MANAGER_NAME=${FLAVOR_NAME} Manager" >> "$GITHUB_ENV"
-          echo "KSUN_BRANCH=$KSU_INPUT" >> "$GITHUB_ENV"
-          echo "KSUN_COMMIT=$KSUN_COMMIT" >> "$GITHUB_ENV"
-          echo "KSU_COMMITS_COUNT=$COMMITS_COUNT" >> "$GITHUB_ENV"
-          echo "KSU_VERSION=$KSU_VERSION" >> "$GITHUB_ENV"
-          echo "KSU_GIT_TAG=$KSU_GIT_TAG" >> "$GITHUB_ENV"
-          echo "KSU_MANAGER=$KSU_MANAGER" >> "$GITHUB_ENV"
-
-          SUSFS_INPUT="${{ inputs.susfs_commit_android16-6-12 }}"
-          if [ -n "$SUSFS_INPUT" ]; then
-            SUSFS_INFO="$SUSFS_INPUT"
-          else
-            SUSFS_INFO="gki-android16-6.12 (latest branch tip)"
-          fi
-          echo "SUSFS_COMMIT=$SUSFS_INFO" >> "$GITHUB_ENV"
-
-      - name: Set release body
-        run: |
-          set -e
-
-          # Generate dynamic commit changelog
-          export CHANGELOG="$(git log -n 15 --pretty=format:'* %h - %s (%cr)' 2>/dev/null || echo '* Initial automated build release')"
-
-          RELEASE_NOTES_PATH="$RELEASE_NOTES"
-          : > release_body.md
-
-          python3 .github/scripts/render_release_body.py "$RELEASE_NOTES_PATH" > release_body.md
-
-      - name: Publish release notes preview
-        run: |
-          {
-            echo "## Release Notes Preview"
-            echo
-            cat release_body.md
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: 📥 Download All Build Artifacts
+      - name: Download Build Artifacts
         uses: actions/download-artifact@v7
         with:
-          path: raw-artifacts
+          path: release-artifacts/
 
-      - name: 📦 Prepare and Package All Artifacts for Release
+      - name: Prepare Release Assets
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p release-assets
+          mkdir -p dist/
+          find release-artifacts/ -name "*.zip" -exec cp -f {} dist/ \;
+          find release-artifacts/ -name "*.apk" -exec cp -f {} dist/ \;
+          find release-artifacts/ -name "*.md" -exec cp -f {} dist/ \;
+          echo "Release assets prepared:"
+          ls -la dist/
 
-          echo "=== Processing all downloaded artifacts ==="
-          for item in raw-artifacts/*; do
-            [ -e "$item" ] || continue
-            base_name="$(basename "$item")"
-
-            # Skip internal summaries if any remain
-            if [[ "$base_name" == *"-Summary" ]]; then
-              continue
-            fi
-
-            if [ -d "$item" ]; then
-              # Check if directory contains exactly one zip file
-              zip_count=$(find "$item" -maxdepth 1 -type f -name "*.zip" | wc -l)
-              file_count=$(find "$item" -maxdepth 1 -type f | wc -l)
-              dir_count=$(find "$item" -mindepth 1 -maxdepth 1 -type d | wc -l)
-
-              if [ "$zip_count" -eq 1 ] && [ "$file_count" -eq 1 ] && [ "$dir_count" -eq 0 ]; then
-                # Move the single zip out directly
-                single_zip=$(find "$item" -maxdepth 1 -type f -name "*.zip")
-                mv -fv "$single_zip" release-assets/
-              else
-                # Directory contains multiple files/subdirs or non-zip files -> zip the whole directory
-                echo "Zipping folder: $base_name into release-assets/${base_name}.zip"
-                (cd "$item" && zip -r -q -9 "${GITHUB_WORKSPACE}/release-assets/${base_name}.zip" .)
-              fi
-            elif [ -f "$item" ]; then
-              mv -fv "$item" release-assets/
-            fi
-          done
-
-          echo "=== All Assets Ready for Release ==="
-          ls -lh release-assets/
-
-      - name: 🚀 Publish to GitHub Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.new_tag }}
-          name: ${{ steps.release_meta.outputs.release_title }}
-          body_path: release_body.md
-          draft: false
+          tag_name: "v6.12.30-android16-${{ github.run_number }}"
+          name: "Kernel 6.12.30-android16 - ${{ inputs.root_flavor }}"
+          draft: ${{ inputs.release_type == 'Draft' }}
           prerelease: ${{ inputs.release_type == 'Pre-Release' }}
-          files: release-assets/*
+          files: dist/*
+          body: |
+            ## GKI Kernel Release (6.12.30-android16)
+            * **Kernel Base:** `6.12.30-android16` (OS Patch Level `2025-07`)
+            * **Root Flavor:** `${{ inputs.root_flavor }}`
+            * **Vendor Module Bypass:** Built-in by default (compatible with Xiaomi HyperOS 3.0.302 & OEM skins)
+            * **All-in-One Flavor Bundles:** Each root flavor includes a dedicated release bundle (`*-Bundle.zip`) containing:
+              1. Flashable Kernel Installer (`*-AnyKernel3.zip`)
+              2. Matching Official Root Manager App (`*.apk`)
+              3. Flashable NetHunter Wireless & Driver Module (`Nethunter-Wireless-Modules.zip`)
+              4. Flashable NoMount VFS Redirection Metamodule (`NoMount-*.zip`)
+              5. Build Summary & Verification Metadata (`*-Summary.md`)

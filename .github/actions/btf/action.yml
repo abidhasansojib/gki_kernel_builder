@@ -1,5 +1,5 @@
-name: 'Enable BTF'
-description: 'Enable CONFIG_DEBUG_INFO_BTF for kernel'
+name: 'Enable BTF & BPF Stack'
+description: 'Enable CONFIG_DEBUG_INFO_BTF, in-kernel eBPF tracing, and FUSE-BPF support'
 inputs:
   version:
     description: 'Kernel config version (e.g., android16-6.12)'
@@ -22,3 +22,22 @@ runs:
       with:
         config_list: |
           CONFIG_DEBUG_INFO_BTF=y
+
+    - name: Enable eBPF Kernel Configs
+      uses: ./.github/actions/set-kernel-config
+      with:
+        config_list: |
+          # eBPF support - tiny safe programs that run in the kernel to trace/control events (CO-RE)
+          CONFIG_BPF_EVENTS=y
+          CONFIG_KPROBE_EVENTS=y
+          CONFIG_UPROBES=y
+          CONFIG_UPROBE_EVENTS=y
+
+    - name: Enable FUSE-BPF Kernel Configs
+      uses: ./.github/actions/set-kernel-config
+      with:
+        config_list: |
+          # FUSE-BPF support - FUSE filesystems backed by eBPF programs
+          CONFIG_FUSE_FS=y
+          CONFIG_BPF_SYSCALL=y
+          CONFIG_FUSE_BPF=y

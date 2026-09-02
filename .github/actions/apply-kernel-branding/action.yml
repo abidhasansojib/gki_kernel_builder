@@ -1,8 +1,12 @@
 name: 'Apply Kernel Branding & Timestamp'
 description: 'Apply kernel version branding string'
 inputs:
+  brand_name:
+    description: 'Kernel branding name (optional, empty for clean stock string)'
+    required: false
+    default: ''
   variant:
-    description: 'Variant of kernel to apply branding to'
+    description: 'Variant of kernel'
     required: false
     default: 'Normal'
   kernel_version:
@@ -30,8 +34,8 @@ runs:
       working-directory: ${{ github.workspace }}/kernel/common
       run: |
         KERNEL_STRING="${{ inputs.kernel_version }}.${{ inputs.sublevel }}-${{ inputs.android_version }}"
-        if [ -n "${{ inputs.variant }}" ] && [ "${{ inputs.variant }}" != "Normal" ]; then
-          KERNEL_STRING="${KERNEL_STRING}-${{ inputs.variant }}"
+        if [ -n "${{ inputs.brand_name }}" ] && [ "${{ inputs.brand_name }}" != "None" ]; then
+          KERNEL_STRING="${KERNEL_STRING}-${{ inputs.brand_name }}"
         fi
         sed -i '$d' scripts/setlocalversion && echo "echo \"$KERNEL_STRING\"" >> scripts/setlocalversion
         chmod +x scripts/setlocalversion
