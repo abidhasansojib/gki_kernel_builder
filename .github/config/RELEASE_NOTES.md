@@ -23,8 +23,10 @@
 ## 📥 Required Downloads & Tools
 
 * **Kernel Flashing Tool**: [Download Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)
-* **Root Manager App**: [Download {{ROOT_MANAGER_NAME}}]({{KSU_MANAGER}})
 * **SUSFS Module**: [Download susfs4ksu-module (by sidex15)](https://github.com/sidex15/susfs4ksu-module/releases)
+
+> [!NOTE]
+> **Root Manager App**: The official matching Root Manager APK is already bundled directly inside your downloaded release package (`*-Bundle.zip`).
 
 ---
 
@@ -35,11 +37,10 @@ Before flashing, open **Settings $\to$ About Phone $\to$ Android Version** and v
 
 ### ⚡ Step 2: Flash Kernel
 1. Open **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** (or your custom recovery).
-2. Select and flash **`*-AnyKernel3.zip`** to the active slot.
-3. 💡 **Recommendation:** Press the **Volume Up (`[VOL+]`)** key during flashing to install **Bypass-Image**. This bypasses OEM vendor module CRC/version mismatches and ensures smooth booting.
+2. Select and flash **`*-AnyKernel3.zip`** to the active slot (vendor module version bypass is baked in automatically).
 
 ### 📱 Step 3: Install Manager App & SUSFS
-* Install the matching **[{{ROOT_MANAGER_NAME}}]({{KSU_MANAGER}})** application.
+* Install the matching **Root Manager APK** extracted from your downloaded release bundle (`*-Bundle.zip`).
 * Flash **[susfs4ksu-module](https://github.com/sidex15/susfs4ksu-module/releases)** in your Root Manager to activate kernel-level root hiding.
 
 ### 🔌 Step 4: Load NetHunter Drivers (Optional)

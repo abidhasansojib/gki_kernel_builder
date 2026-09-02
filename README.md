@@ -94,13 +94,10 @@ The kernel and accompanying flashable `Nethunter-Wireless-Modules.zip` module pr
    - Stock kernel based on `6.12.30-android16`.
    - Flashing utility (e.g. [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher) or custom recovery).
 
-2. **Flashing Kernel**:
-   - Download the generated `AnyKernel3.zip` artifact from Releases or Actions.
-   - Flash the ZIP using Kernel Flasher or custom recovery (vendor module version bypass is applied automatically).
-   - Install the matching Manager app for your selected root flavor:
-     - [KernelSU-Next Manager](https://github.com/KernelSU-Next/KernelSU-Next/releases) *(for KernelSU-Next)*
-     - [SukiSU-Ultra Manager](https://github.com/SukiSU-Ultra/SukiSU-Ultra/releases) *(for SukiSU-Ultra)*
-     - [ReSukiSU Manager](https://github.com/ReSukiSU/ReSukiSU/releases) *(for ReSukiSU)*
+2. **Flashing Kernel & Installing Manager**:
+   - Download the generated all-in-one release package (`*-Bundle.zip`) from Releases or Actions.
+   - Flash `*-AnyKernel3.zip` using Kernel Flasher or custom recovery (vendor module version bypass is applied automatically).
+   - Install the matching Manager APK extracted from the bundle (`KernelSU_Next_*.apk`, `SukiSU_*.apk`, or `ReSukiSU_*.apk`).
    - Reboot device.
 
 3. **External USB WiFi & NetHunter Tools (Optional)**:
