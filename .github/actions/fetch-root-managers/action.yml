@@ -1,5 +1,5 @@
 name: 'Fetch Root Manager APKs'
-description: 'Download the single primary root manager APK for KernelSU-Next, SukiSU-Ultra, or ReSukiSU'
+description: 'Download the matching latest root manager APKs for KernelSU-Next, SukiSU-Ultra, or ReSukiSU'
 inputs:
   flavor:
     description: 'Root flavor (KernelSU-Next, SukiSU-Ultra, ReSukiSU, or All)'
@@ -29,21 +29,25 @@ runs:
         mkdir -p "$OUT_DIR" /tmp/manager-dl
         cd /tmp/manager-dl
 
-        fetch_single_primary_apk() {
+        fetch_latest_release_apks() {
           local owner="$1"
           local repo="$2"
           local flavor_tag="$3"
 
-          echo "[+] Fetching primary release APK for ${owner}/${repo}..."
-          local all_urls=""
+          echo "[+] Fetching latest release APKs for ${owner}/${repo}..."
+          local urls=""
 
-          # 1. Try using GitHub CLI (gh api) with authentication
+          # 1. Try using GitHub CLI (gh api) with authentication for the latest release (index .[0])
           if command -v gh >/dev/null 2>&1; then
-            all_urls=$(gh api "repos/${owner}/${repo}/releases" --jq ".[0].assets[].browser_download_url" 2>/dev/null | grep -i "\.apk$" || true)
+            urls=$(gh api repos/${owner}/${repo}/releases --jq ".[0].assets[] | select(.name | endswith(\".apk\") and (contains(\"debug\") | not)) | .browser_download_url" 2>/dev/null || true)
+            # If no non-debug apk was found, fallback to any apk from latest release
+            if [ -z "$urls" ]; then
+              urls=$(gh api repos/${owner}/${repo}/releases --jq ".[0].assets[] | select(.name | endswith(\".apk\")) | .browser_download_url" 2>/dev/null || true)
+            fi
           fi
 
-          # 2. Fallback to authenticated curl if gh returned empty
-          if [ -z "$all_urls" ]; then
+          # 2. Fallback to authenticated curl for the single latest release if gh returned empty
+          if [ -z "$urls" ]; then
             local auth_header=()
             if [ -n "$GH_TOKEN" ]; then
               auth_header=(-H "Authorization: Bearer $GH_TOKEN")
@@ -51,65 +55,51 @@ runs:
             auth_header+=(-H "Accept: application/vnd.github+json" -H "User-Agent: curl/8.0")
             local rel_json
             rel_json=$(curl -fsSL --retry 5 --retry-delay 3 "${auth_header[@]}" \
-              "https://api.github.com/repos/${owner}/${repo}/releases" 2>/dev/null || true)
+              "https://api.github.com/repos/${owner}/${repo}/releases/latest" 2>/dev/null || true)
+            if [ -z "$rel_json" ] || ! echo "$rel_json" | grep -q '"browser_download_url"'; then
+              rel_json=$(curl -fsSL --retry 5 --retry-delay 3 "${auth_header[@]}" \
+                "https://api.github.com/repos/${owner}/${repo}/releases" 2>/dev/null | jq '.[0]' 2>/dev/null || true)
+            fi
             if [ -n "$rel_json" ]; then
-              all_urls=$(echo "$rel_json" | grep -o '"browser_download_url": *"[^"]*\.apk"' | sed -e 's/"browser_download_url": *"//' -e 's/"$//' || true)
+              urls=$(echo "$rel_json" | grep -o '"browser_download_url": *"[^"]*\.apk"' | sed -e 's/"browser_download_url": *"//' -e 's/"$//' | grep -v -i "debug" || true)
+              if [ -z "$urls" ]; then
+                urls=$(echo "$rel_json" | grep -o '"browser_download_url": *"[^"]*\.apk"' | sed -e 's/"browser_download_url": *"//' -e 's/"$//' || true)
+              fi
             fi
           fi
 
-          if [ -z "$all_urls" ]; then
+          if [ -z "$urls" ]; then
             echo "[-] Warning: Could not find APK release assets for ${owner}/${repo}"
             return 0
           fi
 
-          # Select strictly ONE primary release APK:
-          local chosen_url=""
-          case "$flavor_tag" in
-            *resukisu*)
-              chosen_url=$(echo "$all_urls" | grep -v -i "debug" | grep -i "arm64" | head -n 1 || true)
-              if [ -z "$chosen_url" ]; then
-                chosen_url=$(echo "$all_urls" | grep -v -i "debug" | grep -i "universal" | head -n 1 || true)
-              fi
-              ;;
-            *next*)
-              chosen_url=$(echo "$all_urls" | grep -v -i "debug" | grep -v -i "spoofed" | head -n 1 || true)
-              ;;
-            *)
-              chosen_url=$(echo "$all_urls" | grep -v -i "debug" | head -n 1 || true)
-              ;;
-          esac
-
-          if [ -z "$chosen_url" ]; then
-            chosen_url=$(echo "$all_urls" | head -n 1)
-          fi
-
-          if [ -n "$chosen_url" ]; then
-            local fname="${chosen_url##*/}"
-            echo "[+] Downloading primary APK: $fname"
-            curl -fsSL --retry 5 --retry-delay 3 -o "/tmp/manager-dl/${fname}" "$chosen_url"
+          for url in $urls; do
+            local fname="${url##*/}"
+            echo "[+] Downloading latest release APK: $fname from $url"
+            curl -fsSL --retry 5 --retry-delay 3 -o "/tmp/manager-dl/${fname}" "$url"
             cp -f "/tmp/manager-dl/${fname}" "${OUT_DIR}/${fname}"
-            echo "[✓] Saved single manager APK: ${OUT_DIR}/${fname}"
-          fi
+            echo "[✓] Saved ${OUT_DIR}/${fname}"
+          done
         }
 
-        # Case matching: ReSukiSU MUST be checked before SukiSU-Ultra
+        # Case matching: ReSukiSU MUST be checked before SukiSU-Ultra so *sukisu* does not match resukisu
         case "$(echo "$FLAVOR" | tr '[:upper:]' '[:lower:]')" in
           *resukisu*)
-            fetch_single_primary_apk "ReSukiSU" "ReSukiSU" "resukisu"
+            fetch_latest_release_apks "ReSukiSU" "ReSukiSU" "resukisu"
             ;;
           *ultra*|*sukisu*)
-            fetch_single_primary_apk "SukiSU-Ultra" "SukiSU-Ultra" "sukisu-ultra"
+            fetch_latest_release_apks "SukiSU-Ultra" "SukiSU-Ultra" "sukisu-ultra"
             ;;
           *next*)
-            fetch_single_primary_apk "KernelSU-Next" "KernelSU-Next" "kernelsu-next"
+            fetch_latest_release_apks "KernelSU-Next" "KernelSU-Next" "kernelsu-next"
             ;;
           *all*)
-            fetch_single_primary_apk "KernelSU-Next" "KernelSU-Next" "kernelsu-next"
-            fetch_single_primary_apk "SukiSU-Ultra" "SukiSU-Ultra" "sukisu-ultra"
-            fetch_single_primary_apk "ReSukiSU" "ReSukiSU" "resukisu"
+            fetch_latest_release_apks "KernelSU-Next" "KernelSU-Next" "kernelsu-next"
+            fetch_latest_release_apks "SukiSU-Ultra" "SukiSU-Ultra" "sukisu-ultra"
+            fetch_latest_release_apks "ReSukiSU" "ReSukiSU" "resukisu"
             ;;
           *)
-            fetch_single_primary_apk "KernelSU-Next" "KernelSU-Next" "kernelsu-next"
+            fetch_latest_release_apks "KernelSU-Next" "KernelSU-Next" "kernelsu-next"
             ;;
         esac
 
