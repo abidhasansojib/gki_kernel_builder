@@ -4,7 +4,7 @@
 * **Project Name:** `gki_kernel_builder`
 * **Target Kernel:** Android 16 GKI (`6.12.30-android16`, Sublevel `30`, OS Patch Level `2025-07`)
 * **Primary Build Platform:** **GitHub Actions CI/CD** &mdash; *Notice: The developer's local environment/device does NOT have local compilation toolchains (no Bazel, Clang, or AOSP cross-compilers). All kernel compilation, toolchains, and module packaging are strictly orchestrated in the cloud via GitHub Actions workflows.*
-* **Primary Tested Device:** Redmi Note 14 4G (`tanzanite`) on Xiaomi HyperOS 3.0.302 (Android 16).
+* **Primary Tested Device:** Redmi Note 14 4G (`tanzanite`) on Xiaomi HyperOS 3 (Android 16).
 
 ---
 

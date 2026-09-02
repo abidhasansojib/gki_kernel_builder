@@ -51,7 +51,7 @@ Android 16 GKI kernels are built with Google's modern Clang toolchain under stri
   Modern Clang flags `if (security_dump_masked_av_fn)` as `-Wpointer-bool-conversion` or `-Wtautological-pointer-compare` when turned into an extern function by SUSFS.
   The build workflow automatically scans and patches `selinux_hide.c` across all root flavors to use proper `&func != NULL` or `func != NULL` pointer comparisons.
 * **Module Versioning Bypass**:
-  The Bazel vendor module versioning bypass (`bad_version: return 1;` in `common/kernel/module/version.c`) is baked in automatically by default, producing a single flashable `Image` compatible with Xiaomi HyperOS 3.0.302 and other strict OEM ROMs.
+  The Bazel vendor module versioning bypass (`bad_version: return 1;` in `common/kernel/module/version.c`) is baked in automatically by default, producing a single flashable `Image` compatible with Xiaomi HyperOS 3 and other strict OEM ROMs.
 
 ---
 

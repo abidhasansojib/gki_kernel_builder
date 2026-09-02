@@ -82,7 +82,7 @@ The kernel and accompanying flashable `Nethunter-Wireless-Modules.zip` module pr
 
 * **Tested Device**: **Redmi Note 14 4G (`tanzanite`)** &mdash; everything is fully working!
 * **Target Kernel**: **Android 16 (`6.12.30-android16`)** GKI only.
-* **Compatibility**: Optimized for Xiaomi HyperOS 3.0.302 (Android 16). The kernel automatically integrates the vendor module version-check bypass hack, ensuring OEM hardware drivers (touchscreen, display, modem, sensors) load seamlessly without bootloops.
+* **Compatibility**: Optimized for Xiaomi HyperOS 3 (Android 16). The kernel automatically integrates the vendor module version-check bypass hack, ensuring OEM hardware drivers (touchscreen, display, modem, sensors) load seamlessly without bootloops.
 
 ---
 

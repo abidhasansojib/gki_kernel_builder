@@ -688,7 +688,7 @@ jobs:
             ## GKI Kernel Release (6.12.30-android16)
             * **Kernel Base:** `6.12.30-android16` (OS Patch Level `2025-07`)
             * **Root Flavor:** `${{ inputs.root_flavor }}`
-            * **Vendor Module Bypass:** Built-in by default (compatible with Xiaomi HyperOS 3.0.302 & OEM skins)
+            * **Vendor Module Bypass:** Built-in by default (compatible with Xiaomi HyperOS 3 & OEM skins)
             * **All-in-One Flavor Bundles:** Each root flavor includes a dedicated release bundle (`*-Bundle.zip`) containing:
               1. Flashable Kernel Installer (`*-AnyKernel3.zip`)
               2. Matching Official Root Manager App (`*.apk`)

@@ -18,7 +18,7 @@ body:
     attributes:
       label: OS + Android Version
       description: Your ROM name, OS version, and Android version
-      placeholder: "e.g., Xiaomi HyperOS 3.0.302 (Android 16)"
+      placeholder: "e.g., Xiaomi HyperOS 3 (Android 16)"
     validations:
       required: true
 
