@@ -685,13 +685,18 @@ jobs:
           prerelease: ${{ inputs.release_type == 'Pre-Release' }}
           files: dist/*
           body: |
-            ## GKI Kernel Release (6.12.30-android16)
-            * **Kernel Base:** `6.12.30-android16` (OS Patch Level `2025-07`)
-            * **Root Flavor:** `${{ inputs.root_flavor }}`
-            * **Vendor Module Bypass:** Built-in by default (compatible with Xiaomi HyperOS 3 & OEM skins)
-            * **All-in-One Flavor Bundles:** Each root flavor includes a dedicated release bundle (`*-Bundle.zip`) containing:
-              1. Flashable Kernel Installer (`*-AnyKernel3.zip`)
-              2. Matching Official Root Manager App (`*.apk`)
-              3. Flashable NetHunter Wireless & Driver Module (`Nethunter-Wireless-Modules.zip`)
-              4. Flashable NoMount VFS Redirection Metamodule (`NoMount-*.zip`)
-              5. Build Summary & Verification Metadata (`*-Summary.md`)
+            ## ⚡ Android 16 GKI Kernel Release (6.12.30)
+
+            > **Quick Start:** Download the all-in-one **`*-Bundle.zip`** for your root flavor below. It contains the flashable kernel installer, matching Manager APK, and companion driver modules!
+
+            ### 📦 Bundle Contents
+            * **Flashable Kernel:** `*-AnyKernel3.zip` (with baked-in vendor bypass for Xiaomi HyperOS 3 & OEM ROMs)
+            * **Root Manager:** Matching official Root Manager APK (`*.apk`)
+            * **NetHunter Modules:** `Nethunter-Wireless-Modules.zip` (75+ WiFi drivers, BadUSB HID, SDR, SocketCAN)
+            * **Stealth Stack:** `NoMount-*.zip` (VFS Metamodule) + SUSFS v2.3.0
+            * **Performance:** 17+ in-tree low-overhead memory, caching, and scheduler optimizations
+
+            ### 🚀 Quick Instructions
+            1. Flash **`*-AnyKernel3.zip`** in [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases) or Recovery.
+            2. Install the included **Manager APK** on Android.
+            3. Reboot device and enjoy!

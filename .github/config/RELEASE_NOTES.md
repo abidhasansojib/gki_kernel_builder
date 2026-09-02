@@ -1,50 +1,38 @@
-# GKI Kernel Release (6.12.30-android16)
+# ⚡ Android 16 GKI Kernel (`6.12.30`)
 
-> [!CAUTION]
-> This kernel is built exclusively for devices running **Android 16 GKI (`6.12.30-android16`)**. Ensure you have a backup of your stock `boot.img` before installation.
-
----
-
-## 🔐 Root & Build Metadata
-
-* **Root Solution**: **{{ROOT_IMPL}}**
-* **Root Version**: `{{KSU_VERSION}}` (Tag: `{{KSU_GIT_TAG}}`)
-* **Branch / Commit**: `{{KSUN_BRANCH}}` (`{{KSUN_COMMIT}}`)
-* **SUSFS Branch**: `{{SUSFS_BRANCHES}}`
+> [!TIP]
+> **Quick Start**: Download your desired **`*-Bundle.zip`** below. It contains the flashable kernel, matching Root Manager APK, and companion driver modules all in one package!
 
 ---
 
-## 📜 Commit Changelog
+### 📦 All-in-One Bundle Contents (`*-Bundle.zip`)
 
+| File in Bundle | Purpose | How to Install |
+| :--- | :--- | :--- |
+| **`*-AnyKernel3.zip`** | Flashable kernel installer with built-in vendor bypass | Flash via [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases) or Recovery |
+| **`*.apk`** | Official matching Root Manager App | Install directly on Android |
+| **`Nethunter-Wireless-Modules.zip`** | 75+ USB WiFi, BadUSB HID, SDR & CAN drivers | Flash inside Root Manager |
+| **`NoMount-*.zip`** | Root-hiding VFS Metamodule | Flash inside Root Manager |
+
+---
+
+### 🚀 3-Step Installation Guide
+
+1. **Flash Kernel**: Open **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** (or custom recovery) and flash **`*-AnyKernel3.zip`** to the active slot. *(Vendor module version bypass is baked in automatically)*
+2. **Install Manager**: Install the matching **Manager APK** included in your bundle.
+3. **Reboot**: Reboot your device and verify root access. Optionally flash **`Nethunter-Wireless-Modules.zip`** or **`NoMount-*.zip`** inside the Manager.
+
+---
+
+### 🔐 Build & Feature Details
+* **Target Kernel:** Android 16 GKI (`6.12.30-android16`, Sublevel `30`, OS Patch `2025-07`)
+* **Compatibility:** Xiaomi HyperOS 3 & standard Android 16 GKI devices
+* **Root Flavor:** {{ROOT_IMPL}} (`{{KSU_VERSION}}`)
+* **Stealth Stack:** SUSFS v2.3.0 (`{{SUSFS_BRANCHES}}`) & NoMount VFS Metamodule
+* **NetHunter Stack:** BadUSB HID (`/dev/hidg0`), 75+ USB WiFi drivers (`=m`), SDR & SocketCAN
+* **Performance Suite:** 17+ in-tree low-overhead memory, caching, and scheduler optimizations
+
+---
+
+### 📜 Commit Changelog
 {{CHANGELOG}}
-
----
-
-## 📥 Required Downloads & Tools
-
-* **Kernel Flashing Tool**: [Download Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)
-* **SUSFS Module**: [Download susfs4ksu-module (by sidex15)](https://github.com/sidex15/susfs4ksu-module/releases)
-
-> [!NOTE]
-> **Root Manager App**: The official matching Root Manager APK is already bundled directly inside your downloaded release package (`*-Bundle.zip`).
-
----
-
-## 📲 Installation Instructions
-
-### ⚠️ Step 1: Verify Kernel Version
-Before flashing, open **Settings $\to$ About Phone $\to$ Android Version** and verify that your device's stock kernel is based on **`6.12.30-android16`**.
-
-### ⚡ Step 2: Flash Kernel
-1. Open **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** (or your custom recovery).
-2. Select and flash **`*-AnyKernel3.zip`** to the active slot (vendor module version bypass is baked in automatically).
-
-### 📱 Step 3: Install Manager App & SUSFS
-* Install the matching **Root Manager APK** extracted from your downloaded release bundle (`*-Bundle.zip`).
-* Flash **[susfs4ksu-module](https://github.com/sidex15/susfs4ksu-module/releases)** in your Root Manager to activate kernel-level root hiding.
-
-### 🔌 Step 4: Load NetHunter Drivers (Optional)
-* Flash **`Nethunter-Wireless-Modules.zip`** in your Root Manager to auto-load external USB WiFi, SDR, BadUSB HID, and SocketCAN drivers and firmware.
-
-### 🔄 Step 5: Reboot
-* Reboot your device and verify root access in your manager app.
