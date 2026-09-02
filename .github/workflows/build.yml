@@ -563,6 +563,7 @@ jobs:
         run: |
           set -euo pipefail
           NOMOUNT_DIR="${{ github.workspace }}/nomount-dist"
+          TARGET_ZIP="$NOMOUNT_DIR/NoMount-${{ steps.extract.outputs.file_name }}.zip"
           mkdir -p "$NOMOUNT_DIR"
 
           # 1. Check if a compiled NoMount metamodule ZIP was downloaded
@@ -576,10 +577,13 @@ jobs:
 
           if [ -n "$FOUND_ZIP" ]; then
             echo "[+] Found compiled NoMount metamodule: $FOUND_ZIP"
-            cp -f "$FOUND_ZIP" "$NOMOUNT_DIR/NoMount-${{ steps.extract.outputs.file_name }}.zip"
+            if [ "$FOUND_ZIP" != "$TARGET_ZIP" ]; then
+              cp -f "$FOUND_ZIP" "$TARGET_ZIP"
+              rm -f "$FOUND_ZIP"
+            fi
           elif [ -d "${{ github.workspace }}/kernel/common/NoMount" ]; then
             echo "[+] Packaging NoMount directly from kernel source tree..."
-            (cd "${{ github.workspace }}/kernel/common/NoMount" && zip -r9 "$NOMOUNT_DIR/NoMount-${{ steps.extract.outputs.file_name }}.zip" . -x "*.git*" "out/*")
+            (cd "${{ github.workspace }}/kernel/common/NoMount" && zip -r9 "$TARGET_ZIP" . -x "*.git*" "out/*")
           else
             echo "[!] No NoMount source found to package."
           fi
@@ -618,9 +622,16 @@ jobs:
           fi
 
           # 4. Add NoMount Metamodule (if enabled)
-          if [ -d "${{ github.workspace }}/nomount-dist" ]; then
+          if [ -f "${{ github.workspace }}/nomount-dist/NoMount-${{ steps.extract.outputs.file_name }}.zip" ]; then
             echo "[+] Adding NoMount Metamodule..."
-            cp -f "${{ github.workspace }}/nomount-dist/"*.zip "$BUNDLE_DIR/" 2>/dev/null || true
+            cp -f "${{ github.workspace }}/nomount-dist/NoMount-${{ steps.extract.outputs.file_name }}.zip" "$BUNDLE_DIR/"
+          elif [ -d "${{ github.workspace }}/nomount-dist" ]; then
+            for z in "${{ github.workspace }}/nomount-dist/"*.zip; do
+              if [ -f "$z" ]; then
+                cp -f "$z" "$BUNDLE_DIR/"
+                break
+              fi
+            done
           fi
 
           # 5. Add Summary Markdown
@@ -689,9 +700,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist/
-          find release-artifacts/ -name "*.zip" -exec cp -f {} dist/ \;
-          find release-artifacts/ -name "*.apk" -exec cp -f {} dist/ \;
-          find release-artifacts/ -name "*.md" -exec cp -f {} dist/ \;
+          # Only publish the all-in-one Flavor Bundles to GitHub Releases
+          find release-artifacts/ -name "*-Bundle.zip" -exec cp -f {} dist/ \;
           echo "Release assets prepared:"
           ls -la dist/
 
