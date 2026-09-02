@@ -92,13 +92,14 @@ The kernel and accompanying flashable `Nethunter-Wireless-Modules.zip` module pr
    - Unlocked bootloader.
    - Backup of your current boot image (`boot.img`).
    - Stock kernel based on `6.12.30-android16`.
-   - Flashing utility (e.g. [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher) or custom recovery).
+   - Flashing utility: **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** app.
 
-2. **Flashing Kernel & Installing Manager**:
-   - Download the generated all-in-one release package (`*-Bundle.zip`) from Releases or Actions.
-   - Flash `*-AnyKernel3.zip` using Kernel Flasher or custom recovery (vendor module version bypass is applied automatically).
+2. **Flashing Kernel & Root Setup**:
+   - Download the generated all-in-one release package (`*-Bundle.zip`) from Releases or Actions and extract it.
+   - Flash `*-AnyKernel3.zip` using the **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** app (vendor module version bypass is applied automatically).
    - Install the matching Manager APK extracted from the bundle (`KernelSU_Next_*.apk`, `SukiSU_*.apk`, or `ReSukiSU_*.apk`).
    - Reboot device.
+   - Flash **[susfs4ksu-module (by sidex15)](https://github.com/sidex15/susfs4ksu-module/releases)** in your Root Manager to activate kernel-level root hiding.
 
 3. **External USB WiFi & NetHunter Tools (Optional)**:
    - Download the `Nethunter-Wireless-Modules.zip` module from the release.

@@ -689,7 +689,8 @@ jobs:
 
             ### 📲 Flashing Instructions
             1. Download the all-in-one **`*-Bundle.zip`** for your chosen root flavor and extract it.
-            2. Flash **`*-AnyKernel3.zip`** in [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases) or Recovery. *(Vendor module bypass is built-in)*
+            2. Flash **`*-AnyKernel3.zip`** using the **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** app. *(Vendor module bypass is built-in)*
             3. Install the included **Root Manager APK** (`*.apk`).
             4. Reboot your device.
-            5. *(Optional)* Flash **`Nethunter-Wireless-Modules.zip`** or **`NoMount-*.zip`** inside the Manager.
+            5. Flash **[susfs4ksu-module (by sidex15)](https://github.com/sidex15/susfs4ksu-module/releases)** in your Root Manager for kernel-level root hiding.
+            6. *(Optional)* Flash **`Nethunter-Wireless-Modules.zip`** or **`NoMount-*.zip`** inside the Manager.
