@@ -2,9 +2,6 @@
 
 # GKI Kernel Builder
 
-[![KernelSU](https://img.shields.io/badge/KernelSU--Next-Supported-green)](https://github.com/pershoot/KernelSU-Next)
-[![SUSFS](https://img.shields.io/badge/SUSFS-Integrated-orange)](https://gitlab.com/simonpunk/susfs4ksu)
-[![NetHunter](https://img.shields.io/badge/Kali--NetHunter-Ready-blueviolet)](https://www.kali.org/docs/nethunter/)
 [![Android](https://img.shields.io/badge/Android-16-blue)](https://android.googlesource.com/)
 [![Linux](https://img.shields.io/badge/Kernel-6.12.30-red)](https://kernel.org/)<br>
 A GKI kernel builder for kernel 6.12.30-android16, 2025-07.
