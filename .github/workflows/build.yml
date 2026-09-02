@@ -216,7 +216,7 @@ jobs:
 
   build-kernel:
     name: "Build Kernel (${{ matrix.flavor }})"
-    needs: [resolve-sources]
+    needs: [resolve-sources, build-nomount-module]
     if: ${{ always() && (needs.resolve-sources.result == 'success') }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -292,6 +292,14 @@ jobs:
           sublevel: "30"
           os_patch_level: "2025-07"
           variant: "Normal"
+
+      - name: Download NoMount Metamodule Artifact
+        if: ${{ inputs.use_nomount }}
+        continue-on-error: true
+        uses: actions/download-artifact@v7
+        with:
+          name: NoMount-Metamodule
+          path: ${{ github.workspace }}/nomount-dist
 
       - name: Kernel Fixes
         uses: ./.github/actions/kernel-fixes
@@ -553,11 +561,25 @@ jobs:
           set -euo pipefail
           NOMOUNT_DIR="${{ github.workspace }}/nomount-dist"
           mkdir -p "$NOMOUNT_DIR"
-          if [ -d "${{ github.workspace }}/AnyKernel3/tools" ]; then
-            cp -f ${{ github.workspace }}/AnyKernel3/tools/ak3-core.sh "$NOMOUNT_DIR/" 2>/dev/null || true
+
+          # 1. Check if a compiled NoMount metamodule ZIP was downloaded
+          FOUND_ZIP=""
+          for z in "$NOMOUNT_DIR"/NoMount-*.zip "$NOMOUNT_DIR"/*.zip; do
+            if [ -f "$z" ]; then
+              FOUND_ZIP="$z"
+              break
+            fi
+          done
+
+          if [ -n "$FOUND_ZIP" ]; then
+            echo "[+] Found compiled NoMount metamodule: $FOUND_ZIP"
+            cp -f "$FOUND_ZIP" "$NOMOUNT_DIR/NoMount-${{ steps.extract.outputs.file_name }}.zip"
+          elif [ -d "${{ github.workspace }}/kernel/common/NoMount" ]; then
+            echo "[+] Packaging NoMount directly from kernel source tree..."
+            (cd "${{ github.workspace }}/kernel/common/NoMount" && zip -r9 "$NOMOUNT_DIR/NoMount-${{ steps.extract.outputs.file_name }}.zip" . -x "*.git*" "out/*")
+          else
+            echo "[!] No NoMount source found to package."
           fi
-          cd "${{ github.workspace }}/nomount" 2>/dev/null || cd "${{ github.workspace }}"
-          zip -r9 "$NOMOUNT_DIR/NoMount-${{ steps.extract.outputs.file_name }}.zip" . -x "*.git*" "out/*" 2>/dev/null || true
 
       - name: Upload NoMount Module Artifact
         if: ${{ inputs.use_nomount }}
