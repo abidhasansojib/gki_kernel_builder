@@ -32,13 +32,16 @@ The project supports 3 independent root implementations with automated patch res
   * Cloned from `SukiSU-Ultra` main branch.
   * **Skips `static.patch`** and applies native symbol linkage fixes.
 * **ReSukiSU (`resukisu`):**
-  * Cloned from `ReSukiSU` main branch.
+  * Cloned from `ReSukiSU` main branch (pinned to `3c188288`).
   * **Skips `static.patch`** as ReSukiSU already provides native extern declarations.
+  * Configured with `CONFIG_KSU_MULTI_MANAGER_SUPPORT=n` (isolates manager access) and `CONFIG_KSU_TOOLKIT_SUPPORT=y` (enables built-in root toolkit).
 
 ### 2. Stealth & Root Hiding Stack
 * **SUSFS v2.3.0:**
   * In-tree kernel patches applied to `fs/`, `kernel/`, and `security/` for kernel-level mount isolation, process masking, and symbol hiding. Pinned to latest verified commit `7d91da2d2ce056d1abf378d9199aaf1072d37ab0`.
+  * **Unconditional Open Redirect:** `CONFIG_KSU_SUSFS_OPEN_REDIRECT=y` is always enabled, ensuring path redirection works seamlessly alongside NoMount.
 * **NoMount VFS Redirection Metamodule:**
+  * Pinned to audited commit `d0f57d5c` with SHA-based pre-fetching to withstand upstream `dev` branch rewinds.
   * Auto-cloned and compiled with Zig compiler in GitHub Actions to produce architecture-native **`ko-loader-arm64`** and **`ko-loader-arm`** binaries inside `bin/`.
 
 ### 3. Automated Root Manager App Fetching

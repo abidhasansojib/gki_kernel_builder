@@ -218,3 +218,11 @@ runs:
       with:
         config_list: |
           CONFIG_KSU=y
+
+    - name: Configure ReSukiSU Options
+      if: ${{ contains(inputs.flavor, 'resukisu') || contains(inputs.flavor, 'ReSukiSU') || env.ROOT_IMPLEMENTATION == 'resukisu' }}
+      uses: ./.github/actions/set-kernel-config
+      with:
+        config_list: |
+          CONFIG_KSU_MULTI_MANAGER_SUPPORT=n
+          CONFIG_KSU_TOOLKIT_SUPPORT=y

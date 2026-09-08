@@ -78,7 +78,7 @@ runs:
 
           if [ $attempt -lt $MAX_RETRIES ]; then
             echo "Cleaning workspace and retrying after ${RETRY_DELAY_SHORT}s..."
-            rm -rf .repo || true
+            find "$PWD" -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || rm -rf .repo || true
             sleep $RETRY_DELAY_SHORT
           else
             echo "All $MAX_RETRIES attempts failed." >&2

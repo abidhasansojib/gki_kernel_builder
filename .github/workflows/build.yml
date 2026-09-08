@@ -135,11 +135,11 @@ jobs:
 
           # Read verified pins from config
           COMMITS_FILE=".github/config/commits.json"
-          PIN_NOMOUNT=$(jq -r '.nomount.dev // empty' "$COMMITS_FILE" 2>/dev/null || echo "9a1431782f390453de54610fb91bdad03eab5b43")
+          PIN_NOMOUNT=$(jq -r '.nomount.dev // empty' "$COMMITS_FILE" 2>/dev/null || echo "d0f57d5c37ff02aae2299daded57919153240cb3")
           PIN_SUSFS=$(jq -r '."susfs"."gki-android16-6.12" // empty' "$COMMITS_FILE" 2>/dev/null || echo "7d91da2d2ce056d1abf378d9199aaf1072d37ab0")
           PIN_KSUN=$(jq -r '."kernelsu_next"."dev-susfs" // empty' "$COMMITS_FILE" 2>/dev/null || echo "5a4a71874caaad06aa126f761c93391de1d32361")
           PIN_ULTRA=$(jq -r '."sukisu_ultra"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "d160166668ce7565d3ec85a210f9e9cf2996ca65")
-          PIN_RESUKISU=$(jq -r '."resukisu"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "0b5efe9e0102c43ca5c41174d500f5a7080cd0c7")
+          PIN_RESUKISU=$(jq -r '."resukisu"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "3c1882886dbbb54f4aae7ddf205f8ccde32c2a34")
 
           pick() {
             local pinned="$1" repo="$2" ref="$3"
@@ -326,7 +326,6 @@ jobs:
           os_patch_level: "2025-07"
           sublevel: ${{ steps.extract.outputs.sublevel }}
           root_flavor: ${{ matrix.flavor }}
-          nomount_enabled: ${{ inputs.use_nomount }}
 
       - name: Fix selinux_hide static declarations & pointer-bool-conversion on 6.12
         shell: bash
