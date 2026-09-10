@@ -215,9 +215,14 @@ runs:
         chmod 666 /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2>/dev/null || true
         chmod -R 666 /dev/bus/usb/ 2>/dev/null || true
 
-        # Performance tuning: enforce BBR3 TCP congestion control and MGLRU
+        # Performance tuning: enforce BBR3 TCP congestion control, MGLRU, and SCHEDUTIL CPU governor
         sysctl -w net.ipv4.tcp_congestion_control=bbr3 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null || true
         [ -f /sys/kernel/mm/lru_gen/enabled ] && echo 7 > /sys/kernel/mm/lru_gen/enabled 2>/dev/null || true
+        if [ ! -f /data/adb/service.d/00-cpugov.sh ]; then
+          for p in /sys/devices/system/cpu/cpufreq/policy*; do
+            [ -f "$p/scaling_governor" ] && (grep -q "schedutil" "$p/scaling_available_governors" 2>/dev/null && echo schedutil > "$p/scaling_governor" || true) 2>/dev/null || true
+          done
+        fi
 
         # Multi-Pass Module Loader from single lkm/ directory
         MODULE_SRC="$MODDIR/lkm"
