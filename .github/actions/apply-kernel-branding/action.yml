@@ -37,5 +37,7 @@ runs:
         if [ -n "${{ inputs.brand_name }}" ] && [ "${{ inputs.brand_name }}" != "None" ]; then
           KERNEL_STRING="${KERNEL_STRING}-${{ inputs.brand_name }}"
         fi
-        sed -i '$d' scripts/setlocalversion && echo "echo \"$KERNEL_STRING\"" >> scripts/setlocalversion
-        chmod +x scripts/setlocalversion
+        if [ -f scripts/setlocalversion ]; then
+          sed -i "2i echo \"$KERNEL_STRING\"; exit 0" scripts/setlocalversion
+          chmod +x scripts/setlocalversion
+        fi

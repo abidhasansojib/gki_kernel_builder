@@ -40,44 +40,59 @@ runs:
 
         echo "=== Fetching Wireless & SDR Firmware ==="
         FIRMWARE_DIR="$STAGING_DIR/system/etc/firmware"
+        mkdir -p "$FIRMWARE_DIR"
 
-        # Download standard Realtek, Atheros, MediaTek, Ralink, and ZyDAS firmware
-        curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/rt2870.bin" \
-          "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rt2870.bin" 2>/dev/null || true
-        curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/mt7601u.bin" \
-          "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/mt7601u.bin" 2>/dev/null || true
-        curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/carl9170-1.fw" \
-          "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/carl9170-1.fw" 2>/dev/null || true
+        # Upstream Linux-Firmware repository and OpenELEC mirror
+        KF_URL="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain"
+        OE_URL="https://raw.githubusercontent.com/OpenELEC/wlan-firmware/master/firmware"
 
+        # Download standard Ralink & Carl9170 firmware
+        curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/rt2870.bin" "$KF_URL/rt2870.bin" 2>/dev/null || true
+        curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/rt73.bin" "$KF_URL/rt73.bin" 2>/dev/null || true
+        curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/carl9170-1.fw" "$KF_URL/carl9170-1.fw" 2>/dev/null || true
+
+        # MediaTek (mt7601u, mt7610u, mt7662u)
         mkdir -p "$FIRMWARE_DIR/mediatek"
-        for fw in mt7662u.bin mt7662u_rom_patch.bin mt7610u.bin; do
-          curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/mediatek/$fw" \
-            "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/mediatek/$fw" 2>/dev/null || true
+        for fw in mt7601u.bin mt7610u.bin mt7662u.bin mt7662u_rom_patch.bin; do
+          curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/mediatek/$fw" "$KF_URL/mediatek/$fw" 2>/dev/null || true
         done
+        # Ensure mt7601u.bin is also in root firmware dir for drivers querying legacy path
+        cp -vf "$FIRMWARE_DIR/mediatek/mt7601u.bin" "$FIRMWARE_DIR/mt7601u.bin" 2>/dev/null || true
 
+        # Realtek RTW88 AC/AX series
         mkdir -p "$FIRMWARE_DIR/rtw88"
-        for fw in rtw8822c_fw.bin rtw8822b_fw.bin rtw8821c_fw.bin rtw8723d_fw.bin; do
-          curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/rtw88/$fw" \
-            "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtw88/$fw" 2>/dev/null || true
+        for fw in rtw8822c_fw.bin rtw8822c_wow_fw.bin rtw8822b_fw.bin rtw8821c_fw.bin rtw8723d_fw.bin; do
+          curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/rtw88/$fw" "$KF_URL/rtw88/$fw" 2>/dev/null || true
         done
 
+        # Realtek RTLWIFI & RTL8XXXU series
         mkdir -p "$FIRMWARE_DIR/rtlwifi"
-        for fw in rtl8192cufw.bin rtl8188eufw.bin rtl8723aufw_B.bin rtl8192eu_nic.bin rtl8723bu_nic.bin rtl8188eu_nic.bin; do
-          curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/rtlwifi/$fw" \
-            "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtlwifi/$fw" 2>/dev/null || true
+        for fw in rtl8188eufw.bin rtl8188fufw.bin rtl8192cufw.bin rtl8192cufw_A.bin rtl8192cufw_B.bin rtl8192cufw_TMSC.bin rtl8192eu_nic.bin rtl8192fufw.bin rtl8710bufw_SMIC.bin rtl8710bufw_UMC.bin rtl8723aufw_A.bin rtl8723aufw_B.bin rtl8723aufw_B_NoBT.bin rtl8723bu_nic.bin; do
+          curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/rtlwifi/$fw" "$KF_URL/rtlwifi/$fw" 2>/dev/null || true
         done
 
+        # Atheros ATH9K-HTC series (TP-Link TL-WN722N v1, Alfa AWUS036NHA)
         mkdir -p "$FIRMWARE_DIR/ath9k_htc"
-        for fw in htc_9271.fw htc_7010.fw htc_9271-1.4.0.fw htc_7010-1.4.0.fw; do
-          curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/ath9k_htc/$fw" \
-            "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/ath9k_htc/$fw" 2>/dev/null || true
+        for fw in htc_9271.fw htc_7010.fw; do
+          curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/$fw" "$KF_URL/$fw" 2>/dev/null || true
+          cp -vf "$FIRMWARE_DIR/$fw" "$FIRMWARE_DIR/ath9k_htc/$fw" 2>/dev/null || true
+        done
+        for fw in htc_9271-1.4.0.fw htc_7010-1.4.0.fw; do
+          curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/ath9k_htc/$fw" "$KF_URL/ath9k_htc/$fw" 2>/dev/null || true
         done
 
+        # ZyDAS ZD1211 / ZD1211B
         mkdir -p "$FIRMWARE_DIR/zd1211"
         for fw in zd1211_ub zd1211_uphr zd1211_ur zd1211b_ub zd1211b_uphr zd1211b_ur; do
-          curl -LSs --retry 5 --retry-delay 5 -o "$FIRMWARE_DIR/zd1211/$fw" \
-            "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/zd1211/$fw" 2>/dev/null || true
+          curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/zd1211/$fw" "$OE_URL/zd1211/$fw" 2>/dev/null || true
         done
+
+        # Mirror firmware to vendor directories for universal OEM ueventd detection
+        echo "=== Mirroring Firmware to Vendor Trees for Universal ueventd Detection ==="
+        mkdir -p "$STAGING_DIR/vendor/firmware"
+        mkdir -p "$STAGING_DIR/vendor/etc/firmware"
+        cp -rf "$FIRMWARE_DIR/"* "$STAGING_DIR/vendor/firmware/" 2>/dev/null || true
+        cp -rf "$FIRMWARE_DIR/"* "$STAGING_DIR/vendor/etc/firmware/" 2>/dev/null || true
 
         echo "=== Creating Module Metadata & Scripts ==="
         printf 'id=nethunter_wireless_modules\n' > "$STAGING_DIR/module.prop"
@@ -143,7 +158,7 @@ runs:
         for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
           if [ -f "$MODDIR/lkm/$core_ko" ]; then
             modbase=$(echo "${core_ko%.ko}" | tr '-' '_')
-            if ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
+            if [ ! -d "/sys/module/$modbase" ] && ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
               insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
             fi
           fi
@@ -183,7 +198,7 @@ runs:
           for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
             if [ -f "$MODULE_SRC/$core_ko" ]; then
               modbase=$(echo "${core_ko%.ko}" | tr '-' '_')
-              if ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
+              if [ ! -d "/sys/module/$modbase" ] && ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
                 insmod "$MODULE_SRC/$core_ko" 2>/dev/null || ksud insmod "$MODULE_SRC/$core_ko" 2>/dev/null || true
               fi
             fi
@@ -195,7 +210,7 @@ runs:
               [ -f "$ko" ] || continue
               modname=$(basename "$ko")
               modbase=$(echo "${modname%.ko}" | tr '-' '_')
-              if ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
+              if [ ! -d "/sys/module/$modbase" ] && ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
                 insmod "$ko" 2>/dev/null || ksud insmod "$ko" 2>/dev/null || true
               fi
             done

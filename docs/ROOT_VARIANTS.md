@@ -18,16 +18,17 @@ The build system supports three distinct root flavors selectable via the `root_f
 
 ## 2. Stealth & Hook Coexistence Architecture
 
-To achieve root hiding while avoiding kernel overhead and VFS hook collisions, the build implements dynamic coexistence rules:
+To achieve comprehensive root hiding while maintaining stability and compatibility, the build integrates both SUSFS and NoMount:
 
 ```mermaid
 flowchart TD
-    A[Feature Selection] --> B{NoMount Active?}
-    B -->|Yes| C[Set CONFIG_KSU_SUSFS_OPEN_REDIRECT=n]
-    B -->|No| D[Set CONFIG_KSU_SUSFS_OPEN_REDIRECT=y]
-    C --> E[NoMount Handles VFS Stealth Hooks]
-    D --> F[SUSFS Handles File Redirection Hooks]
-    E --> G[Clean VFS Layer - Zero Overhead Collision]
+    A[Stealth Stack Integration] --> B[SUSFS v2.3.0]
+    A --> C[NoMount Metamodule]
+    B --> D[Path Redirection: CONFIG_KSU_SUSFS_OPEN_REDIRECT=y]
+    B --> E[Kernel Hiding: kstat, uname, mounts, symbols]
+    C --> F[VFS Inode & Mount Isolation Hooks]
+    D --> G[Unified Root-Hiding Architecture]
+    E --> G
     F --> G
 ```
 
@@ -37,9 +38,8 @@ flowchart TD
    * Provides suspicious path hiding, fake mount IDs (`mnt_id`), kstat spoofing, `uname` spoofing, and symbol hiding from `/proc/kallsyms`.
 2. **NoMount VFS Hooks** (`maxsteeel/nomount`):
    * Injects low-level VFS mounting stealth hooks directly into kernel filesystem structures.
-3. **Automated Coexistence Toggle**:
-   * When NoMount is enabled (`nomount_enabled: "true"`), `CONFIG_KSU_SUSFS_OPEN_REDIRECT` is automatically disabled (`=n`).
-   * When NoMount is absent, `CONFIG_KSU_SUSFS_OPEN_REDIRECT` is enabled (`=y`).
+3. **Unconditional Open Redirect**:
+   * `CONFIG_KSU_SUSFS_OPEN_REDIRECT=y` is always enabled, ensuring path redirection works seamlessly alongside NoMount.
 
 ---
 

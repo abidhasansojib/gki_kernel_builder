@@ -34,8 +34,3 @@ runs:
           CONFIG_TMPFS_POSIX_ACL=y
           CONFIG_KALLSYMS=y
           CONFIG_KALLSYMS_ALL=y
-          CONFIG_BPF_EVENTS=y
-          CONFIG_KPROBE_EVENTS=y
-          CONFIG_UPROBES=y
-          CONFIG_UPROBE_EVENTS=y
-          CONFIG_FUSE_BPF=y

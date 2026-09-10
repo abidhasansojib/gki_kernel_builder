@@ -97,6 +97,26 @@ The project supports 3 independent root implementations with automated patch res
 
 ---
 
+## 🚀 Recent Architecture Improvements & Fixes
+* **Pinned Commit Support for Root Flavors:** Passed `matrix.commit` into `kernelsu/action.yml` so `commit_mode: verified` strictly checks out the audited commit SHA instead of branch tips.
+* **Isolated Pin Promotion Job:** Moved pin promotion from inside the matrix runner into a post-build `promote-pins` job, eliminating multi-runner git race conflicts and premature promotions.
+* **Real Bazel Cache Restoration:** Integrated `actions/cache@v4` in `cache-setup/action.yml` to restore and save `/home/runner/.cache/bazel` across runs.
+* **CIFS Input Decoupling:** Removed unconditional CIFS invocation inside `networking/action.yml`, restoring granular control via `use_cifs`.
+* **Full Inline Shell Script Validation:** Enhanced `validate_shell.py` to extract all 60+ inline `run:` blocks from workflows and composite actions and validate their syntax via `bash -n`.
+* **Heredoc Compliance in FUSE-BPF:** Replaced base64 string dumps with clean, standard heredocs in `fuse-bpf/action.yml`.
+* **Stable Zig Compiler Pinning:** Pinned Zig version to `0.13.0` in `nomount-metamodule/action.yml` for CI build stability.
+* **Idempotent IPC Symbol Exports:** Protected `EXPORT_SYMBOL_GPL(put_ipc_ns)` and `EXPORT_SYMBOL_GPL(init_ipc_ns)` in `droidspaces/action.yml` against duplicate symbol appends.
+* **Automatic Sublevel Detection:** Fixed Makefile sublevel extraction in `extract-sublevel-file-name/action.yml`.
+* **Optimized Docker Cache Pruning:** Switched to `docker system prune -af --volumes` in `disk-cleanup/action.yml` to maximize free runner disk space.
+* **Patch Rejection Step Summary:** Added rejection count reporting directly into `build-summary` to surface patch collisions immediately.
+* **Documentation Alignment:** Updated `docs/ROOT_VARIANTS.md` to reflect unconditional `CONFIG_KSU_SUSFS_OPEN_REDIRECT=y`.
+* **Prerequisite Job Early-Abort:** Updated `build-kernel` condition to abort early if `build-nomount-module` fails, saving runner time.
+* **Shallow Git Clones:** Added `--depth=1` to dependency clones in `setup-build-environment/action.yml` to minimize bandwidth and checkout latency.
+* **Misc BPF Config Decoupling:** Removed duplicate BPF configs from `misc/action.yml` so `use_bpf` maintains strict control.
+* **Robust Kernel Branding Script:** Replaced `$d` deletion in `apply-kernel-branding/action.yml` with top-of-file injection to guarantee script integrity.
+
+---
+
 ## ⚠️ Strict Operational Rules for AI Agents
 
 1. **Zero-Tolerance for Errors & Bootloop Prevention:**

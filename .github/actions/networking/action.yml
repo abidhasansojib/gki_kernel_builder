@@ -30,8 +30,3 @@ runs:
         version: ${{ inputs.version }}
         kernel_version: ${{ inputs.kernel_version }}
         sublevel: ${{ inputs.sublevel }}
-
-    - name: Setup CIFS Configs
-      uses: ./.github/actions/cifs
-      with:
-        version: ${{ inputs.version }}

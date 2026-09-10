@@ -47,10 +47,16 @@ runs:
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
       run: |
-        echo >> "${{ github.workspace }}/kernel/common/ipc/namespace.c"
-        echo 'EXPORT_SYMBOL_GPL(put_ipc_ns);' >> "${{ github.workspace }}/kernel/common/ipc/namespace.c"
-        echo >> "${{ github.workspace }}/kernel/common/ipc/msgutil.c"
-        echo 'EXPORT_SYMBOL_GPL(init_ipc_ns);' >> "${{ github.workspace }}/kernel/common/ipc/msgutil.c"
+        NS_FILE="${{ github.workspace }}/kernel/common/ipc/namespace.c"
+        MSG_FILE="${{ github.workspace }}/kernel/common/ipc/msgutil.c"
+        if [ -f "$NS_FILE" ] && ! grep -q "EXPORT_SYMBOL_GPL(put_ipc_ns);" "$NS_FILE"; then
+          echo >> "$NS_FILE"
+          echo 'EXPORT_SYMBOL_GPL(put_ipc_ns);' >> "$NS_FILE"
+        fi
+        if [ -f "$MSG_FILE" ] && ! grep -q "EXPORT_SYMBOL_GPL(init_ipc_ns);" "$MSG_FILE"; then
+          echo >> "$MSG_FILE"
+          echo 'EXPORT_SYMBOL_GPL(init_ipc_ns);' >> "$MSG_FILE"
+        fi
 
     - name: Enable Kernel Configs
       uses: ./.github/actions/set-kernel-config

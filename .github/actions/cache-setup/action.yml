@@ -21,7 +21,16 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Setup Bazel Cache
+    - name: Setup Bazel Cache Directory
       uses: ./.github/actions/cache-bazel-setup
       with:
         version: ${{ inputs.version }}
+
+    - name: Restore / Save Bazel Disk Cache
+      uses: actions/cache@v4
+      with:
+        path: /home/runner/.cache/bazel
+        key: bazel-cache-${{ inputs.version }}-${{ inputs.sublevel }}-${{ github.sha }}
+        restore-keys: |
+          bazel-cache-${{ inputs.version }}-${{ inputs.sublevel }}-
+          bazel-cache-${{ inputs.version }}-

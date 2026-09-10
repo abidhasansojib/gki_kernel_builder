@@ -18,7 +18,7 @@ runs:
     - name: Set up Zig
       uses: jetsung/setup-zig@v0.0.4
       with:
-        version: master
+        version: 0.13.0
 
     - name: Build and package matching metamodule
       id: package

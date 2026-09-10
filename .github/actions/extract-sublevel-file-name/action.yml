@@ -38,7 +38,7 @@ runs:
         SUBLEVEL="${{ inputs.sublevel }}"
         if [ -f "${{ github.workspace }}/kernel/common/Makefile" ]; then
           EXTRACTED="$(grep '^SUBLEVEL = ' "${{ github.workspace }}/kernel/common/Makefile" | awk '{print $3}')"
-          if [ "${{ inputs.os_patch_level }}" = "lts" ] && [ -n "$EXTRACTED" ]; then
+          if [ -n "$EXTRACTED" ]; then
             SUBLEVEL="$EXTRACTED"
           fi
         fi

@@ -135,11 +135,11 @@ jobs:
 
           # Read verified pins from config
           COMMITS_FILE=".github/config/commits.json"
-          PIN_NOMOUNT=$(jq -r '.nomount.dev // empty' "$COMMITS_FILE" 2>/dev/null || echo "d0f57d5c37ff02aae2299daded57919153240cb3")
-          PIN_SUSFS=$(jq -r '."susfs"."gki-android16-6.12" // empty' "$COMMITS_FILE" 2>/dev/null || echo "7d91da2d2ce056d1abf378d9199aaf1072d37ab0")
-          PIN_KSUN=$(jq -r '."kernelsu_next"."dev-susfs" // empty' "$COMMITS_FILE" 2>/dev/null || echo "5a4a71874caaad06aa126f761c93391de1d32361")
-          PIN_ULTRA=$(jq -r '."sukisu_ultra"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "d160166668ce7565d3ec85a210f9e9cf2996ca65")
-          PIN_RESUKISU=$(jq -r '."resukisu"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "3c1882886dbbb54f4aae7ddf205f8ccde32c2a34")
+          PIN_NOMOUNT=$(jq -r '.nomount.dev // empty' "$COMMITS_FILE" 2>/dev/null || echo "09257d7bee031f35124ed7a39e6094a4395d5746")
+          PIN_SUSFS=$(jq -r '."susfs"."gki-android16-6.12" // empty' "$COMMITS_FILE" 2>/dev/null || echo "fb58aef70a9c2aca8f0f85fba14017af94c4e789")
+          PIN_KSUN=$(jq -r '."kernelsu_next"."dev-susfs" // empty' "$COMMITS_FILE" 2>/dev/null || echo "ca10476f73698c1e6ac8b23415f2993e7e8ebc27")
+          PIN_ULTRA=$(jq -r '."sukisu_ultra"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "9fbe8fe8ca90c62c259c5894bf96d02ac31209b9")
+          PIN_RESUKISU=$(jq -r '."resukisu"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "23a40c0f1dc047ee73a1dfd70a3f14df70021cac")
 
           pick() {
             local pinned="$1" repo="$2" ref="$3"
@@ -217,7 +217,7 @@ jobs:
   build-kernel:
     name: "Build Kernel (${{ matrix.flavor }})"
     needs: [resolve-sources, build-nomount-module]
-    if: ${{ always() && (needs.resolve-sources.result == 'success') }}
+    if: ${{ needs.resolve-sources.result == 'success' && (needs.build-nomount-module.result == 'success' || needs.build-nomount-module.result == 'skipped') }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
@@ -315,6 +315,7 @@ jobs:
         with:
           flavor: ${{ matrix.flavor }}
           ksu_branch: ${{ matrix.ref }}
+          commit: ${{ matrix.commit }}
 
       - name: SUSFS
         uses: ./.github/actions/susfs
@@ -522,6 +523,7 @@ jobs:
           - **Root Flavor:** __ROOT_FLAVOR__
           - **Vendor Bypass:** Baked In (Default)
           - **Commit Mode:** __COMMIT_MODE__
+          - **Patch Rejects:** __REJ_STATUS__
           - **NoMount Metamodule:** __NOMOUNT_STATUS__
           - **NetHunter Module:** __NETHUNTER_STATUS__
           - **Performance Patches:** __PERF_STATUS__
@@ -529,9 +531,17 @@ jobs:
           EOF
           sed -i 's/^[[:space:]]*//' "$SUMMARY_FILE"
 
+          REJ_COUNT="${{ steps.scan.outputs.rej_count || '0' }}"
+          if [ "$REJ_COUNT" -eq 0 ] 2>/dev/null; then
+            REJ_DISPLAY="0 (Clean)"
+          else
+            REJ_DISPLAY="⚠️ ${REJ_COUNT} rejects (Check Rejects artifact)"
+          fi
+
           sed -i "s/__STATUS__/${STATUS}/g" "$SUMMARY_FILE"
           sed -i "s/__ROOT_FLAVOR__/${{ matrix.flavor }}/g" "$SUMMARY_FILE"
           sed -i "s/__COMMIT_MODE__/${{ inputs.commit_mode }}/g" "$SUMMARY_FILE"
+          sed -i "s/__REJ_STATUS__/${REJ_DISPLAY}/g" "$SUMMARY_FILE"
           sed -i "s/__NOMOUNT_STATUS__/${{ inputs.use_nomount }}/g" "$SUMMARY_FILE"
           sed -i "s/__NETHUNTER_STATUS__/${{ inputs.use_nethunter }}/g" "$SUMMARY_FILE"
           sed -i "s/__PERF_STATUS__/${{ inputs.use_perf }}/g" "$SUMMARY_FILE"
@@ -653,8 +663,17 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
-      - name: Promote Verified Pins (Update Mode)
-        if: ${{ success() && inputs.commit_mode == 'update' }}
+  promote-pins:
+    name: "Promote Verified Pins"
+    needs: [build-kernel, resolve-sources]
+    if: ${{ success() && inputs.commit_mode == 'update' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Promote Verified Pins
         shell: bash
         env:
           NOMOUNT_SHA: ${{ needs.resolve-sources.outputs.nomount_commit }}
@@ -664,9 +683,9 @@ jobs:
           RESUKISU_SHA: ${{ needs.resolve-sources.outputs.resukisu_commit }}
           APPROVE_NOMOUNT: ${{ inputs.use_nomount }}
           APPROVE_SUSFS: 'true'
-          APPROVE_KERNELSU_NEXT: ${{ matrix.flavor == 'KernelSU-Next' || inputs.root_flavor == 'All' }}
-          APPROVE_SUKISU_ULTRA: ${{ matrix.flavor == 'SukiSU-Ultra' || inputs.root_flavor == 'All' }}
-          APPROVE_RESUKISU: ${{ matrix.flavor == 'ReSukiSU' || inputs.root_flavor == 'All' }}
+          APPROVE_KERNELSU_NEXT: ${{ inputs.root_flavor == 'KernelSU-Next' || inputs.root_flavor == 'All' }}
+          APPROVE_SUKISU_ULTRA: ${{ inputs.root_flavor == 'SukiSU-Ultra' || inputs.root_flavor == 'All' }}
+          APPROVE_RESUKISU: ${{ inputs.root_flavor == 'ReSukiSU' || inputs.root_flavor == 'All' }}
         run: |
           set -euo pipefail
           echo "Promoting verified pins on successful build..."
@@ -704,21 +723,37 @@ jobs:
           echo "Release assets prepared:"
           ls -la dist/
 
+          FLAVOR="${{ inputs.root_flavor }}"
+          if [ "$FLAVOR" = "All" ]; then
+            RELEASE_NAME="Kernel 6.12.30-android16 — Release #${{ github.run_number }} (All Flavors)"
+          else
+            RELEASE_NAME="Kernel 6.12.30-android16 — Release #${{ github.run_number }} (${FLAVOR})"
+          fi
+          echo "RELEASE_NAME=${RELEASE_NAME}" >> "$GITHUB_ENV"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "v6.12.30-android16-${{ github.run_number }}"
-          name: "Kernel 6.12.30-android16 - ${{ inputs.root_flavor }}"
+          name: ${{ env.RELEASE_NAME }}
           draft: ${{ inputs.release_type == 'Draft' }}
           prerelease: ${{ inputs.release_type == 'Pre-Release' }}
           files: dist/*
           body: |
-            ## ⚡ Android 16 GKI Kernel (`6.12.30`)
+            ## ⚡ Android 16 GKI Kernel (`6.12.30`) — Release #${{ github.run_number }}
+
+            ### 📦 Build & Release Information
+            - **Kernel Version:** `6.12.30-android16`
+            - **OS Patch Level:** `2025-07`
+            - **Root Implementation:** `${{ inputs.root_flavor }}`
+            - **Vendor Module Bypass:** Baked In (`bad_version: return 1;`)
+            - **Stealth Integration:** SUSFS v2.3.0 + NoMount VFS Metamodule
+            - **NetHunter Driver Stack:** 75+ Wireless WiFi drivers (`=m`), BadUSB HID (`/dev/hidg*`), CAN-Bus & RTL-SDR
 
             ### 📲 Flashing Instructions
-            1. Download the all-in-one **`*-Bundle.zip`** for your chosen root flavor and extract it.
+            1. Download the all-in-one **`*-Bundle.zip`** matching your chosen root flavor and extract it.
             2. Flash **`*-AnyKernel3.zip`** using the **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** app. *(Vendor module bypass is built-in)*
-            3. Install the included **Root Manager APK** (`*.apk`).
+            3. Install the matching **Root Manager APK** (`*.apk`) included in the bundle.
             4. Reboot your device.
             5. Flash **[susfs4ksu-module (by sidex15)](https://github.com/sidex15/susfs4ksu-module/releases)** in your Root Manager for kernel-level root hiding.
-            6. *(Optional)* Flash **`Nethunter-Wireless-Modules.zip`** or **`NoMount-*.zip`** inside the Manager.
+            6. *(Optional)* Flash **`Nethunter-Wireless-Modules.zip`** or **`NoMount-*.zip`** inside the Root Manager.

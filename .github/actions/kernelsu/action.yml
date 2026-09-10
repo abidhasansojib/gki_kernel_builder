@@ -9,6 +9,10 @@ inputs:
     description: 'Branch or commit (empty = default for selected flavor)'
     required: false
     default: ""
+  commit:
+    description: 'Pinned commit SHA (used in verified mode)'
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -63,9 +67,13 @@ runs:
         if [ -z "$KSU_INPUT" ]; then
           KSU_INPUT="$DEFAULT_REF"
         fi
+        PINNED_COMMIT="${{ inputs.commit }}"
 
         echo "Selected root flavor: $FLAVOR ($DIR_NAME)"
         echo "Target ref: $KSU_INPUT"
+        if [ -n "$PINNED_COMMIT" ]; then
+          echo "Target pinned commit: $PINNED_COMMIT"
+        fi
 
         # Download via setup.sh or git clone
         if curl -fsSL "$SETUP_URL" &>/dev/null; then
@@ -92,8 +100,17 @@ runs:
           TARGET_DIR="$DIR_NAME"
         fi
 
-        # Fetch and checkout target ref if specified
-        if [ "$KSU_INPUT" != "$DEFAULT_REF" ] && [ -d "$TARGET_DIR" ]; then
+        # If a verified commit SHA was provided, check it out explicitly
+        if [ -n "$PINNED_COMMIT" ] && [ -d "$TARGET_DIR" ]; then
+          echo "Checking out verified pinned commit: $PINNED_COMMIT"
+          cd "$TARGET_DIR"
+          retry git fetch --depth=50 origin "$PINNED_COMMIT" 2>/dev/null || retry git fetch origin "$PINNED_COMMIT" 2>/dev/null || true
+          git checkout "$PINNED_COMMIT" || {
+            echo "ERROR: Failed to checkout pinned commit $PINNED_COMMIT" >&2
+            exit 1
+          }
+          cd "${{ github.workspace }}/kernel"
+        elif [ "$KSU_INPUT" != "$DEFAULT_REF" ] && [ -d "$TARGET_DIR" ]; then
           cd "$TARGET_DIR"
           if retry git ls-remote --heads "$REPO" "$KSU_INPUT" | grep -q .; then
             retry git fetch --depth=50 origin "$KSU_INPUT"
