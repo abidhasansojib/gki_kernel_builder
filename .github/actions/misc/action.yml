@@ -34,3 +34,6 @@ runs:
           CONFIG_TMPFS_POSIX_ACL=y
           CONFIG_KALLSYMS=y
           CONFIG_KALLSYMS_ALL=y
+          CONFIG_ZRAM_WRITEBACK=y
+          CONFIG_ZRAM_MEMORY_TRACKING=y
+          CONFIG_RCU_TRACE=n
