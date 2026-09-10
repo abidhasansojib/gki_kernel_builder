@@ -581,50 +581,14 @@
       word-break: break-all;
     }
 
-    /* Redesigned Diagnostics Terminal Elements */
-    .m3-preset-chips-scroll {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 4px 0 2px 0;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-    }
-    .m3-preset-chips-scroll::-webkit-scrollbar {
-      display: none;
-    }
+    /* ==================================================== */
+    /* INDUSTRIAL TERMINAL & CONSOLE (MINIMAL & ADVANCED)   */
+    /* ==================================================== */
 
-    .m3-preset-chip {
-      background: var(--md-sys-color-surface-container-high);
-      border: 1px solid var(--md-sys-color-outline-variant);
-      border-radius: var(--md-shape-corner-full);
-      color: var(--md-sys-color-on-surface);
-      padding: 6px 12px;
-      font-size: 11.5px;
-      font-weight: 500;
-      font-family: var(--font-family-mono);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-      flex-shrink: 0;
-      transition: all 0.15s ease;
-    }
-    .m3-preset-chip:hover {
-      background: var(--md-sys-color-surface-container-highest);
-      border-color: var(--md-sys-color-primary);
-      color: var(--md-sys-color-primary);
-    }
-    .m3-preset-chip:active {
-      transform: scale(0.96);
-      background: var(--md-sys-color-secondary-container);
-    }
-
-    .m3-terminal-header {
-      background: #14161e;
+    .term-topbar {
+      background: #0d1117;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 10px 14px;
+      padding: 8px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -632,219 +596,275 @@
       flex-wrap: wrap;
     }
 
-    .m3-terminal-header-left {
+    .term-topbar-left {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .m3-terminal-dots {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-    .m3-terminal-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-    .m3-dot-red { background: #ff5f56; }
-    .m3-dot-yellow { background: #ffbd2e; }
-    .m3-dot-green { background: #27c93f; }
-
-    .m3-terminal-title {
+    .term-prompt-label {
       font-family: var(--font-family-mono);
       font-size: 12px;
       font-weight: 600;
-      letter-spacing: 0.3px;
+      color: #58a6ff;
+      letter-spacing: 0.2px;
     }
-    .m3-term-user { color: #ff7b72; }
-    .m3-term-at { color: #8b949e; }
-    .m3-term-host { color: #79c0ff; }
-    .m3-term-colon { color: #8b949e; }
-    .m3-term-path { color: #7ee787; }
 
-    .m3-terminal-header-right {
+    .term-chip {
+      background: rgba(56, 139, 253, 0.12);
+      border: 1px solid rgba(56, 139, 253, 0.25);
+      border-radius: var(--md-shape-corner-xs);
+      padding: 2px 7px;
+      font-size: 10px;
+      font-weight: 600;
+      font-family: var(--font-family-mono);
+      color: #79c0ff;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .term-chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #3fb950;
+      display: inline-block;
+    }
+
+    .term-chip-subtle {
+      font-family: var(--font-family-mono);
+      font-size: 10px;
+      color: #8b949e;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 2px 6px;
+      border-radius: var(--md-shape-corner-xs);
+    }
+    .term-chip-subtle.err {
+      color: #f85149;
+      background: rgba(248, 81, 73, 0.12);
+    }
+
+    .term-topbar-actions {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
 
-    .m3-term-tool-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+    .term-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: var(--md-shape-corner-xs);
-      color: var(--md-sys-color-on-surface-variant);
-      padding: 4px 9px;
+      color: #c9d1d9;
+      padding: 4px 8px;
       font-size: 11px;
+      font-family: var(--font-family);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      font-family: var(--font-family);
       transition: all 0.15s ease;
     }
-    .m3-term-tool-btn:hover {
-      background: rgba(255, 255, 255, 0.12);
-      color: var(--md-sys-color-on-surface);
+    .term-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #f0f6fc;
+      border-color: rgba(255, 255, 255, 0.2);
     }
-    .m3-term-tool-btn:active {
+    .term-btn:active {
       transform: scale(0.96);
     }
-    .m3-term-tool-btn.active {
-      background: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
-      border-color: var(--md-sys-color-primary);
+    .term-btn.active {
+      background: rgba(56, 139, 253, 0.18);
+      color: #58a6ff;
+      border-color: rgba(56, 139, 253, 0.4);
     }
 
-    .m3-terminal-screen {
-      background: #08090d;
-      color: #e6edf3;
-      padding: 14px;
+    /* Sub-bar (Filters & Presets) */
+    .term-subbar {
+      background: #11151c;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .term-subbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .term-filter-group {
+      display: flex;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: var(--md-shape-corner-xs);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 1px;
+      flex-shrink: 0;
+    }
+
+    .term-filter-pill {
+      background: transparent;
+      border: none;
+      color: #8b949e;
+      padding: 3px 8px;
+      font-size: 10.5px;
+      font-weight: 500;
+      border-radius: var(--md-shape-corner-xs);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .term-filter-pill:hover {
+      color: #c9d1d9;
+    }
+    .term-filter-pill.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #f0f6fc;
+      font-weight: 600;
+    }
+
+    .term-presets-scroll {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .term-preset-tag {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--md-shape-corner-xs);
+      color: #8b949e;
+      padding: 3px 7px;
+      font-size: 10.5px;
+      font-family: var(--font-family-mono);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .term-preset-tag:hover {
+      background: rgba(56, 139, 253, 0.1);
+      border-color: rgba(56, 139, 253, 0.3);
+      color: #58a6ff;
+    }
+    .term-preset-tag:active {
+      transform: scale(0.95);
+    }
+
+    /* Terminal Screen / Output */
+    .term-output {
+      background: #080a0f;
+      color: #c9d1d9;
+      padding: 12px;
       font-family: var(--font-family-mono);
       font-size: 11.5px;
-      line-height: 1.55;
-      min-height: 280px;
-      max-height: 440px;
+      line-height: 1.5;
+      min-height: 320px;
+      max-height: 480px;
       overflow-y: auto;
       word-break: break-all;
       white-space: pre-wrap;
     }
 
-    .m3-terminal-screen::-webkit-scrollbar {
-      width: 6px;
+    .term-output::-webkit-scrollbar {
+      width: 5px;
     }
-    .m3-terminal-screen::-webkit-scrollbar-track {
-      background: #08090d;
+    .term-output::-webkit-scrollbar-track {
+      background: #080a0f;
     }
-    .m3-terminal-screen::-webkit-scrollbar-thumb {
+    .term-output::-webkit-scrollbar-thumb {
       background: #21262d;
-      border-radius: 3px;
-    }
-    .m3-terminal-screen::-webkit-scrollbar-thumb:hover {
-      background: #30363d;
+      border-radius: 2px;
     }
 
-    .m3-term-line {
-      margin-bottom: 6px;
+    .term-row {
+      margin-bottom: 3px;
       display: block;
     }
-    .m3-term-time {
-      color: #6e7681;
-      font-size: 10.5px;
+    .term-time {
+      color: #484f58;
+      font-size: 10px;
       margin-right: 6px;
       user-select: none;
     }
-    .m3-term-cmd {
-      color: #7ee787;
+    .term-row.term-cmd {
+      color: #f0f6fc;
+      margin-top: 6px;
+    }
+    .term-prompt-char {
+      color: #3fb950;
+      font-weight: 700;
+      margin-right: 6px;
+      user-select: none;
+    }
+    .term-cmd-text {
+      color: #f0f6fc;
       font-weight: 600;
-      background: rgba(126, 231, 135, 0.08);
-      padding: 4px 8px;
-      border-radius: 4px;
-      border-left: 3px solid #7ee787;
-      margin-top: 8px;
-      word-break: break-all;
     }
-    .m3-term-prompt {
-      color: #79c0ff;
-      margin-right: 6px;
-      user-select: none;
+    .term-row.term-out {
+      color: #8b949e;
+      padding-left: 2px;
     }
-    .m3-term-cmd-text {
-      color: #7ee787;
-    }
-    .m3-term-out {
-      color: #c9d1d9;
-      padding: 2px 4px 2px 8px;
-    }
-    .m3-term-pre {
+    .term-pre {
       font-family: inherit;
       white-space: pre-wrap;
       word-break: break-all;
       margin: 0;
+      color: #c9d1d9;
     }
-    .m3-term-err {
-      color: #ff7b72;
-      background: rgba(255, 123, 114, 0.1);
-      padding: 4px 8px;
-      border-radius: 4px;
-      border-left: 3px solid #ff7b72;
-      margin-top: 4px;
+    .term-row.term-err {
+      color: #f85149;
+      padding-left: 2px;
     }
-    .m3-term-sys {
-      color: #d2a8ff;
-      font-size: 11.5px;
-      padding: 2px 4px;
-    }
-    .m3-term-badge-sys, .m3-term-badge-info, .m3-term-badge-err {
-      display: inline-block;
-      font-size: 9.5px;
-      font-weight: 700;
-      padding: 1px 5px;
-      border-radius: 3px;
-      margin-right: 6px;
-      user-select: none;
-      vertical-align: middle;
-    }
-    .m3-term-badge-sys {
-      background: rgba(210, 168, 255, 0.18);
-      color: #d2a8ff;
-    }
-    .m3-term-badge-info {
-      background: rgba(121, 192, 255, 0.18);
-      color: #79c0ff;
-    }
-    .m3-term-badge-err {
-      background: rgba(255, 123, 114, 0.2);
-      color: #ff7b72;
+    .term-row.term-sys {
+      color: #8b949e;
+      font-size: 11px;
     }
 
-    .m3-terminal-input-bar {
-      background: #11131a;
+    /* Command Input Line */
+    .term-input-row {
+      background: #0d1117;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 8px 12px;
+      padding: 6px 10px;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .m3-terminal-prompt-sym {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .term-prompt-symbol {
+      color: #3fb950;
+      font-family: var(--font-family-mono);
+      font-size: 14px;
+      font-weight: 700;
       user-select: none;
+      padding-left: 4px;
     }
 
-    .m3-terminal-input {
+    .term-input {
       flex: 1;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: var(--md-shape-corner-sm);
+      background: transparent;
+      border: none;
       outline: none;
       color: #f0f6fc;
       font-family: var(--font-family-mono);
-      font-size: 12.5px;
-      padding: 8px 10px;
-      transition: border-color 0.2s ease;
-    }
-    .m3-terminal-input:focus {
-      border-color: var(--md-sys-color-primary);
-      background: rgba(255, 255, 255, 0.06);
-    }
-    .m3-terminal-input::placeholder {
-      color: #6e7681;
-      font-family: var(--font-family);
       font-size: 12px;
+      padding: 6px 0;
+    }
+    .term-input::placeholder {
+      color: #484f58;
+      font-family: var(--font-family-mono);
+      font-size: 11.5px;
     }
 
-    .m3-terminal-run-btn {
-      background: var(--md-sys-color-primary);
-      color: var(--md-sys-color-on-primary);
-      border: none;
-      border-radius: var(--md-shape-corner-sm);
-      width: 38px;
-      height: 38px;
+    .term-send-btn {
+      background: transparent;
+      color: #58a6ff;
+      border: 1px solid rgba(56, 139, 253, 0.25);
+      border-radius: var(--md-shape-corner-xs);
+      width: 32px;
+      height: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -852,11 +872,12 @@
       transition: all 0.15s ease;
       flex-shrink: 0;
     }
-    .m3-terminal-run-btn:hover {
-      background: #90b8f8;
+    .term-send-btn:hover {
+      background: rgba(56, 139, 253, 0.15);
+      border-color: #58a6ff;
     }
-    .m3-terminal-run-btn:active {
-      transform: scale(0.92);
+    .term-send-btn:active {
+      transform: scale(0.94);
     }
 
     /* M3 Snackbar */
@@ -1488,121 +1509,81 @@
     <!-- TAB 5: CONSOLE & DIAGNOSTICS                         -->
     <!-- ==================================================== -->
     <div id="tab-console" class="tab-view">
-      
-      <!-- Quick Diagnostic Presets Bar -->
-      <div class="m3-card" style="padding: 12px 14px; margin-bottom: 12px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-          <span style="font-size: 11px; font-weight: 700; color: var(--md-sys-color-primary); text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 6px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-            </svg>
-            Quick Diagnostic Presets
-          </span>
-          <span style="font-size: 11px; color: var(--md-sys-color-outline);">Tap to execute</span>
-        </div>
-        
-        <div class="m3-preset-chips-scroll">
-          <button class="m3-preset-chip" onclick="runPreset('dmesg 2>/dev/null | tail -n 40 || logcat -d -t 40')">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-            dmesg
-          </button>
-          <button class="m3-preset-chip" onclick="runPreset('uname -a')">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M12 16h.01"></path></svg>
-            uname -a
-          </button>
-          <button class="m3-preset-chip" onclick="runPreset('lsmod 2>/dev/null || ls -d /sys/module/*')">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect></svg>
-            lsmod
-          </button>
-          <button class="m3-preset-chip" onclick="runPreset('ip addr show')">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"></path></svg>
-            ip addr
-          </button>
-          <button class="m3-preset-chip" onclick="runPreset('ip route show')">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-            ip route
-          </button>
-          <button class="m3-preset-chip" onclick="runPreset('free -h 2>/dev/null || free -m')">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg>
-            free mem
-          </button>
-          <button class="m3-preset-chip" onclick="runPreset('sysctl net.ipv4.tcp_congestion_control net.core.default_qdisc')">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line></svg>
-            sysctl tcp
-          </button>
-          <button class="m3-preset-chip" onclick="runPreset('getenforce 2>/dev/null || cat /sys/fs/selinux/enforce')">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            selinux
-          </button>
-          <button class="m3-preset-chip" onclick="runPreset('getprop ro.product.model && getprop ro.build.version.release')">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-            device info
-          </button>
-        </div>
-      </div>
-
-      <!-- Main Terminal Window Card -->
       <div class="m3-card" style="padding: 0; overflow: hidden; border: 1px solid var(--md-sys-color-outline-variant);">
         
-        <!-- Terminal Titlebar -->
-        <div class="m3-terminal-header">
-          <div class="m3-terminal-header-left">
-            <div class="m3-terminal-dots">
-              <span class="m3-terminal-dot m3-dot-red"></span>
-              <span class="m3-terminal-dot m3-dot-yellow"></span>
-              <span class="m3-terminal-dot m3-dot-green"></span>
-            </div>
-            <div class="m3-terminal-title">
-              <span class="m3-term-user">root</span><span class="m3-term-at">@</span><span class="m3-term-host">android</span><span class="m3-term-colon">:</span><span class="m3-term-path">~#</span>
-            </div>
-          </div>
-
-          <div class="m3-terminal-header-right">
-            <span id="term-bridge-badge" class="m3-chip" style="height: 24px; padding: 0 8px; font-size: 10px;">
-              <span class="m3-chip-dot"></span>
+        <!-- Top Control Bar (Status & Tools) -->
+        <div class="term-topbar">
+          <div class="term-topbar-left">
+            <span class="term-prompt-label">root@android</span>
+            <span id="term-status-chip" class="term-chip">
+              <span class="term-chip-dot"></span>
               <span id="term-bridge-name">CONNECTING</span>
             </span>
+            <span id="term-exit-status" class="term-chip-subtle">exit: 0</span>
+            <span id="term-line-count" class="term-chip-subtle">0 lines</span>
+          </div>
 
-            <button id="btn-autoscroll" class="m3-term-tool-btn active" onclick="toggleAutoScroll()" title="Toggle Auto-scroll">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"></path></svg>
-              <span id="label-autoscroll">Scroll: ON</span>
+          <div class="term-topbar-actions">
+            <button id="btn-autoscroll" class="term-btn active" onclick="toggleAutoScroll()" title="Auto-scroll">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+              <span>Scroll</span>
             </button>
-            <button class="m3-term-tool-btn" onclick="copyConsole()" title="Copy Output">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <button class="term-btn" onclick="copyConsole()" title="Copy all text">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               <span>Copy</span>
             </button>
-            <button class="m3-term-tool-btn" onclick="clearConsole()" title="Clear Output">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <button class="term-btn" onclick="exportConsoleLog()" title="Export log to file">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Export</span>
+            </button>
+            <button class="term-btn" onclick="clearConsole()" title="Clear screen">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
               <span>Clear</span>
             </button>
           </div>
         </div>
 
-        <!-- Terminal Output Buffer Screen -->
-        <div id="box-console" class="m3-terminal-screen">
-          <div class="m3-term-line m3-term-sys">
-            <span class="m3-term-time">[BOOT]</span>
-            <span class="m3-term-badge-sys">KERNEL</span>
-            <span>NetHunter GKI Diagnostics Terminal initialized.</span>
+        <!-- Filter & Quick Presets Sub-bar -->
+        <div class="term-subbar">
+          <div class="term-filter-group">
+            <button class="term-filter-pill active" onclick="filterTermLogs('all', this)">All</button>
+            <button class="term-filter-pill" onclick="filterTermLogs('cmd', this)">Commands</button>
+            <button class="term-filter-pill" onclick="filterTermLogs('err', this)">Errors</button>
           </div>
-          <div class="m3-term-line m3-term-sys">
-            <span class="m3-term-time">[INFO]</span>
-            <span class="m3-term-badge-info">READY</span>
-            <span>Root shell environment active. Enter command or tap presets above.</span>
+          
+          <div class="term-presets-scroll">
+            <button class="term-preset-tag" onclick="runPreset('dmesg -T 2>/dev/null | tail -n 50 || dmesg | tail -n 50')">dmesg</button>
+            <button class="term-preset-tag" onclick="runPreset('uname -a')">uname -a</button>
+            <button class="term-preset-tag" onclick="runPreset('ip addr show')">ip addr</button>
+            <button class="term-preset-tag" onclick="runPreset('ip route show')">ip route</button>
+            <button class="term-preset-tag" onclick="runPreset('lsmod 2>/dev/null || ls -d /sys/module/*')">lsmod</button>
+            <button class="term-preset-tag" onclick="runPreset('free -h 2>/dev/null || free -m')">free -h</button>
+            <button class="term-preset-tag" onclick="runPreset('sysctl net.ipv4.tcp_congestion_control net.core.default_qdisc')">sysctl tcp</button>
+            <button class="term-preset-tag" onclick="runPreset('getenforce')">getenforce</button>
+            <button class="term-preset-tag" onclick="runPreset('cat /proc/version')">/proc/version</button>
           </div>
         </div>
 
-        <!-- Interactive Command Prompt Input Bar -->
-        <div class="m3-terminal-input-bar">
-          <div class="m3-terminal-prompt-sym">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7cdbb5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
+        <!-- Terminal Output Buffer -->
+        <div id="box-console" class="term-output">
+          <div class="term-row term-sys">
+            <span class="term-time">[00:00:00]</span>
+            <span class="term-text">NetHunter Kernel Diagnostics Terminal (Linux GKI)</span>
           </div>
-          <input id="term-input" type="text" class="m3-terminal-input" placeholder="Enter root command (e.g. dmesg, uname -a, ip a)..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" onkeydown="handleTermKey(event)" />
-          <button id="term-run-btn" class="m3-terminal-run-btn" onclick="executeCustomCommand()" title="Execute command">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          <div class="term-row term-sys">
+            <span class="term-time">[00:00:00]</span>
+            <span class="term-text">Root shell connected. Type commands below or click presets.</span>
+          </div>
+        </div>
+
+        <!-- Interactive Command Input Line -->
+        <div class="term-input-row">
+          <span class="term-prompt-symbol">#</span>
+          <input id="term-input" type="text" class="term-input" placeholder="sh command..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" onkeydown="handleTermKey(event)" />
+          <button id="term-run-btn" class="term-send-btn" onclick="executeCustomCommand()" title="Execute">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
           </button>
         </div>
@@ -1840,6 +1821,32 @@
       if (badge) badge.innerText = detectRootManager();
     }
 
+    function setExitCode(code) {
+      const el = document.getElementById('term-exit-status');
+      if (!el) return;
+      el.innerText = "exit: " + code;
+      el.className = code === 0 ? "term-chip-subtle" : "term-chip-subtle err";
+    }
+
+    let currentTermFilter = 'all';
+
+    function filterTermLogs(filterType, btn) {
+      currentTermFilter = filterType;
+      document.querySelectorAll('.term-filter-pill').forEach(el => el.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      const rows = document.querySelectorAll('.term-output .term-row');
+      rows.forEach(row => {
+        if (filterType === 'all') {
+          row.style.display = 'block';
+        } else if (filterType === 'cmd') {
+          row.style.display = row.classList.contains('term-cmd') ? 'block' : 'none';
+        } else if (filterType === 'err') {
+          row.style.display = row.classList.contains('term-err') ? 'block' : 'none';
+        }
+      });
+    }
+
     function logConsole(text) {
       const box = document.getElementById('box-console');
       if (!box) return;
@@ -1849,18 +1856,25 @@
       const trimmed = (text || "").trim();
 
       if (trimmed.startsWith("$ ")) {
-        div.className = "m3-term-line m3-term-cmd";
+        div.className = "term-row term-cmd";
         const cmdOnly = trimmed.substring(2);
-        div.innerHTML = `<span class="m3-term-time">[${time}]</span><span class="m3-term-prompt">root#</span><span class="m3-term-cmd-text">${escapeHtml(cmdOnly)}</span>`;
+        div.innerHTML = `<span class="term-time">[${time}]</span><span class="term-prompt-char">#</span><span class="term-cmd-text">${escapeHtml(cmdOnly)}</span>`;
       } else if (trimmed.startsWith("Error:") || trimmed.toLowerCase().includes("permission denied") || trimmed.toLowerCase().includes("command not found")) {
-        div.className = "m3-term-line m3-term-err";
-        div.innerHTML = `<span class="m3-term-time">[${time}]</span><span class="m3-term-badge-err">ERR</span><span class="m3-term-out-text">${escapeHtml(trimmed)}</span>`;
+        div.className = "term-row term-err";
+        div.innerHTML = `<span class="term-time">[${time}]</span><span class="term-pre">${escapeHtml(trimmed)}</span>`;
+        setExitCode(1);
       } else if (trimmed.startsWith("[SYSTEM]") || trimmed.startsWith("[BOOT]") || trimmed.startsWith("[INFO]")) {
-        div.className = "m3-term-line m3-term-sys";
-        div.innerHTML = `<span class="m3-term-time">[${time}]</span><span class="m3-term-badge-info">SYS</span><span class="m3-term-out-text">${escapeHtml(trimmed)}</span>`;
+        div.className = "term-row term-sys";
+        div.innerHTML = `<span class="term-time">[${time}]</span><span class="term-text">${escapeHtml(trimmed)}</span>`;
       } else {
-        div.className = "m3-term-line m3-term-out";
-        div.innerHTML = `<pre class="m3-term-pre">${escapeHtml(text)}</pre>`;
+        div.className = "term-row term-out";
+        div.innerHTML = `<pre class="term-pre">${escapeHtml(text)}</pre>`;
+      }
+
+      if (currentTermFilter === 'cmd' && !div.classList.contains('term-cmd')) {
+        div.style.display = 'none';
+      } else if (currentTermFilter === 'err' && !div.classList.contains('term-err')) {
+        div.style.display = 'none';
       }
 
       box.appendChild(div);
@@ -1868,6 +1882,9 @@
       while (box.children.length > 500) {
         box.removeChild(box.firstChild);
       }
+
+      const countEl = document.getElementById('term-line-count');
+      if (countEl) countEl.innerText = box.children.length + " lines";
 
       if (termAutoScroll) {
         box.scrollTop = box.scrollHeight;
@@ -1878,12 +1895,14 @@
       const box = document.getElementById('box-console');
       if (!box) return;
       box.innerHTML = `
-        <div class="m3-term-line m3-term-sys">
-          <span class="m3-term-time">[${getTimeString()}]</span>
-          <span class="m3-term-badge-info">SYS</span>
-          <span>Terminal session cleared. Ready for input.</span>
+        <div class="term-row term-sys">
+          <span class="term-time">[${getTimeString()}]</span>
+          <span class="term-text">Terminal buffer cleared.</span>
         </div>
       `;
+      const countEl = document.getElementById('term-line-count');
+      if (countEl) countEl.innerText = "1 lines";
+      setExitCode(0);
       showSnackbar("Terminal cleared");
     }
 
@@ -1892,7 +1911,7 @@
       if (!box) return;
       const text = box.innerText;
       if (!text || text.trim() === "") {
-        showSnackbar("Terminal is empty");
+        showSnackbar("Terminal buffer is empty");
         return;
       }
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1921,12 +1940,30 @@
       document.body.removeChild(ta);
     }
 
+    function exportConsoleLog() {
+      const box = document.getElementById('box-console');
+      if (!box) return;
+      const text = box.innerText;
+      if (!text || text.trim() === "") {
+        showSnackbar("Terminal buffer is empty");
+        return;
+      }
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "nethunter_terminal_" + new Date().toISOString().replace(/[:.]/g, '-') + ".log";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showSnackbar("Terminal log exported");
+    }
+
     function toggleAutoScroll() {
       termAutoScroll = !termAutoScroll;
       const btn = document.getElementById('btn-autoscroll');
-      const label = document.getElementById('label-autoscroll');
       if (btn) btn.classList.toggle('active', termAutoScroll);
-      if (label) label.innerText = termAutoScroll ? "Scroll: ON" : "Scroll: OFF";
       if (termAutoScroll) {
         const box = document.getElementById('box-console');
         if (box) box.scrollTop = box.scrollHeight;
@@ -1942,6 +1979,7 @@
       termHistory.push(cmd);
       termHistoryIndex = termHistory.length;
       input.value = "";
+      setExitCode(0);
 
       await exec(cmd);
       input.focus();
