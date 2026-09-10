@@ -94,10 +94,14 @@ runs:
         cp -rf "$FIRMWARE_DIR/"* "$STAGING_DIR/vendor/firmware/" 2>/dev/null || true
         cp -rf "$FIRMWARE_DIR/"* "$STAGING_DIR/vendor/etc/firmware/" 2>/dev/null || true
 
-        echo "=== Installing NetHunter Module WebUI Dashboard ==="
+        echo "=== Installing NetHunter Module WebUI Dashboard & Action Handler ==="
         mkdir -p "$STAGING_DIR/webroot"
         if [ -f "${{ github.action_path }}/webroot/index.html" ]; then
           cp -vf "${{ github.action_path }}/webroot/index.html" "$STAGING_DIR/webroot/"
+        fi
+        if [ -f "${{ github.action_path }}/action.sh" ]; then
+          cp -vf "${{ github.action_path }}/action.sh" "$STAGING_DIR/action.sh"
+          chmod +x "$STAGING_DIR/action.sh"
         fi
 
         echo "=== Creating Module Metadata & Scripts ==="
@@ -107,6 +111,8 @@ runs:
         printf 'versionCode=130\n' >> "$STAGING_DIR/module.prop"
         printf 'author=abidhasansojib\n' >> "$STAGING_DIR/module.prop"
         printf 'description=External USB WiFi (RTW88, RTL8xxxu, ATH9K-HTC, CARL9170, RT2800, MT76, ZD1211), BadUSB HID Gadget, TCP Congestion Switcher & WebUI Manager for Android 16 (6.12) GKI\n' >> "$STAGING_DIR/module.prop"
+        printf 'webui=true\n' >> "$STAGING_DIR/module.prop"
+        printf 'action=true\n' >> "$STAGING_DIR/module.prop"
 
         # --- Flashing Script (customize.sh) ---
         cat << 'EOF' > "$STAGING_DIR/customize.sh"
@@ -127,6 +133,15 @@ runs:
         set_perm_recursive "$MODPATH/webroot" 0 0 0755 0644
         set_perm "$MODPATH/service.sh" 0 0 0755
         set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
+        [ -f "$MODPATH/action.sh" ] && set_perm "$MODPATH/action.sh" 0 0 0755
+
+        # Sync WebUI directly to storage for immediate browser & manager access
+        mkdir -p /storage/emulated/0 /storage/emulated/0/Download 2>/dev/null || true
+        if [ -f "$MODPATH/webroot/index.html" ]; then
+          cp -f "$MODPATH/webroot/index.html" /storage/emulated/0/nethunter_webui.html 2>/dev/null || true
+          cp -f "$MODPATH/webroot/index.html" /storage/emulated/0/Download/nethunter_webui.html 2>/dev/null || true
+          chmod 666 /storage/emulated/0/nethunter_webui.html /storage/emulated/0/Download/nethunter_webui.html 2>/dev/null || true
+        fi
         EOF
         sed -i 's/^[[:space:]]*//' "$STAGING_DIR/customize.sh"
 

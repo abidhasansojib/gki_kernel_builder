@@ -1341,7 +1341,10 @@
       logConsole("$ " + cmd);
       
       const runner = (window.ksu && typeof window.ksu.exec === 'function') ? window.ksu.exec.bind(window.ksu) :
-                     (window.apatch && typeof window.apatch.exec === 'function') ? window.apatch.exec.bind(window.apatch) : null;
+                     (window.sukisu && typeof window.sukisu.exec === 'function') ? window.sukisu.exec.bind(window.sukisu) :
+                     (window.resukisu && typeof window.resukisu.exec === 'function') ? window.resukisu.exec.bind(window.resukisu) :
+                     (window.apatch && typeof window.apatch.exec === 'function') ? window.apatch.exec.bind(window.apatch) :
+                     (window.KernelSU && typeof window.KernelSU.exec === 'function') ? window.KernelSU.exec.bind(window.KernelSU) : null;
       
       if (runner) {
         try {
@@ -1413,8 +1416,15 @@
       return "";
     }
 
-    // M3 Snackbar System
+    // M3 Snackbar System with Native Manager Toast Bridge
     function showSnackbar(msg) {
+      if (window.ksu && typeof window.ksu.toast === 'function') {
+        try { window.ksu.toast(msg); } catch(e) {}
+      } else if (window.sukisu && typeof window.sukisu.toast === 'function') {
+        try { window.sukisu.toast(msg); } catch(e) {}
+      } else if (window.resukisu && typeof window.resukisu.toast === 'function') {
+        try { window.resukisu.toast(msg); } catch(e) {}
+      }
       const bar = document.getElementById('m3-snackbar');
       document.getElementById('m3-snackbar-text').innerText = msg;
       bar.classList.add('show');
