@@ -803,20 +803,12 @@
             <span class="m3-option-desc">Model-based congestion for maximum throughput</span>
           </div>
 
-          <div id="opt-bbr" class="m3-option-card" onclick="applyTcp('bbr')">
-            <div class="m3-option-header">
-              <span class="m3-option-title">BBRv1</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-            </div>
-            <span class="m3-option-desc">Standard Google BBR model-based protocol</span>
-          </div>
-
-          <div id="opt-cubic" class="m3-option-card" onclick="applyTcp('cubic')">
+          <div id="opt-cubic" class="m3-option-card" style="grid-column: span 2;" onclick="applyTcp('cubic')">
             <div class="m3-option-header">
               <span class="m3-option-title">CUBIC</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
             </div>
-            <span class="m3-option-desc">Standard Linux loss-based cubic algorithm</span>
+            <span class="m3-option-desc">Standard Linux loss-based cubic algorithm (Default)</span>
           </div>
         </div>
 
@@ -1212,27 +1204,6 @@
         </div>
       </div>
 
-      <!-- ART Ahead-of-Time Runtime Compiler -->
-      <div class="m3-card">
-        <div class="m3-card-header">
-          <div class="m3-card-title-group">
-            <span class="m3-card-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
-              </svg>
-              Android Runtime (ART) Optimization
-            </span>
-            <span class="m3-card-subtitle">Ahead-of-Time native ARM64 machine code compilation</span>
-          </div>
-        </div>
-        <p style="font-size: 12.5px; color: var(--md-sys-color-on-surface-variant); margin-bottom: 12px; line-height: 1.45;">
-          Executes Android background dexopt compilation to pre-compile installed application bytecode into native machine code, eliminating app launch lags.
-        </p>
-        <button class="m3-btn m3-btn-tonal" onclick="runDexopt()">
-          Compile Applications (speed-profile)
-        </button>
-      </div>
-
     </div>
 
     <!-- ==================================================== -->
@@ -1488,9 +1459,14 @@
 
       // Highlight active algorithm option card
       document.querySelectorAll('.m3-option-card').forEach(c => {
-        if (c.id.startsWith('opt-')) c.classList.remove('selected');
+        if (c.id === 'opt-westwood' || c.id === 'opt-bbr3' || c.id === 'opt-cubic') {
+          c.classList.remove('selected');
+        }
       });
-      const activeCard = document.getElementById('opt-' + trimmed);
+      let activeCard = document.getElementById('opt-' + trimmed);
+      if (!activeCard && (trimmed === 'bbr' || trimmed === 'bbr3')) {
+        activeCard = document.getElementById('opt-bbr3');
+      }
       if (activeCard) activeCard.classList.add('selected');
 
       // Highlight active Qdisc segment
@@ -1840,12 +1816,6 @@
       if (active) active.classList.add('active');
       await checkPerf();
       showSnackbar("VFS Cache Pressure set to " + val);
-    }
-
-    async function runDexopt() {
-      showSnackbar("Starting background dexopt compilation...");
-      exec("cmd package compile -m speed-profile -a > /dev/null 2>&1 &");
-      showSnackbar("AOT Package compiler dispatched in background");
     }
 
     // Master Refresh
