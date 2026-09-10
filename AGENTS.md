@@ -63,11 +63,25 @@ The project supports 3 independent root implementations with automated patch res
   * USB Serial dongles: FTDI (`ftdi_sio.ko`), WCH (`ch341.ko`), Silicon Labs (`cp210x.ko`), Prolific (`pl2303.ko`), CDC-ACM.
 * **Bluetooth Attacks:**
   * USB Bluetooth dongles via `btusb.ko` with RFCOMM TTY (`rfcomm.ko`), BNEP, and HIDP.
+* **Integrated Material 3 WebUI Dashboard & Action Launcher:**
+  * **Module Staging:** `webroot/index.html` (embedded within `Nethunter-Wireless-Modules.zip`).
+  * **Root Bridge Execution:** Supports KernelSU (`window.ksu`), APatch, SukiSU-Ultra, and ReSukiSU (`window.suki`). Automatically falls back to safe read-only preview mode when opened in standard web browsers.
+  * **Zero Fake Telemetry:** Fully dynamic real-time parsing from kernel filesystems:
+    * Available TCP algorithms dynamically queried from `/proc/sys/net/ipv4/tcp_available_congestion_control`.
+    * True RAM usage calculated dynamically via $\text{Used} = \text{MemTotal} - \text{MemAvailable}$ from `/proc/meminfo`.
+    * MGLRU capabilities inspected from `/sys/kernel/mm/lru_gen/enabled` (with one-tap `0x0007` locking).
+    * ZRAM compression algorithm and disk size extracted directly from `/sys/block/zram0/`.
+  * **BadUSB HID & Gadget Controller:** ConfigFS integration supporting hotplug toggling between Stock Android USB (MTP + ADB), BadUSB HID Keyboard/Mouse (`/dev/hidg0`, `/dev/hidg1`), USB Mass Storage, and RNDIS Ethernet, including an on-screen DuckyScript test keystroke injector.
+  * **Driver Manager:** Dynamic category filtering, multi-tier dependency auto-loading from `lkm/`, and safe reverse-order driver unbinding.
+  * **Subsystem Reset Buttons:** One-tap Reset buttons on every view to restore network, USB, driver, and memory parameters back to kernel defaults.
+  * **CPU Governor Design:** Intentionally omitted from WebUI per user request; kernel sets `schedutil` as default in `gki_defconfig` and `service.sh`, allowing users to tune governors via FKM.
+  * **Storage Mirror & Recovery Resilience:** Auto-synced to `/storage/emulated/0/Download/nethunter_webui.html` both at flash-time (`customize.sh`) and late-boot (`service.sh`) to support TWRP recovery installations.
+  * **Safe Action Launcher (`action.sh`):** Launches the WebUI via public storage URI to prevent Android cross-app `ERR_ACCESS_DENIED` errors from `/data/adb`.
 * **Single-Storage Packaging (`Nethunter-Wireless-Modules.zip`):**
   * Module ID: `nethunter_wireless_modules` | Name: `Nethunter Wireless,HID Driver & Modules` | Author: `abidhasansojib`.
   * Packaged in a lightweight single `lkm/` storage directory and firmware in `system/etc/firmware/` (reduced ZIP from 52 MB to 14 MB).
   * `post-fs-data.sh`: Dynamically auto-populates firmware paths (`/vendor/firmware`, `/vendor/etc/firmware`, `/system/etc/firmware`) and loads core networking modules early.
-  * `service.sh`: Loads all remaining drivers on boot in a 3-pass loop with underscore-hyphen normalization matching `lsmod`.
+  * `service.sh`: Loads all remaining drivers on boot in a 3-pass loop with underscore-hyphen normalization matching `lsmod`, applies native ueventd permissions, enforces `schedutil`, and syncs WebUI.
 
 ### 5. Performance, Networking & Security Enhancements
 * **Performance Patch Suite (`performance/action.yml`):**
@@ -114,6 +128,12 @@ The project supports 3 independent root implementations with automated patch res
 * **Shallow Git Clones:** Added `--depth=1` to dependency clones in `setup-build-environment/action.yml` to minimize bandwidth and checkout latency.
 * **Misc BPF Config Decoupling:** Removed duplicate BPF configs from `misc/action.yml` so `use_bpf` maintains strict control.
 * **Robust Kernel Branding Script:** Replaced `$d` deletion in `apply-kernel-branding/action.yml` with top-of-file injection to guarantee script integrity.
+* **NetHunter WebUI Dynamic Telemetry & Anti-Simulation:** Completely removed mock/simulated data; implemented strict multi-bridge detection (`KernelSU`, `APatch`, `SukiSU-Ultra`, `ReSukiSU`), dynamic `/proc/meminfo` calculation ($Used = Total - Available$), live TCP congestion control discovery, and live MGLRU/ZRAM telemetry.
+* **Action Launcher Public Storage Transition:** Fixed `action.sh` invoking `file:///data/adb/...` which caused `ERR_ACCESS_DENIED` in browsers due to mode `0700` permissions on `/data/adb`; redirected to `/storage/emulated/0/Download/nethunter_webui.html` and added operational bridge guidance.
+* **Late-Boot WebUI Sync for TWRP Installs:** Integrated automated storage sync into `service.sh` in `nethunter-module/action.yml` to mirror `webroot/index.html` on boot, ensuring recovery-flashed installations have internal storage WebUI mirrors populated once decrypted.
+* **RTW88 Silicon Base Module Dependency Resolution:** Added missing base silicon modules (`rtw88_8822c`, `rtw88_8821c`) to the dependency tree for `rtw88_8822cu` and `rtw88_8821cu` in WebUI module loader, preventing symbol resolution errors during insmod.
+* **Reverse Iterative Module Unloading:** Enhanced `resetDriversDefaults()` to unload modules in reverse dependency order in an iterative shell loop, eliminating toybox `rmmod` resource busy failures.
+* **Workflow Dead Code Elimination:** Cleaned out redundant `touch gki.fragment` step in `build.yml`.
 
 ---
 
