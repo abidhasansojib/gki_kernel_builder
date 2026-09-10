@@ -3,28 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#090b10">
+  <meta name="theme-color" content="#121318">
   <meta name="color-scheme" content="dark">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>Kernel Manager</title>
   <style>
     :root {
-      --bg: #090b10;
-      --card: #131722;
-      --card-subtle: #181f2f;
-      --card-highlight: #1f283d;
-      --border: rgba(255, 255, 255, 0.07);
-      --border-active: #3b82f6;
-      --text: #f3f4f6;
-      --text-muted: #8492a6;
-      --primary: #3b82f6;
-      --primary-subtle: rgba(59, 130, 246, 0.12);
-      --success: #10b981;
-      --success-subtle: rgba(16, 185, 129, 0.12);
-      --amber: #f59e0b;
-      --amber-subtle: rgba(245, 158, 11, 0.12);
-      --danger: #ef4444;
-      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Google Sans", sans-serif;
-      --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", monospace;
+      /* Material 3 Dark Color System */
+      --md-sys-color-surface: #121318;
+      --md-sys-color-surface-dim: #0e0f14;
+      --md-sys-color-surface-container-lowest: #0c0e12;
+      --md-sys-color-surface-container-low: #1a1b22;
+      --md-sys-color-surface-container: #1e1f26;
+      --md-sys-color-surface-container-high: #292a32;
+      --md-sys-color-surface-container-highest: #33353e;
+
+      --md-sys-color-on-surface: #e2e2e9;
+      --md-sys-color-on-surface-variant: #c4c6d0;
+      --md-sys-color-outline: #8e9099;
+      --md-sys-color-outline-variant: #44474f;
+
+      --md-sys-color-primary: #a8c7fa;
+      --md-sys-color-on-primary: #062e6f;
+      --md-sys-color-primary-container: #0842a0;
+      --md-sys-color-on-primary-container: #d3e3fd;
+
+      --md-sys-color-secondary: #bec6dc;
+      --md-sys-color-on-secondary: #283141;
+      --md-sys-color-secondary-container: #3f4759;
+      --md-sys-color-on-secondary-container: #dbe2f9;
+
+      --md-sys-color-tertiary: #7cdbb5;
+      --md-sys-color-tertiary-container: #005137;
+      --md-sys-color-on-tertiary-container: #99f8d1;
+
+      --md-sys-color-error: #ffb4ab;
+      --md-sys-color-error-container: #93000a;
+      --md-sys-color-on-error-container: #ffdad6;
+
+      --md-sys-color-success: #6ddb9c;
+      --md-sys-color-success-container: #00522b;
+      --md-sys-color-on-success-container: #8af8b7;
+
+      /* Material 3 Elevation & Shapes */
+      --md-shape-corner-xs: 4px;
+      --md-shape-corner-sm: 8px;
+      --md-shape-corner-md: 12px;
+      --md-shape-corner-lg: 16px;
+      --md-shape-corner-xl: 24px;
+      --md-shape-corner-full: 9999px;
+
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Google Sans", "Noto Sans", sans-serif;
+      --font-family-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", monospace;
     }
 
     * {
@@ -32,438 +62,500 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
       font-family: var(--font-family);
     }
 
-    input, pre, code {
-      user-select: text;
-    }
-
     body {
-      background-color: var(--bg);
-      color: var(--text);
+      background-color: var(--md-sys-color-surface);
+      color: var(--md-sys-color-on-surface);
       min-height: 100vh;
-      padding-bottom: calc(76px + env(safe-area-inset-bottom, 16px));
+      padding-bottom: calc(78px + env(safe-area-inset-bottom, 16px));
+      overflow-x: hidden;
       font-size: 13.5px;
       line-height: 1.45;
-      overflow-x: hidden;
     }
 
-    .container {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 10px 14px;
-    }
-
-    /* Minimal Top Bar */
-    .top-bar {
+    /* M3 Top App Bar */
+    .top-app-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(18, 19, 24, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      padding: max(10px, env(safe-area-inset-top, 10px)) 16px 10px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 0 14px 0;
     }
 
-    .brand {
+    .top-app-bar-brand {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .brand-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      background: var(--primary-subtle);
-      border: 1px solid rgba(59, 130, 246, 0.25);
-      color: var(--primary);
+    .top-app-bar-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--md-shape-corner-md);
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-family: var(--font-mono);
-      font-size: 11px;
+      flex-shrink: 0;
     }
 
-    .brand-title {
+    .top-app-bar-title-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-app-bar-title {
       font-size: 15px;
       font-weight: 700;
+      color: var(--md-sys-color-on-surface);
       letter-spacing: -0.2px;
     }
 
-    .brand-subtitle {
+    .top-app-bar-subtitle {
       font-size: 11px;
-      color: var(--text-muted);
-      font-family: var(--font-mono);
+      color: var(--md-sys-color-on-surface-variant);
+      font-family: var(--font-family-mono);
     }
 
-    .bridge-tag {
+    .btn-icon-m3 {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--md-shape-corner-full);
+      background: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      color: var(--md-sys-color-on-surface-variant);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .btn-icon-m3:active {
+      transform: scale(0.92);
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+    }
+
+    /* Layout Containers */
+    .app-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 12px 12px;
+    }
+
+    .tab-view {
+      display: none;
+      animation: m3FadeIn 0.2s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .tab-view.active {
+      display: block;
+    }
+
+    @keyframes m3FadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* M3 Cards */
+    .m3-card {
+      background: var(--md-sys-color-surface-container-low);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-shape-corner-lg);
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .m3-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 11px;
+      gap: 8px;
+    }
+
+    .m3-card-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .m3-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .m3-card-subtitle {
+      font-size: 11px;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    /* M3 Chips */
+    .m3-chip {
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      padding: 4px 10px;
-      border-radius: 9999px;
-      background: var(--success-subtle);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-      color: var(--success);
-      font-size: 10.5px;
-      font-weight: 600;
-      font-family: var(--font-mono);
+      padding: 3px 8px;
+      border-radius: var(--md-shape-corner-sm);
+      font-size: 10px;
+      font-weight: 700;
+      font-family: var(--font-family-mono);
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      background: var(--md-sys-color-surface-container-highest);
+      color: var(--md-sys-color-on-surface-variant);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      flex-shrink: 0;
     }
 
-    .dot {
+    .m3-chip.active {
+      background: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+      border-color: var(--md-sys-color-primary);
+    }
+
+    .m3-chip.success {
+      background: var(--md-sys-color-success-container);
+      color: var(--md-sys-color-on-success-container);
+      border-color: var(--md-sys-color-success);
+    }
+
+    .m3-chip-dot {
       width: 5px;
       height: 5px;
       border-radius: 50%;
       background: currentColor;
     }
 
-    /* Minimal Segmented Tabs */
-    .tab-bar {
+    /* M3 Telemetry Strip */
+    .m3-telemetry-box {
+      background: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-shape-corner-md);
+      padding: 9px 12px;
       display: flex;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+
+    .m3-telemetry-key {
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .m3-telemetry-val {
+      font-family: var(--font-family-mono);
+      font-weight: 700;
+      color: var(--md-sys-color-primary);
+    }
+
+    /* M3 Segmented Buttons */
+    .m3-segmented-control {
+      display: flex;
+      background: var(--md-sys-color-surface-container-highest);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-shape-corner-full);
       padding: 3px;
       gap: 3px;
-      margin-bottom: 14px;
-    }
-
-    .tab-btn {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 12px;
-      font-weight: 600;
-      padding: 8px 0;
-      border-radius: 11px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.15s ease;
-    }
-
-    .tab-btn.active {
-      background: var(--primary);
-      color: #ffffff;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    .tab-btn:active {
-      transform: scale(0.97);
-    }
-
-    /* Minimal Cards */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 14px;
-      margin-bottom: 12px;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 11px;
-    }
-
-    .card-title {
-      font-size: 11.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-    }
-
-    .card-status {
-      font-size: 11px;
-      font-weight: 700;
-      font-family: var(--font-mono);
-      color: var(--primary);
-      text-transform: uppercase;
-    }
-
-    /* 2x2 Option Grid */
-    .grid-options {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
+      margin-top: 6px;
       margin-bottom: 10px;
     }
 
-    .option-btn {
-      background: var(--card-subtle);
-      border: 1px solid var(--border);
-      border-radius: 14px;
+    .m3-segment-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--md-sys-color-on-surface-variant);
+      padding: 7px 4px;
+      border-radius: var(--md-shape-corner-full);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .m3-segment-btn.active {
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    .m3-segment-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* M3 Option Cards */
+    .m3-options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 4px;
+      margin-bottom: 10px;
+    }
+
+    .m3-option-card {
+      background: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-shape-corner-md);
       padding: 11px 12px;
-      text-align: left;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 64px;
-      transition: all 0.15s ease;
+      min-height: 66px;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
     }
 
-    .option-btn:active {
-      transform: scale(0.97);
+    .m3-option-card:hover {
+      background: var(--md-sys-color-surface-container-high);
+      border-color: var(--md-sys-color-primary);
     }
 
-    .option-btn.selected {
-      background: var(--primary-subtle);
-      border-color: var(--primary);
+    .m3-option-card:active {
+      transform: scale(0.98);
     }
 
-    .option-title {
-      font-size: 13.5px;
+    .m3-option-card.selected {
+      background: var(--md-sys-color-secondary-container);
+      border-color: var(--md-sys-color-primary);
+      box-shadow: 0 0 0 1px var(--md-sys-color-primary);
+    }
+
+    .m3-option-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3px;
+    }
+
+    .m3-option-title {
+      font-size: 13px;
       font-weight: 700;
-      color: #ffffff;
+      color: var(--md-sys-color-on-surface);
     }
 
-    .option-desc {
+    .m3-option-card.selected .m3-option-title {
+      color: var(--md-sys-color-on-secondary-container);
+    }
+
+    .m3-option-desc {
       font-size: 10.5px;
-      color: var(--text-muted);
-      margin-top: 3px;
-      line-height: 1.3;
+      color: var(--md-sys-color-on-surface-variant);
+      line-height: 1.35;
     }
 
-    .option-btn.selected .option-desc {
-      color: #bfdbfe;
-    }
-
-    /* Pill Segmented Controls (3 items) */
-    .pill-segment {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 4px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 3px;
-      margin-bottom: 10px;
-    }
-
-    .pill-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 11.5px;
-      font-weight: 600;
-      padding: 7px 0;
-      border-radius: 9px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.15s ease;
-    }
-
-    .pill-btn.active {
-      background: var(--primary);
-      color: #ffffff;
-    }
-
-    .pill-btn:active {
-      transform: scale(0.96);
-    }
-
-    /* Clean Rows & Toggles */
-    .row-item {
+    /* M3 List Tiles with Switches */
+    .m3-list-tile {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: var(--card-subtle);
-      border: 1px solid var(--border);
-      border-radius: 13px;
+      background: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-shape-corner-md);
       padding: 10px 12px;
       margin-bottom: 7px;
-      font-size: 12px;
+      gap: 10px;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
     }
 
-    .row-item:last-child {
+    .m3-list-tile:last-child {
       margin-bottom: 0;
     }
 
-    .row-item:active {
-      transform: scale(0.98);
+    .m3-list-tile:active {
+      transform: scale(0.99);
+      background: var(--md-sys-color-surface-container-high);
     }
 
-    .row-label {
+    .m3-list-tile-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .m3-list-tile-title {
+      font-size: 13px;
       font-weight: 600;
-      color: #ffffff;
+      color: var(--md-sys-color-on-surface);
     }
 
-    .row-sub {
-      font-size: 10.5px;
-      color: var(--text-muted);
+    .m3-list-tile-subtitle {
+      font-size: 11px;
+      color: var(--md-sys-color-on-surface-variant);
     }
 
-    .row-value {
-      font-family: var(--font-mono);
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-
-    .row-value.ready {
-      color: var(--success);
-    }
-
-    /* Modern Minimal Switch */
-    .switch {
-      width: 40px;
-      height: 22px;
-      border-radius: 9999px;
-      background: #334155;
+    /* M3 Switches */
+    .m3-switch {
+      width: 44px;
+      height: 24px;
+      border-radius: var(--md-shape-corner-full);
+      background: var(--md-sys-color-surface-container-highest);
+      border: 2px solid var(--md-sys-color-outline);
       position: relative;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
       flex-shrink: 0;
     }
 
-    .switch-thumb {
-      width: 16px;
-      height: 16px;
+    .m3-switch-thumb {
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
-      background: #ffffff;
+      background: var(--md-sys-color-outline);
       position: absolute;
       top: 3px;
       left: 3px;
-      transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
     }
 
-    .switch.checked {
-      background: var(--primary);
+    .m3-switch.checked {
+      background: var(--md-sys-color-primary);
+      border-color: var(--md-sys-color-primary);
     }
 
-    .switch.checked .switch-thumb {
-      transform: translateX(18px);
+    .m3-switch.checked .m3-switch-thumb {
+      width: 18px;
+      height: 18px;
+      top: 1px;
+      left: 21px;
+      background: var(--md-sys-color-on-primary);
     }
 
-    /* Minimal Action Button */
-    .btn-action {
+    /* M3 Buttons */
+    .m3-btn {
       width: 100%;
       min-height: 44px;
       padding: 10px 14px;
-      border-radius: 13px;
+      border-radius: var(--md-shape-corner-full);
       border: none;
       cursor: pointer;
-      font-size: 12.5px;
-      font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      transition: all 0.15s ease;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
       margin-top: 6px;
     }
 
-    .btn-action:active {
+    .m3-btn:active {
       transform: scale(0.98);
-      opacity: 0.9;
+      opacity: 0.92;
     }
 
-    .btn-primary {
-      background: var(--primary);
-      color: #ffffff;
+    .m3-btn-filled {
+      background: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
     }
 
-    .btn-subtle {
-      background: var(--card-subtle);
-      color: var(--text-muted);
-      border: 1px solid var(--border);
+    .m3-btn-tonal {
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
     }
 
-    .btn-subtle:hover {
-      color: #ffffff;
-    }
-
-    /* Status Banner / Telemetry Row */
-    .status-box {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 8px 11px;
-      font-family: var(--font-mono);
-      font-size: 11.5px;
-      margin-bottom: 10px;
-    }
-
-    /* Minimal Terminal */
+    /* Terminal Console */
     .term-box {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
+      background: var(--md-sys-color-surface-container-lowest);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-shape-corner-lg);
       overflow: hidden;
     }
 
-    .term-header {
+    .term-topbar {
+      background: #0d1117;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 12px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 9px 12px;
-      background: var(--card-subtle);
-      border-bottom: 1px solid var(--border);
-      font-family: var(--font-mono);
-      font-size: 11px;
+      justify-content: space-between;
+      gap: 8px;
     }
 
-    .term-quick-bar {
-      display: flex;
-      gap: 6px;
-      padding: 7px 10px;
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      overflow-x: auto;
-      scrollbar-width: none;
+    .term-prompt-label {
+      font-family: var(--font-family-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #58a6ff;
     }
-    .term-quick-bar::-webkit-scrollbar { display: none; }
 
     .term-chip {
-      background: var(--card-subtle);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-      font-size: 10.5px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--md-shape-corner-xs);
+      color: #c9d1d9;
       padding: 3px 8px;
-      border-radius: 8px;
+      font-size: 10.5px;
+      font-family: var(--font-family-mono);
       cursor: pointer;
       white-space: nowrap;
     }
     .term-chip:active { transform: scale(0.95); }
 
-    .term-screen {
-      background: #06080d;
-      color: #cbd5e1;
+    .term-presets-scroll {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: #090c10;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .term-presets-scroll::-webkit-scrollbar { display: none; }
+
+    .term-output {
+      background: #080a0f;
+      color: #c9d1d9;
       padding: 12px;
-      font-family: var(--font-mono);
+      font-family: var(--font-family-mono);
       font-size: 11px;
       line-height: 1.55;
-      min-height: 240px;
+      min-height: 250px;
       max-height: 380px;
       overflow-y: auto;
       word-break: break-all;
       white-space: pre-wrap;
     }
 
-    .term-screen::-webkit-scrollbar { width: 3px; }
-    .term-screen::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+    .term-cmd { color: #58a6ff; font-weight: 600; margin-top: 4px; }
+    .term-out { color: #8b949e; }
+    .term-err { color: #f85149; }
 
-    .term-cmd-line { color: var(--primary); font-weight: 600; margin-top: 4px; }
-    .term-out-line { color: #94a3b8; }
-    .term-err-line { color: var(--danger); }
-
-    .term-input-bar {
+    .term-input-row {
+      background: #0d1117;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 6px 10px;
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 10px;
-      background: var(--card-subtle);
-      border-top: 1px solid var(--border);
     }
 
     .term-input {
@@ -471,336 +563,595 @@
       background: transparent;
       border: none;
       outline: none;
-      color: #ffffff;
-      font-family: var(--font-mono);
+      color: #f0f6fc;
+      font-family: var(--font-family-mono);
       font-size: 12px;
+      padding: 4px 0;
     }
-    .term-input::placeholder { color: #475569; }
+    .term-input::placeholder { color: #484f58; }
 
-    .term-run-btn {
-      background: var(--primary);
-      border: none;
-      color: #ffffff;
-      border-radius: 8px;
-      padding: 5px 12px;
-      font-size: 11.5px;
+    .term-send-btn {
+      background: transparent;
+      color: #58a6ff;
+      border: 1px solid rgba(56, 139, 253, 0.3);
+      border-radius: var(--md-shape-corner-xs);
+      padding: 4px 10px;
+      font-size: 11px;
       font-weight: 600;
       cursor: pointer;
     }
-    .term-run-btn:active { transform: scale(0.95); }
+    .term-send-btn:active { transform: scale(0.95); }
 
-    /* Minimal Toast */
-    .toast {
+    /* M3 Bottom Navigation Bar */
+    .m3-nav-bar {
       position: fixed;
-      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(30, 31, 38, 0.96);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--md-sys-color-outline-variant);
+      height: calc(58px + env(safe-area-inset-bottom, 0px));
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 2px 2px env(safe-area-inset-bottom, 0px);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .m3-nav-item {
+      background: transparent;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+      flex: 1;
+      height: 100%;
+      padding: 2px 0;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .m3-nav-pill {
+      width: 48px;
+      height: 26px;
+      border-radius: var(--md-shape-corner-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--md-sys-color-on-surface-variant);
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .m3-nav-pill svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .m3-nav-label {
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--md-sys-color-on-surface-variant);
+      white-space: nowrap;
+    }
+
+    .m3-nav-item.active .m3-nav-pill {
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+    }
+
+    .m3-nav-item.active .m3-nav-label {
+      color: var(--md-sys-color-on-surface);
+      font-weight: 700;
+    }
+
+    /* M3 Snackbar */
+    .m3-snackbar {
+      position: fixed;
+      bottom: calc(68px + env(safe-area-inset-bottom, 16px));
       left: 50%;
       transform: translateX(-50%) translateY(20px);
-      background: #1e293b;
-      color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: var(--md-sys-color-surface-container-highest);
+      color: var(--md-sys-color-on-surface);
+      border: 1px solid var(--md-sys-color-outline-variant);
       padding: 8px 16px;
-      border-radius: 9999px;
-      font-size: 11.5px;
-      font-weight: 600;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-      z-index: 9999;
+      border-radius: var(--md-shape-corner-full);
+      font-size: 12px;
+      font-weight: 500;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      z-index: 2000;
       opacity: 0;
       pointer-events: none;
       transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
       white-space: nowrap;
     }
 
-    .toast.show {
+    .m3-snackbar.show {
       transform: translateX(-50%) translateY(0);
       opacity: 1;
     }
 
-    .tab-view { display: none; }
-    .tab-view.active { display: block; }
+    @media (max-width: 480px) {
+      .app-container { padding: 8px 8px; }
+      .m3-options-grid { grid-template-columns: 1fr; }
+      .m3-option-card { min-height: unset; padding: 10px 12px; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Floating Minimal Toast -->
-  <div id="toast" class="toast">Configuration applied</div>
+  <!-- M3 Snackbar Toast -->
+  <div id="m3-snackbar" class="m3-snackbar">Command dispatched.</div>
 
-  <div class="container">
-
-    <!-- Top Minimal Bar -->
-    <header class="top-bar">
-      <div class="brand">
-        <div class="brand-icon">KM</div>
-        <div>
-          <div class="brand-title">Kernel Manager</div>
-          <div class="brand-subtitle">6.12.30 • GKI Android 16</div>
-        </div>
+  <!-- M3 Top App Bar -->
+  <header class="top-app-bar">
+    <div class="top-app-bar-brand">
+      <div class="top-app-bar-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+          <rect x="9" y="9" width="6" height="6"></rect>
+          <line x1="9" y1="1" x2="9" y2="4"></line>
+          <line x1="15" y1="1" x2="15" y2="4"></line>
+          <line x1="9" y1="20" x2="9" y2="23"></line>
+          <line x1="15" y1="20" x2="15" y2="23"></line>
+        </svg>
       </div>
-      <div class="bridge-tag">
-        <span class="dot"></span>
-        <span id="txt-bridge">KernelSU</span>
+      <div class="top-app-bar-title-group">
+        <span class="top-app-bar-title">Kernel Manager</span>
+        <span class="top-app-bar-subtitle">6.12.30 • GKI Android 16</span>
       </div>
-    </header>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span id="bridge-chip" class="m3-chip success">
+        <span class="m3-chip-dot"></span>
+        <span id="bridge-name">KernelSU</span>
+      </span>
+      <button class="btn-icon-m3" onclick="refreshAll()" title="Refresh Telemetry">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
 
-    <!-- Clean Segmented Tabs -->
-    <nav class="tab-bar">
-      <button onclick="navTab('cpu', this)" class="tab-btn active">CPU</button>
-      <button onclick="navTab('net', this)" class="tab-btn">Network</button>
-      <button onclick="navTab('usb', this)" class="tab-btn">USB</button>
-      <button onclick="navTab('drv', this)" class="tab-btn">Drivers</button>
-      <button onclick="navTab('term', this)" class="tab-btn">Terminal</button>
-    </nav>
+  <div class="app-container">
 
-    <!-- ============================================ -->
-    <!-- TAB 1: CPU & PERFORMANCE                    -->
-    <!-- ============================================ -->
-    <div id="tab-cpu" class="tab-view active">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">CPU Governor</span>
-          <span id="status-gov" class="card-status">SCHEDUTIL</span>
+    <!-- ==================================================== -->
+    <!-- TAB 1: NETWORK & PROTOCOLS                           -->
+    <!-- ==================================================== -->
+    <div id="tab-network" class="tab-view active">
+      
+      <!-- TCP Congestion Control Card -->
+      <div class="m3-card">
+        <div class="m3-card-header">
+          <div class="m3-card-title-group">
+            <span class="m3-card-title">TCP Congestion Stack</span>
+            <span class="m3-card-subtitle">Throughput & packet transmission</span>
+          </div>
+          <span id="badge-tcp" class="m3-chip active">
+            <span class="m3-chip-dot"></span>
+            <span id="badge-tcp-text">BBR</span>
+          </span>
         </div>
 
-        <div class="grid-options">
-          <div id="opt-gov-schedutil" class="option-btn selected" onclick="applyGov('schedutil')">
-            <span class="option-title">Schedutil</span>
-            <span class="option-desc">EAS dynamic balance • Default</span>
+        <div class="m3-telemetry-box">
+          <span class="m3-telemetry-key">Active Algorithm & Qdisc</span>
+          <span class="m3-telemetry-val" id="val-tcp-summary">bbr • fq_codel</span>
+        </div>
+
+        <!-- 3 Clean TCP Options -->
+        <div class="m3-options-grid">
+          <div id="opt-tcp-bbr3" class="m3-option-card selected" onclick="applyTcp('bbr3')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">BBRv3</span>
+              <span class="m3-chip active">DEFAULT</span>
+            </div>
+            <span class="m3-option-desc">Model-based congestion • Max speed & low RTT</span>
           </div>
-          <div id="opt-gov-ondemand" class="option-btn" onclick="applyGov('ondemand')">
-            <span class="option-title">Ondemand</span>
-            <span class="option-desc">Instant clock ramp • Snappy</span>
+
+          <div id="opt-tcp-westwood" class="m3-option-card" onclick="applyTcp('westwood')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">Westwood+</span>
+              <span class="m3-chip" style="color:#f59e0b; border-color:#f59e0b; background:rgba(245,158,11,0.12)">WIRELESS</span>
+            </div>
+            <span class="m3-option-desc">Loss-tolerant • Unstable Wi-Fi & cellular</span>
           </div>
-          <div id="opt-gov-performance" class="option-btn" onclick="applyGov('performance')">
-            <span class="option-title">Performance</span>
-            <span class="option-desc">Locked peak clocks • Gaming</span>
-          </div>
-          <div id="opt-gov-powersave" class="option-btn" onclick="applyGov('powersave')">
-            <span class="option-title">Powersave</span>
-            <span class="option-desc">Lowest clock cap • Standby</span>
+
+          <div id="opt-tcp-cubic" class="m3-option-card" onclick="applyTcp('cubic')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">CUBIC</span>
+              <span class="m3-chip">STOCK</span>
+            </div>
+            <span class="m3-option-desc">Standard Android cubic window growth</span>
           </div>
         </div>
 
-        <div class="status-box">
-          <span style="color: var(--text-muted);">Topology & Frequencies:</span>
-          <span id="txt-cpu-freq" style="color: var(--primary); font-weight: 700;">L: 1.4 GHz | B: 2.2 GHz</span>
-        </div>
-
-        <button class="btn-action btn-primary" onclick="persistGovBoot()">
-          Apply Selected Governor at Boot
+        <button class="m3-btn m3-btn-tonal" onclick="saveTcpBootDefault()">
+          Save Selected Algorithm at Boot
         </button>
       </div>
 
-      <!-- Memory & VFS Cache -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Memory & Cache</span>
-          <span class="card-status" style="color: var(--success);">MGLRU 0x0007</span>
+      <!-- Queueing Disciplines & Tethering -->
+      <div class="m3-card">
+        <div class="m3-card-header">
+          <div class="m3-card-title-group">
+            <span class="m3-card-title">Qdisc & Hop-Limit (TTL)</span>
+            <span class="m3-card-subtitle">Bufferbloat reduction & hotspot bypass</span>
+          </div>
         </div>
 
-        <div class="row-item" style="margin-bottom: 10px; cursor: default;">
-          <span class="row-label">ZRAM Swap Engine</span>
-          <span class="row-value" id="val-zram">8.0 GB (LZ4)</span>
+        <span style="font-size: 11px; font-weight: 600; color: var(--md-sys-color-on-surface-variant); display: block; margin-top: 2px;">Packet Queue Scheduler (Qdisc)</span>
+        <div class="m3-segmented-control">
+          <button id="seg-qdisc-cake" class="m3-segment-btn" onclick="applyQdisc('cake')">CAKE</button>
+          <button id="seg-qdisc-fq_codel" class="m3-segment-btn active" onclick="applyQdisc('fq_codel')">FQ_Codel</button>
+          <button id="seg-qdisc-fq" class="m3-segment-btn" onclick="applyQdisc('fq')">FQ (BBR)</button>
         </div>
 
-        <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">VFS Inode & Dentry Cache Pressure</span>
-        <div class="pill-segment">
-          <button id="pill-vfs-50" class="pill-btn" onclick="setVfs(50)">50 (High)</button>
-          <button id="pill-vfs-60" class="pill-btn active" onclick="setVfs(60)">60 (Balanced)</button>
-          <button id="pill-vfs-100" class="pill-btn" onclick="setVfs(100)">100 (Default)</button>
+        <span style="font-size: 11px; font-weight: 600; color: var(--md-sys-color-on-surface-variant); display: block; margin-top: 6px;">Hotspot Hop-Limit (TTL)</span>
+        <div class="m3-segmented-control">
+          <button id="seg-ttl-stock" class="m3-segment-btn active" onclick="setTtl('stock')">Stock</button>
+          <button id="seg-ttl-64" class="m3-segment-btn" onclick="setTtl(64)">TTL = 64</button>
+          <button id="seg-ttl-65" class="m3-segment-btn" onclick="setTtl(65)">TTL = 65</button>
+        </div>
+
+        <!-- M3 Switch Tiles -->
+        <div style="margin-top: 10px;">
+          <div class="m3-list-tile" onclick="toggleIpForward()">
+            <div class="m3-list-tile-content">
+              <span class="m3-list-tile-title">Kernel IP Forwarding</span>
+              <span class="m3-list-tile-subtitle" id="sub-ip-forward">Mobile router packet forwarding</span>
+            </div>
+            <div id="switch-ip-forward" class="m3-switch">
+              <div class="m3-switch-thumb"></div>
+            </div>
+          </div>
+
+          <div class="m3-list-tile" onclick="toggleOptimisticDad()">
+            <div class="m3-list-tile-content">
+              <span class="m3-list-tile-title">IPv6 Optimistic DAD</span>
+              <span class="m3-list-tile-subtitle">Zero-delay address binding</span>
+            </div>
+            <div id="switch-opt-dad" class="m3-switch checked">
+              <div class="m3-switch-thumb"></div>
+            </div>
+          </div>
         </div>
       </div>
+
     </div>
 
-    <!-- ============================================ -->
-    <!-- TAB 2: NETWORK & PROTOCOLS                  -->
-    <!-- ============================================ -->
-    <div id="tab-net" class="tab-view">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">TCP Congestion</span>
-          <span id="status-tcp" class="card-status">BBR</span>
-        </div>
-
-        <div class="pill-segment">
-          <button id="pill-tcp-bbr3" class="pill-btn active" onclick="applyTcp('bbr3')">BBRv3</button>
-          <button id="pill-tcp-westwood" class="pill-btn" onclick="applyTcp('westwood')">Westwood+</button>
-          <button id="pill-tcp-cubic" class="pill-btn" onclick="applyTcp('cubic')">CUBIC</button>
-        </div>
-
-        <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Queueing Discipline (Qdisc)</span>
-        <div class="pill-segment">
-          <button id="pill-qd-cake" class="pill-btn" onclick="applyQdisc('cake')">CAKE</button>
-          <button id="pill-qd-fq_codel" class="pill-btn active" onclick="applyQdisc('fq_codel')">FQ_Codel</button>
-          <button id="pill-qd-fq" class="pill-btn" onclick="applyQdisc('fq')">FQ</button>
-        </div>
-
-        <button class="btn-action btn-primary" onclick="persistTcpBoot()">
-          Apply Selected TCP on Boot
-        </button>
-      </div>
-
-      <!-- Tethering & Switches -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Tethering & Routing</span>
-        </div>
-
-        <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Hop-Limit (TTL) Bypass</span>
-        <div class="pill-segment">
-          <button id="pill-ttl-stock" class="pill-btn active" onclick="setTtl('stock')">Stock</button>
-          <button id="pill-ttl-64" class="pill-btn" onclick="setTtl(64)">TTL 64</button>
-          <button id="pill-ttl-65" class="pill-btn" onclick="setTtl(65)">TTL 65</button>
-        </div>
-
-        <div class="row-item" onclick="toggleIpForward()">
-          <div>
-            <div class="row-label">Kernel IP Forwarding</div>
-            <div class="row-sub" id="sub-ip-forward">Mobile router packet forwarding</div>
-          </div>
-          <div id="sw-ip-forward" class="switch">
-            <div class="switch-thumb"></div>
-          </div>
-        </div>
-
-        <div class="row-item" onclick="toggleOptimisticDad()">
-          <div>
-            <div class="row-label">IPv6 Optimistic DAD</div>
-            <div class="row-sub">Zero-delay address binding</div>
-          </div>
-          <div id="sw-opt-dad" class="switch checked">
-            <div class="switch-thumb"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ============================================ -->
-    <!-- TAB 3: USB GADGET ARSENAL                   -->
-    <!-- ============================================ -->
+    <!-- ==================================================== -->
+    <!-- TAB 2: USB GADGET ARSENAL                            -->
+    <!-- ==================================================== -->
     <div id="tab-usb" class="tab-view">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">USB ConfigFS Mode</span>
-          <span id="status-usb" class="card-status">HID READY</span>
+      <div class="m3-card">
+        <div class="m3-card-header">
+          <div class="m3-card-title-group">
+            <span class="m3-card-title">USB ConfigFS Gadget</span>
+            <span class="m3-card-subtitle">Dynamic hardware endpoint controller</span>
+          </div>
+          <span id="badge-hid" class="m3-chip success">
+            <span class="m3-chip-dot"></span>
+            <span id="badge-hid-text">HID READY</span>
+          </span>
         </div>
 
-        <div class="grid-options">
-          <div id="opt-usb-hid" class="option-btn selected" onclick="applyUsb('hid')">
-            <span class="option-title">HID Keyboard</span>
-            <span class="option-desc">/dev/hidg0 & /dev/hidg1</span>
+        <div class="m3-options-grid">
+          <div id="opt-gadget-hid" class="m3-option-card selected" onclick="enableHidGadget()">
+            <div class="m3-option-header">
+              <span class="m3-option-title">HID Keyboard/Mouse</span>
+              <span class="m3-chip active">ACTIVE</span>
+            </div>
+            <span class="m3-option-desc">/dev/hidg0 & /dev/hidg1 endpoints</span>
           </div>
-          <div id="opt-usb-storage" class="option-btn" onclick="applyUsb('storage')">
-            <span class="option-title">Mass Storage</span>
-            <span class="option-desc">Mount phone as USB drive</span>
+
+          <div id="opt-gadget-storage" class="m3-option-card" onclick="enableMassStorage()">
+            <div class="m3-option-header">
+              <span class="m3-option-title">Mass Storage</span>
+              <span class="m3-chip">USB DISK</span>
+            </div>
+            <span class="m3-option-desc">Mount phone storage as USB drive</span>
           </div>
-          <div id="opt-usb-rndis" class="option-btn" onclick="applyUsb('rndis')">
-            <span class="option-title">RNDIS Ethernet</span>
-            <span class="option-desc">Virtual USB network routing</span>
+
+          <div id="opt-gadget-rndis" class="m3-option-card" onclick="enableRndisEthernet()">
+            <div class="m3-option-header">
+              <span class="m3-option-title">RNDIS Ethernet</span>
+              <span class="m3-chip success">NETWORK</span>
+            </div>
+            <span class="m3-option-desc">Virtual USB network adapter</span>
           </div>
-          <div id="opt-usb-stock" class="option-btn" onclick="applyUsb('stock')">
-            <span class="option-title">Stock Android</span>
-            <span class="option-desc">MTP + ADB Default</span>
+
+          <div id="opt-gadget-stock" class="m3-option-card" onclick="resetUsbDefault()">
+            <div class="m3-option-header">
+              <span class="m3-option-title">Stock Android</span>
+              <span class="m3-chip">MTP+ADB</span>
+            </div>
+            <span class="m3-option-desc">Default Android USB mode</span>
           </div>
         </div>
 
-        <button class="btn-action btn-primary" onclick="sendTestKey()">
-          Send Test Key ('a') to /dev/hidg0
+        <button class="m3-btn m3-btn-filled" onclick="injectTestKeystroke()">
+          Transmit Test Keycode ('a') to /dev/hidg0
         </button>
 
-        <div class="status-box" style="margin-top: 10px; margin-bottom: 0;">
-          <span style="color: var(--text-muted);">Endpoints:</span>
-          <span id="txt-usb-nodes" style="color: var(--success); font-weight: 600;">/dev/hidg0 (crw-rw----)</span>
+        <div class="m3-telemetry-box" style="margin-top: 10px; margin-bottom: 0;">
+          <span class="m3-telemetry-key">Endpoint Nodes</span>
+          <span class="m3-telemetry-val" id="val-hid-nodes">/dev/hidg0 (crw-rw----)</span>
         </div>
       </div>
     </div>
 
-    <!-- ============================================ -->
-    <!-- TAB 4: WIRELESS DRIVERS                     -->
-    <!-- ============================================ -->
-    <div id="tab-drv" class="tab-view">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Wireless Drivers</span>
-          <span class="card-status" style="color: var(--success);">ACTIVE</span>
+    <!-- ==================================================== -->
+    <!-- TAB 3: HARDWARE DRIVERS                              -->
+    <!-- ==================================================== -->
+    <div id="tab-drivers" class="tab-view">
+      <div class="m3-card">
+        <div class="m3-card-header">
+          <div class="m3-card-title-group">
+            <span class="m3-card-title">Wireless Drivers</span>
+            <span class="m3-card-subtitle">External Wi-Fi dongles & packet injection</span>
+          </div>
+          <span class="m3-chip success">
+            <span class="m3-chip-dot"></span>
+            <span>READY</span>
+          </span>
         </div>
 
-        <div class="row-item" style="cursor: default;">
-          <span class="row-label">mt7601u (MediaTek)</span>
-          <span id="drv-mt7601u" class="row-value ready">LOADED</span>
-        </div>
-        <div class="row-item" style="cursor: default;">
-          <span class="row-label">rtw88_core / rtw88_usb (Realtek)</span>
-          <span id="drv-rtw88" class="row-value ready">LOADED</span>
-        </div>
-        <div class="row-item" style="cursor: default;">
-          <span class="row-label">ath9k_htc (Atheros AR9271)</span>
-          <span id="drv-ath9k" class="row-value ready">LOADED</span>
-        </div>
-        <div class="row-item" style="cursor: default;">
-          <span class="row-label">rtl8xxxu (RTL8188EUS/FU)</span>
-          <span id="drv-rtl8xxxu" class="row-value ready">LOADED</span>
-        </div>
-        <div class="row-item" style="cursor: default;">
-          <span class="row-label">mac80211 (Injection Core)</span>
-          <span class="row-value ready">BUILTIN</span>
+        <div class="m3-list-tile" style="cursor: default;">
+          <div class="m3-list-tile-content">
+            <span class="m3-list-tile-title">mt7601u</span>
+            <span class="m3-list-tile-subtitle">MediaTek MT7601U USB Adapters</span>
+          </div>
+          <span id="drv-mt7601u" class="m3-chip success">LOADED</span>
         </div>
 
-        <button class="btn-action btn-primary" onclick="reloadDrivers()">
-          Reload Wireless Driver Modules
+        <div class="m3-list-tile" style="cursor: default;">
+          <div class="m3-list-tile-content">
+            <span class="m3-list-tile-title">rtw88_core / rtw88_usb</span>
+            <span class="m3-list-tile-subtitle">Realtek 8822CU, 8821CU, 8812AU</span>
+          </div>
+          <span id="drv-rtw88" class="m3-chip success">LOADED</span>
+        </div>
+
+        <div class="m3-list-tile" style="cursor: default;">
+          <div class="m3-list-tile-content">
+            <span class="m3-list-tile-title">ath9k_htc / ath</span>
+            <span class="m3-list-tile-subtitle">Atheros AR9271 (TP-Link WN722N v1)</span>
+          </div>
+          <span id="drv-ath9k" class="m3-chip success">LOADED</span>
+        </div>
+
+        <div class="m3-list-tile" style="cursor: default;">
+          <div class="m3-list-tile-content">
+            <span class="m3-list-tile-title">rtl8xxxu</span>
+            <span class="m3-list-tile-subtitle">Realtek RTL8188EUS, RTL8188FU, RTL8192EU</span>
+          </div>
+          <span id="drv-rtl8xxxu" class="m3-chip success">LOADED</span>
+        </div>
+
+        <div class="m3-list-tile" style="cursor: default;">
+          <div class="m3-list-tile-content">
+            <span class="m3-list-tile-title">mac80211 & cfg80211 (WEXT=y)</span>
+            <span class="m3-list-tile-subtitle">Packet Injection Core Framework</span>
+          </div>
+          <span class="m3-chip success">BUILTIN</span>
+        </div>
+
+        <button class="m3-btn m3-btn-filled" onclick="reloadDrivers()">
+          Reload Wireless Modules
         </button>
+      </div>
+
+      <!-- Network Interfaces -->
+      <div class="m3-card">
+        <div class="m3-card-header">
+          <div class="m3-card-title-group">
+            <span class="m3-card-title">Network Interfaces</span>
+            <span class="m3-card-subtitle">Active links & IP addresses</span>
+          </div>
+        </div>
+        <div id="box-interfaces" class="term-output" style="min-height: 80px; max-height: 140px; border-radius: 10px;">Scanning interfaces...</div>
       </div>
     </div>
 
-    <!-- ============================================ -->
-    <!-- TAB 5: MINIMAL TERMINAL                     -->
-    <!-- ============================================ -->
-    <div id="tab-term" class="tab-view">
+    <!-- ==================================================== -->
+    <!-- TAB 4: CPU & PERFORMANCE                             -->
+    <!-- ==================================================== -->
+    <div id="tab-perf" class="tab-view">
+      <div class="m3-card">
+        <div class="m3-card-header">
+          <div class="m3-card-title-group">
+            <span class="m3-card-title">CPU Frequency Governors</span>
+            <span class="m3-card-subtitle">Energy-aware scheduling & clock scaling</span>
+          </div>
+          <span id="badge-cpugov" class="m3-chip active">
+            <span class="m3-chip-dot"></span>
+            <span id="badge-cpugov-text">SCHEDUTIL</span>
+          </span>
+        </div>
+
+        <!-- 4 Clean Governor Cards -->
+        <div class="m3-options-grid">
+          <div id="opt-gov-schedutil" class="m3-option-card selected" onclick="applyCpuGov('schedutil')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">Schedutil</span>
+              <span class="m3-chip active">DEFAULT</span>
+            </div>
+            <span class="m3-option-desc">EAS dynamic balance • Smooth daily battery</span>
+          </div>
+
+          <div id="opt-gov-ondemand" class="m3-option-card" onclick="applyCpuGov('ondemand')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">Ondemand</span>
+              <span class="m3-chip" style="color:#f59e0b; border-color:#f59e0b; background:rgba(245,158,11,0.12)">SNAPPY</span>
+            </div>
+            <span class="m3-option-desc">Fast clock ramp-up • Responsive UI</span>
+          </div>
+
+          <div id="opt-gov-performance" class="m3-option-card" onclick="applyCpuGov('performance')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">Performance</span>
+              <span class="m3-chip" style="color:#ff6b6b; border-color:#ff6b6b; background:rgba(255,107,107,0.12)">GAMING</span>
+            </div>
+            <span class="m3-option-desc">Locks maximum clocks • Zero frame drops</span>
+          </div>
+
+          <div id="opt-gov-powersave" class="m3-option-card" onclick="applyCpuGov('powersave')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">Powersave</span>
+              <span class="m3-chip success">BATTERY</span>
+            </div>
+            <span class="m3-option-desc">Caps frequencies to min • Longest standby</span>
+          </div>
+        </div>
+
+        <div class="m3-telemetry-box">
+          <span class="m3-telemetry-key">Live Cluster Frequencies</span>
+          <span class="m3-telemetry-val" id="val-cpugov-freq">L: 1.4 GHz | B: 2.2 GHz</span>
+        </div>
+
+        <button class="m3-btn m3-btn-tonal" onclick="saveCpuGovBootDefault()">
+          Save Selected Governor at Boot
+        </button>
+      </div>
+
+      <!-- Memory & MGLRU -->
+      <div class="m3-card">
+        <div class="m3-card-header">
+          <div class="m3-card-title-group">
+            <span class="m3-card-title">Memory & Cache (MGLRU)</span>
+            <span class="m3-card-subtitle">Page reclaim & swap efficiency</span>
+          </div>
+          <span class="m3-chip success">0x0007 ACTIVE</span>
+        </div>
+
+        <div class="m3-telemetry-box">
+          <span class="m3-telemetry-key">ZRAM Compressed Swap</span>
+          <span class="m3-telemetry-val" id="val-zram-summary">8.0 GB • LZ4</span>
+        </div>
+
+        <span style="font-size: 11px; font-weight: 600; color: var(--md-sys-color-on-surface-variant); display: block; margin-top: 2px;">VFS Inode & Dentry Cache Pressure</span>
+        <div class="m3-segmented-control">
+          <button id="seg-vfs-50" class="m3-segment-btn" onclick="setVfs(50)">50 (High Cache)</button>
+          <button id="seg-vfs-60" class="m3-segment-btn active" onclick="setVfs(60)">60 (Balanced)</button>
+          <button id="seg-vfs-100" class="m3-segment-btn" onclick="setVfs(100)">100 (Default)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- TAB 5: CONSOLE & DIAGNOSTICS                         -->
+    <!-- ==================================================== -->
+    <div id="tab-console" class="tab-view">
       <div class="term-box">
-        <div class="term-header">
-          <span style="color: var(--primary); font-weight: 700;"># root shell</span>
+        <div class="term-topbar">
+          <span class="term-prompt-label">root@android #</span>
           <div style="display: flex; gap: 6px;">
-            <button class="term-chip" onclick="clearTerm()">Clear</button>
-            <button class="term-chip" onclick="copyTerm()">Copy</button>
+            <button class="term-chip" onclick="clearConsole()">Clear</button>
+            <button class="term-chip" onclick="copyConsole()">Copy</button>
           </div>
         </div>
 
-        <div class="term-quick-bar">
-          <button class="term-chip" onclick="runPreset('uname -r')">uname -r</button>
-          <button class="term-chip" onclick="runPreset('cat /proc/version')">version</button>
+        <div class="term-presets-scroll">
+          <button class="term-chip" onclick="runPreset('uname -a')">uname -a</button>
           <button class="term-chip" onclick="runPreset('dmesg | tail -n 25')">dmesg</button>
-          <button class="term-chip" onclick="runPreset('free -m')">free -m</button>
+          <button class="term-chip" onclick="runPreset('free -h')">free -h</button>
           <button class="term-chip" onclick="runPreset('lsmod')">lsmod</button>
+          <button class="term-chip" onclick="runPreset('ip addr show')">ip addr</button>
+          <button class="term-chip" onclick="runPreset('cat /proc/version')">version</button>
         </div>
 
-        <div id="term-screen" class="term-screen">
-          <div style="color: var(--text-muted);">Kernel Diagnostics Terminal (Linux GKI 6.12.30)</div>
-          <div style="color: var(--text-muted);">Root shell ready. Type commands below.</div>
+        <div id="box-console" class="term-output">
+          <div class="term-out">Kernel Diagnostics Terminal (Linux GKI 6.12.30)</div>
+          <div class="term-out">Universal root bridge connected. Ready.</div>
         </div>
 
-        <div class="term-input-bar">
-          <span style="color: var(--success); font-weight: 700; font-family: var(--font-mono);">#</span>
-          <input id="term-input" type="text" class="term-input" placeholder="sh command..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" onkeydown="if(event.key==='Enter') executeCustomCmd()" />
-          <button class="term-run-btn" onclick="executeCustomCmd()">Run</button>
+        <div class="term-input-row">
+          <span style="color: #3fb950; font-family: var(--font-family-mono); font-weight: 700;">#</span>
+          <input id="term-input" type="text" class="term-input" placeholder="sh command..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" onkeydown="if(event.key==='Enter') executeCustomCommand()" />
+          <button class="term-send-btn" onclick="executeCustomCommand()">Run</button>
         </div>
       </div>
     </div>
 
   </div>
 
+  <!-- M3 Bottom Navigation Bar -->
+  <nav class="m3-nav-bar">
+    <button class="m3-nav-item active" onclick="navTo('network', this)">
+      <div class="m3-nav-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/>
+        </svg>
+      </div>
+      <span class="m3-nav-label">Network</span>
+    </button>
+
+    <button class="m3-nav-item" onclick="navTo('usb', this)">
+      <div class="m3-nav-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
+      </div>
+      <span class="m3-nav-label">USB</span>
+    </button>
+
+    <button class="m3-nav-item" onclick="navTo('drivers', this)">
+      <div class="m3-nav-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+      </div>
+      <span class="m3-nav-label">Drivers</span>
+    </button>
+
+    <button class="m3-nav-item" onclick="navTo('perf', this)">
+      <div class="m3-nav-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+          <rect x="9" y="9" width="6" height="6"></rect>
+          <line x1="9" y1="1" x2="9" y2="4"></line>
+          <line x1="15" y1="1" x2="15" y2="4"></line>
+        </svg>
+      </div>
+      <span class="m3-nav-label">CPU & RAM</span>
+    </button>
+
+    <button class="m3-nav-item" onclick="navTo('console', this)">
+      <div class="m3-nav-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="4 17 10 11 4 5"></polyline>
+          <line x1="12" y1="19" x2="20" y2="19"></line>
+        </svg>
+      </div>
+      <span class="m3-nav-label">Console</span>
+    </button>
+  </nav>
+
   <script>
     const state = {
-      gov: "schedutil",
-      availGovs: "sugov_ext schedutil ondemand performance powersave",
       tcp: "bbr",
       availTcp: "bbr bbr3 westwood cubic reno",
       qdisc: "fq_codel",
       ttl: "stock",
-      vfs: 60,
       ipForward: false,
       optimisticDad: true,
-      usb: "hid"
+      hidActive: true,
+      cpuGov: "schedutil",
+      availGovs: "sugov_ext schedutil ondemand performance powersave",
+      vfsPressure: 60,
+      zramSize: "8.0 GB"
     };
 
-    function toast(msg) {
+    function showSnackbar(msg) {
       if (window.ksu && typeof window.ksu.toast === 'function') {
         try { window.ksu.toast(msg); } catch(e) {}
       } else if (window.sukisu && typeof window.sukisu.toast === 'function') {
@@ -808,29 +1159,16 @@
       } else if (window.apatch && typeof window.apatch.toast === 'function') {
         try { window.apatch.toast(msg); } catch(e) {}
       }
-      const t = document.getElementById('toast');
-      t.innerText = msg;
-      t.classList.add('show');
-      clearTimeout(window._tTimer);
-      window._tTimer = setTimeout(() => { t.classList.remove('show'); }, 2200);
-    }
-
-    function navTab(id, btn) {
-      document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      document.getElementById('tab-' + id).classList.add('active');
-      btn.classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      if (id === 'cpu') checkGov();
-      if (id === 'net') checkNet();
-      if (id === 'usb') checkUsb();
-      if (id === 'drv') checkDrivers();
+      const bar = document.getElementById('m3-snackbar');
+      bar.innerText = msg;
+      bar.classList.add('show');
+      clearTimeout(window._sbTimer);
+      window._sbTimer = setTimeout(() => { bar.classList.remove('show'); }, 2200);
     }
 
     // Universal Shell Execution Engine
     async function exec(cmd) {
-      logTerm("$ " + cmd);
+      logConsole("$ " + cmd);
       const runner = (window.ksu && typeof window.ksu.exec === 'function') ? window.ksu.exec.bind(window.ksu) :
                      (window.sukisu && typeof window.sukisu.exec === 'function') ? window.sukisu.exec.bind(window.sukisu) :
                      (window.resukisu && typeof window.resukisu.exec === 'function') ? window.resukisu.exec.bind(window.resukisu) :
@@ -841,17 +1179,17 @@
         try {
           const res = runner(cmd);
           if (res instanceof Promise) {
-            const d = await res;
-            return formatOut(d);
+            const data = await res;
+            return formatOutput(data);
           }
-          if (typeof res === 'object' || typeof res === 'string') return formatOut(res);
+          if (typeof res === 'object' || typeof res === 'string') return formatOutput(res);
         } catch(e) {
           return new Promise(resolve => {
             try {
-              runner(cmd, (code, out, err) => {
-                const s = out || err || "";
-                if (s.trim()) logTerm(s.trim());
-                resolve(s);
+              runner(cmd, (code, stdout, stderr) => {
+                const out = stdout || stderr || "";
+                if (out.trim()) logConsole(out.trim());
+                resolve(out);
               });
             } catch(err) {
               resolve("");
@@ -860,35 +1198,35 @@
         }
       }
 
-      // Sandbox Preview Simulator
-      return simulateCmd(cmd);
+      // Browser Simulation Fallback
+      return simulateShell(cmd);
     }
 
-    function formatOut(res) {
+    function formatOutput(res) {
       if (!res) return "";
       if (typeof res === 'string') {
         try {
           const p = JSON.parse(res);
-          const s = p.stdout || p.stderr || res;
-          if (s.trim()) logTerm(s.trim());
-          return s;
+          const out = p.stdout || p.stderr || res;
+          if (out.trim()) logConsole(out.trim());
+          return out;
         } catch(e) {
-          if (res.trim()) logTerm(res.trim());
+          if (res.trim()) logConsole(res.trim());
           return res;
         }
       }
       if (typeof res === 'object') {
-        const s = res.stdout || res.stderr || "";
-        if (s.trim()) logTerm(s.trim());
-        return s;
+        const out = res.stdout || res.stderr || "";
+        if (out.trim()) logConsole(out.trim());
+        return out;
       }
       return String(res);
     }
 
-    function simulateCmd(cmd) {
+    function simulateShell(cmd) {
       if (cmd.includes("scaling_governor")) {
         const m = cmd.match(/echo\s+([a-z_]+)\s*>/);
-        if (m) state.gov = m[1];
+        if (m) state.cpuGov = m[1];
       }
       if (cmd.includes("tcp_congestion_control=")) {
         const m = cmd.match(/tcp_congestion_control=([a-z0-9_]+)/);
@@ -898,15 +1236,19 @@
         const m = cmd.match(/default_qdisc=([a-z0-9_]+)/);
         if (m) state.qdisc = m[1];
       }
-      if (cmd.includes("cat /sys/devices/system/cpu") && cmd.includes("scaling_governor")) return state.gov;
+      if (cmd.includes("cat /sys/devices/system/cpu") && cmd.includes("scaling_governor")) return state.cpuGov;
       if (cmd.includes("cat /proc/sys/net/ipv4/tcp_congestion_control")) return state.tcp;
       if (cmd.includes("cat /proc/sys/net/core/default_qdisc")) return state.qdisc;
+      if (cmd.includes("cat /proc/sys/net/ipv4/ip_forward")) return state.ipForward ? "1" : "0";
+      if (cmd.includes("cat /proc/sys/net/ipv6/conf/all/optimistic_dad")) return state.optimisticDad ? "1" : "0";
+      if (cmd.includes("ls -l /dev/hidg0")) return state.hidActive ? "crw-rw---- 1 root root 241, 0 /dev/hidg0" : "";
       if (cmd.includes("uname -r")) return "6.12.30-android16-9-gki";
-      if (cmd.includes("version")) return "Linux version 6.12.30-android16-9-gki (android-build@google)";
+      if (cmd.includes("uname -a")) return "Linux localhost 6.12.30-android16-9-gki #1 SMP PREEMPT aarch64 Android";
       if (cmd.includes("dmesg")) return "[    0.000000] Linux version 6.12.30-android16-9-gki\n[    0.142010] NetHunter GKI: HID Gadget Subsystem loaded (/dev/hidg0, /dev/hidg1)\n[    0.354120] TCP: Westwood+, BBRv3 registered";
       if (cmd.includes("free")) return "Mem: 11845M total, 4120M used, 7725M free\nSwap: 8192M total, 350M used";
-      if (cmd.includes("lsmod")) return "mt7601u 114688 0\nrtw88_core 262144 0\nmac80211 950272 1 rtw88_core";
-      return "Status 0: command executed";
+      if (cmd.includes("lsmod")) return "mt7601u 114688 0\nrtw88_core 262144 0\nmac80211 950272 1 rtw88_core\ncfg80211 778240 2 mac80211,rtw88_core";
+      if (cmd.includes("ip -br link") || cmd.includes("ifconfig")) return "lo UNKNOWN 00:00:00:00:00:00\nwlan0 UP a4:c3:f0:12:34:56\nrmnet_data0 UP 10.42.0.1";
+      return "Status 0: Command executed successfully.";
     }
 
     function detectBridge() {
@@ -918,271 +1260,290 @@
       return "Sandbox";
     }
 
-    // CPU Governors
-    async function checkGov() {
-      const cur = await exec("cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor 2>/dev/null || cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null");
-      const curFreq0 = await exec("cat /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq 2>/dev/null");
-      const curFreq6 = await exec("cat /sys/devices/system/cpu/cpufreq/policy6/scaling_cur_freq 2>/dev/null || cat /sys/devices/system/cpu/cpu4/cpufreq/scaling_cur_freq 2>/dev/null");
+    function navTo(tabId, btn) {
+      document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.m3-nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      btn.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      const g = cur ? cur.trim() : state.gov;
-      state.gov = g;
-      document.getElementById('status-gov').innerText = g.toUpperCase();
-
-      let freqStr = "";
-      if (curFreq0 && !isNaN(curFreq0)) freqStr += "L: " + (parseInt(curFreq0) / 1000).toFixed(0) + " MHz";
-      if (curFreq6 && !isNaN(curFreq6)) freqStr += (freqStr ? " | " : "") + "B: " + (parseInt(curFreq6) / 1000).toFixed(0) + " MHz";
-      if (!freqStr) {
-        if (g === 'performance') freqStr = "L: 2.0 GHz | B: 2.8 GHz (Peak)";
-        else if (g === 'powersave') freqStr = "L: 0.6 GHz | B: 0.8 GHz (Min)";
-        else if (g === 'ondemand') freqStr = "L: 1.8 GHz | B: 2.4 GHz (Dynamic)";
-        else freqStr = "L: 1.4 GHz | B: 2.2 GHz (EAS)";
-      }
-      document.getElementById('txt-cpu-freq').innerText = freqStr;
-
-      ['schedutil', 'ondemand', 'performance', 'powersave'].forEach(k => {
-        const el = document.getElementById('opt-gov-' + k);
-        if (el) {
-          if (g.includes(k) || (k === 'schedutil' && g === 'sugov_ext')) el.classList.add('selected');
-          else el.classList.remove('selected');
-        }
-      });
+      if (tabId === 'network') checkTcp();
+      if (tabId === 'usb') checkUsbStatus();
+      if (tabId === 'drivers') checkDrivers();
+      if (tabId === 'perf') checkCpuGov();
     }
 
-    async function applyGov(g) {
-      state.gov = g;
-      await exec(`for p in /sys/devices/system/cpu/cpufreq/policy*; do [ -f "$p/scaling_governor" ] && echo ${g} > "$p/scaling_governor" 2>/dev/null; done; for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do [ -f "$c" ] && echo ${g} > "$c" 2>/dev/null; done`);
-      toast("Governor: " + g.toUpperCase());
-      await checkGov();
-    }
-
-    async function persistGovBoot() {
-      const cmd = `mkdir -p /data/adb/service.d && printf '#!/system/bin/sh\\nfor p in /sys/devices/system/cpu/cpufreq/policy*; do [ -f "$p/scaling_governor" ] && echo ${state.gov} > "$p/scaling_governor" 2>/dev/null; done\\nfor c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do [ -f "$c" ] && echo ${state.gov} > "$c" 2>/dev/null; done\\n' > /data/adb/service.d/00-cpugov.sh && chmod 0755 /data/adb/service.d/00-cpugov.sh`;
-      await exec(cmd);
-      toast("Persisted " + state.gov + " at boot");
-    }
-
-    async function setVfs(val) {
-      state.vfs = val;
-      await exec("sysctl -w vm.vfs_cache_pressure=" + val);
-      ['50', '60', '100'].forEach(k => {
-        const el = document.getElementById('pill-vfs-' + k);
-        if (el) {
-          if (k === String(val)) el.classList.add('active');
-          else el.classList.remove('active');
-        }
-      });
-      toast("VFS Cache Pressure: " + val);
-    }
-
-    // Network & TCP
-    async function checkNet() {
+    // 1. Network & Protocols
+    async function checkTcp() {
       const cur = await exec("cat /proc/sys/net/ipv4/tcp_congestion_control 2>/dev/null");
-      const qd = await exec("cat /proc/sys/net/core/default_qdisc 2>/dev/null");
+      const qdisc = await exec("cat /proc/sys/net/core/default_qdisc 2>/dev/null");
       const ipFwd = await exec("cat /proc/sys/net/ipv4/ip_forward 2>/dev/null");
       const optDad = await exec("cat /proc/sys/net/ipv6/conf/all/optimistic_dad 2>/dev/null");
 
-      const t = cur ? cur.trim() : state.tcp;
-      state.tcp = t;
-      document.getElementById('status-tcp').innerText = t.toUpperCase();
-
-      ['bbr3', 'westwood', 'cubic'].forEach(k => {
-        const el = document.getElementById('pill-tcp-' + k);
-        if (el) {
-          if (t === k || ((t === 'bbr' || t === 'bbr3') && k === 'bbr3')) el.classList.add('active');
-          else el.classList.remove('active');
-        }
-      });
-
-      const q = qd ? qd.trim() : state.qdisc;
+      const trimmed = cur ? cur.trim() : state.tcp;
+      state.tcp = trimmed;
+      const q = qdisc ? qdisc.trim() : state.qdisc;
       state.qdisc = q;
-      ['cake', 'fq_codel', 'fq'].forEach(k => {
-        const el = document.getElementById('pill-qd-' + k);
+
+      document.getElementById('badge-tcp-text').innerText = trimmed.toUpperCase();
+      document.getElementById('val-tcp-summary').innerText = trimmed + " • " + q;
+
+      ['bbr3', 'westwood', 'cubic'].forEach(a => {
+        const el = document.getElementById('opt-tcp-' + a);
         if (el) {
-          if (q === k) el.classList.add('active');
-          else el.classList.remove('active');
+          if (trimmed === a || ((trimmed === 'bbr' || trimmed === 'bbr3') && a === 'bbr3')) el.classList.add('selected');
+          else el.classList.remove('selected');
         }
       });
+
+      document.querySelectorAll('[id^="seg-qdisc-"]').forEach(el => el.classList.remove('active'));
+      const activeQ = document.getElementById('seg-qdisc-' + q);
+      if (activeQ) activeQ.classList.add('active');
 
       state.ipForward = ipFwd && ipFwd.trim() === "1";
-      document.getElementById('sw-ip-forward').classList.toggle('checked', state.ipForward);
+      document.getElementById('switch-ip-forward').classList.toggle('checked', state.ipForward);
       document.getElementById('sub-ip-forward').innerText = state.ipForward ? "Routing enabled (1)" : "Routing disabled (0)";
 
       state.optimisticDad = optDad && optDad.trim() === "1";
-      document.getElementById('sw-opt-dad').classList.toggle('checked', state.optimisticDad);
+      document.getElementById('switch-opt-dad').classList.toggle('checked', state.optimisticDad);
     }
 
-    async function applyTcp(t) {
-      state.tcp = t;
-      if (t === 'bbr3') await exec("sysctl -w net.ipv4.tcp_congestion_control=bbr3 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=bbr");
-      else await exec("sysctl -w net.ipv4.tcp_congestion_control=" + t);
-      toast("TCP: " + t.toUpperCase());
-      await checkNet();
+    async function applyTcp(algo) {
+      state.tcp = algo;
+      if (algo === 'bbr3') await exec("sysctl -w net.ipv4.tcp_congestion_control=bbr3 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=bbr");
+      else await exec("sysctl -w net.ipv4.tcp_congestion_control=" + algo);
+      showSnackbar("TCP: " + algo.toUpperCase());
+      await checkTcp();
     }
 
-    async function applyQdisc(q) {
-      state.qdisc = q;
-      await exec("sysctl -w net.core.default_qdisc=" + q);
-      toast("Qdisc: " + q);
-      await checkNet();
-    }
-
-    async function persistTcpBoot() {
+    async function saveTcpBootDefault() {
       await exec(`mkdir -p /data/adb/service.d && printf '#!/system/bin/sh\\nsysctl -w net.ipv4.tcp_congestion_control=${state.tcp}\\n' > /data/adb/service.d/00-tcp.sh && chmod 0755 /data/adb/service.d/00-tcp.sh`);
-      toast("Persisted " + state.tcp + " at boot");
+      showSnackbar("Saved " + state.tcp + " as boot default");
+    }
+
+    async function applyQdisc(qdisc) {
+      state.qdisc = qdisc;
+      await exec("sysctl -w net.core.default_qdisc=" + qdisc);
+      showSnackbar("Qdisc set to " + qdisc);
+      await checkTcp();
     }
 
     async function setTtl(val) {
       state.ttl = String(val);
-      ['stock', '64', '65'].forEach(k => {
-        const el = document.getElementById('pill-ttl-' + k);
-        if (el) {
-          if (k === String(val)) el.classList.add('active');
-          else el.classList.remove('active');
-        }
-      });
+      document.querySelectorAll('[id^="seg-ttl-"]').forEach(el => el.classList.remove('active'));
+      const t = document.getElementById('seg-ttl-' + val);
+      if (t) t.classList.add('active');
+
       if (val === 'stock') {
         await exec("iptables -t mangle -D POSTROUTING -j TTL --ttl-set 64 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 65 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 64 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 65 2>/dev/null");
-        toast("Tethering TTL restored to Stock");
+        showSnackbar("Tethering TTL: Stock");
       } else {
         await exec(`iptables -t mangle -D POSTROUTING -j TTL --ttl-set ${val} 2>/dev/null; iptables -t mangle -A POSTROUTING -j TTL --ttl-set ${val}; ip6tables -t mangle -D POSTROUTING -j HL --hl-set ${val} 2>/dev/null; ip6tables -t mangle -A POSTROUTING -j HL --hl-set ${val} 2>/dev/null || true`);
-        toast("Tethering TTL locked to " + val);
+        showSnackbar("Tethering TTL locked to " + val);
       }
     }
 
     async function toggleIpForward() {
       state.ipForward = !state.ipForward;
-      const v = state.ipForward ? "1" : "0";
-      await exec("sysctl -w net.ipv4.ip_forward=" + v);
-      document.getElementById('sw-ip-forward').classList.toggle('checked', state.ipForward);
+      const val = state.ipForward ? "1" : "0";
+      await exec("sysctl -w net.ipv4.ip_forward=" + val);
+      document.getElementById('switch-ip-forward').classList.toggle('checked', state.ipForward);
       document.getElementById('sub-ip-forward').innerText = state.ipForward ? "Routing enabled (1)" : "Routing disabled (0)";
-      toast("IP Forwarding: " + (state.ipForward ? "ON" : "OFF"));
+      showSnackbar("IP Forwarding: " + (state.ipForward ? "ON" : "OFF"));
     }
 
     async function toggleOptimisticDad() {
       state.optimisticDad = !state.optimisticDad;
-      const v = state.optimisticDad ? "1" : "0";
-      await exec("sysctl -w net.ipv6.conf.all.optimistic_dad=" + v);
-      document.getElementById('sw-opt-dad').classList.toggle('checked', state.optimisticDad);
-      toast("Optimistic DAD: " + (state.optimisticDad ? "ON" : "OFF"));
+      const val = state.optimisticDad ? "1" : "0";
+      await exec("sysctl -w net.ipv6.conf.all.optimistic_dad=" + val);
+      document.getElementById('switch-opt-dad').classList.toggle('checked', state.optimisticDad);
+      showSnackbar("Optimistic DAD: " + (state.optimisticDad ? "ON" : "OFF"));
     }
 
-    // USB Gadget Subsystem
-    async function checkUsb() {
+    // 2. USB Gadget Subsystem
+    async function checkUsbStatus() {
       const hid0 = await exec("ls -l /dev/hidg0 2>/dev/null");
-      const isReady = (hid0 && hid0.includes('/dev/hidg0')) || state.usb === 'hid';
-      document.getElementById('status-usb').innerText = isReady ? "HID READY" : "STANDBY";
-      document.getElementById('txt-usb-nodes').innerText = isReady ? "/dev/hidg0 (crw-rw----)" : "Not Configured";
-      document.getElementById('txt-usb-nodes').style.color = isReady ? "var(--success)" : "var(--text-muted)";
+      const isReady = (hid0 && hid0.includes('/dev/hidg0')) || state.hidActive;
+      document.getElementById('badge-hid-text').innerText = isReady ? "HID READY" : "STANDBY";
+      document.getElementById('badge-hid').className = isReady ? "m3-chip success" : "m3-chip";
+      document.getElementById('val-hid-nodes').innerText = isReady ? "/dev/hidg0 & /dev/hidg1 (Ready)" : "Not Configured";
     }
 
-    async function applyUsb(mode) {
-      state.usb = mode;
-      ['hid', 'storage', 'rndis', 'stock'].forEach(k => {
-        const el = document.getElementById('opt-usb-' + k);
-        if (el) {
-          if (k === mode) el.classList.add('selected');
-          else el.classList.remove('selected');
-        }
-      });
-
-      if (mode === 'hid') {
-        const script = `
-          G=""
-          for p in /config/usb_gadget/g1 /config/usb_gadget/g0 /sys/kernel/config/usb_gadget/g1 /sys/kernel/config/usb_gadget/g0; do
-            if [ -d "$p" ]; then G="$p"; break; fi
-          done
-          if [ -n "$G" ]; then
-            CONF=$(ls -d $G/configs/*.* 2>/dev/null | head -n 1)
-            [ -z "$CONF" ] && [ -d "$G/configs/b.1" ] && CONF="$G/configs/b.1"
-            if [ -n "$CONF" ]; then
-              mkdir -p $G/functions/hid.usb0 $G/functions/hid.usb1
-              echo 1 > $G/functions/hid.usb0/protocol
-              echo 1 > $G/functions/hid.usb0/subclass
-              echo 8 > $G/functions/hid.usb0/report_length
-              printf '\\005\\001\\011\\006\\241\\001\\005\\007\\031\\340\\051\\347\\025\\000\\045\\001\\165\\001\\225\\010\\201\\002\\225\\001\\165\\010\\201\\003\\225\\005\\165\\001\\005\\010\\031\\001\\051\\005\\221\\002\\225\\001\\165\\003\\221\\003\\225\\006\\165\\010\\025\\000\\045\\145\\005\\007\\031\\000\\051\\145\\201\\000\\300' > $G/functions/hid.usb0/report_desc
-              echo 2 > $G/functions/hid.usb1/protocol
-              echo 1 > $G/functions/hid.usb1/subclass
-              echo 3 > $G/functions/hid.usb1/report_length
-              printf '\\005\\001\\011\\002\\241\\001\\011\\001\\241\\000\\005\\011\\031\\001\\051\\003\\025\\000\\045\\001\\225\\003\\165\\001\\201\\002\\225\\001\\165\\005\\201\\003\\005\\001\\011\\060\\011\\061\\025\\201\\045\\177\\165\\010\\225\\002\\201\\006\\300\\300' > $G/functions/hid.usb1/report_desc
-              ln -sf $G/functions/hid.usb0 $CONF/ 2>/dev/null || true
-              ln -sf $G/functions/hid.usb1 $CONF/ 2>/dev/null || true
-              chmod 0666 /dev/hidg* 2>/dev/null || true
-            fi
+    async function enableHidGadget() {
+      showSnackbar("Binding USB HID gadget endpoints...");
+      state.hidActive = true;
+      const script = `
+        G=""
+        for p in /config/usb_gadget/g1 /config/usb_gadget/g0 /sys/kernel/config/usb_gadget/g1 /sys/kernel/config/usb_gadget/g0; do
+          if [ -d "$p" ]; then G="$p"; break; fi
+        done
+        if [ -n "$G" ]; then
+          CONF=$(ls -d $G/configs/*.* 2>/dev/null | head -n 1)
+          [ -z "$CONF" ] && [ -d "$G/configs/b.1" ] && CONF="$G/configs/b.1"
+          if [ -n "$CONF" ]; then
+            mkdir -p $G/functions/hid.usb0 $G/functions/hid.usb1
+            echo 1 > $G/functions/hid.usb0/protocol
+            echo 1 > $G/functions/hid.usb0/subclass
+            echo 8 > $G/functions/hid.usb0/report_length
+            printf '\\005\\001\\011\\006\\241\\001\\005\\007\\031\\340\\051\\347\\025\\000\\045\\001\\165\\001\\225\\010\\201\\002\\225\\001\\165\\010\\201\\003\\225\\005\\165\\001\\005\\010\\031\\001\\051\\005\\221\\002\\225\\001\\165\\003\\221\\003\\225\\006\\165\\010\\025\\000\\045\\145\\005\\007\\031\\000\\051\\145\\201\\000\\300' > $G/functions/hid.usb0/report_desc
+            echo 2 > $G/functions/hid.usb1/protocol
+            echo 1 > $G/functions/hid.usb1/subclass
+            echo 3 > $G/functions/hid.usb1/report_length
+            printf '\\005\\001\\011\\002\\241\\001\\011\\001\\241\\000\\005\\011\\031\\001\\051\\003\\025\\000\\045\\001\\225\\003\\165\\001\\201\\002\\225\\001\\165\\005\\201\\003\\005\\001\\011\\060\\011\\061\\025\\201\\045\\177\\165\\010\\225\\002\\201\\006\\300\\300' > $G/functions/hid.usb1/report_desc
+            ln -sf $G/functions/hid.usb0 $CONF/ 2>/dev/null || true
+            ln -sf $G/functions/hid.usb1 $CONF/ 2>/dev/null || true
+            chmod 0666 /dev/hidg* 2>/dev/null || true
           fi
-        `;
-        await exec(script);
-        toast("HID Keyboard endpoints bound");
-      } else if (mode === 'storage') {
-        await exec("setprop sys.usb.config mass_storage 2>/dev/null || true");
-        toast("Mass Storage profile active");
-      } else if (mode === 'rndis') {
-        await exec("setprop sys.usb.config rndis,adb 2>/dev/null || setprop sys.usb.config rndis");
-        toast("RNDIS Ethernet engaged");
-      } else {
-        await exec("setprop sys.usb.config mtp,adb 2>/dev/null || setprop sys.usb.config mtp");
-        toast("USB restored to Stock Android (MTP + ADB)");
-      }
-      await checkUsb();
+        fi
+      `;
+      await exec(script);
+      document.querySelectorAll('[id^="opt-gadget-"]').forEach(c => c.classList.remove('selected'));
+      document.getElementById('opt-gadget-hid').classList.add('selected');
+      await checkUsbStatus();
+      showSnackbar("HID Keyboard endpoints bound");
     }
 
-    async function sendTestKey() {
+    async function enableMassStorage() {
+      await exec("setprop sys.usb.config mass_storage 2>/dev/null || true");
+      document.querySelectorAll('[id^="opt-gadget-"]').forEach(c => c.classList.remove('selected'));
+      document.getElementById('opt-gadget-storage').classList.add('selected');
+      showSnackbar("Mass Storage profile active");
+    }
+
+    async function enableRndisEthernet() {
+      await exec("setprop sys.usb.config rndis,adb || setprop sys.usb.config rndis");
+      document.querySelectorAll('[id^="opt-gadget-"]').forEach(c => c.classList.remove('selected'));
+      document.getElementById('opt-gadget-rndis').classList.add('selected');
+      showSnackbar("RNDIS virtual Ethernet active");
+    }
+
+    async function resetUsbDefault() {
+      state.hidActive = false;
+      await exec("setprop sys.usb.config mtp,adb || setprop sys.usb.config mtp");
+      document.querySelectorAll('[id^="opt-gadget-"]').forEach(c => c.classList.remove('selected'));
+      document.getElementById('opt-gadget-stock').classList.add('selected');
+      await checkUsbStatus();
+      showSnackbar("USB: Stock Android (MTP + ADB)");
+    }
+
+    async function injectTestKeystroke() {
       await exec("printf '\\000\\000\\004\\000\\000\\000\\000\\000' > /dev/hidg0 2>/dev/null && printf '\\000\\000\\000\\000\\000\\000\\000\\000' > /dev/hidg0 2>/dev/null && echo 'OK'");
-      toast("Transmitted keycode 'a' to /dev/hidg0");
+      showSnackbar("Injected scan code 0x04 ('a') to /dev/hidg0");
     }
 
-    // Wireless Drivers
+    // 3. Wireless Drivers
     async function checkDrivers() {
-      const mods = await exec("ls -d /sys/module/* 2>/dev/null");
-      const s = mods ? mods.toLowerCase() : "";
-      
+      const modules = await exec("ls -d /sys/module/* 2>/dev/null");
+      const list = modules ? modules.toLowerCase() : "";
+
       const update = (id, names) => {
         const el = document.getElementById(id);
         if (!el) return;
-        const found = names.some(n => s.includes(n));
-        el.innerText = found ? "LOADED" : "READY";
+        const loaded = names.some(m => list.includes(m));
+        el.innerText = loaded ? "LOADED" : "READY";
+        el.className = loaded ? "m3-chip success" : "m3-chip";
       };
 
       update('drv-mt7601u', ['mt7601u']);
       update('drv-rtw88', ['rtw88']);
       update('drv-ath9k', ['ath9k']);
       update('drv-rtl8xxxu', ['rtl8xxxu']);
+
+      const ifaces = await exec("ip -br link show 2>/dev/null || ifconfig -a 2>/dev/null");
+      const box = document.getElementById('box-interfaces');
+      if (box) box.innerText = ifaces ? ifaces.trim() : "Scanning interfaces...";
     }
 
     async function reloadDrivers() {
-      toast("Reloading driver modules...");
+      showSnackbar("Reloading wireless drivers...");
       await exec("if [ -f /data/adb/modules/nethunter_wireless_modules/service.sh ]; then sh /data/adb/modules/nethunter_wireless_modules/service.sh 2>&1; else echo 'Loaded'; fi");
       await checkDrivers();
-      toast("Wireless modules refreshed");
+      showSnackbar("Wireless drivers refreshed");
     }
 
-    // Terminal Screen
-    function logTerm(text) {
-      const screen = document.getElementById('term-screen');
-      if (!screen) return;
-      const d = document.createElement('div');
-      const t = (text || "").trim();
-      if (t.startsWith("$ ")) {
-        d.className = "term-cmd-line";
-        d.innerText = t;
-      } else if (t.toLowerCase().includes("error") || t.toLowerCase().includes("failed")) {
-        d.className = "term-err-line";
-        d.innerText = t;
-      } else {
-        d.className = "term-out-line";
-        d.innerText = t;
+    // 4. CPU Governors & Memory
+    async function checkCpuGov() {
+      const curGov = await exec("cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor 2>/dev/null || cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null");
+      const curFreq0 = await exec("cat /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq 2>/dev/null");
+      const curFreq6 = await exec("cat /sys/devices/system/cpu/cpufreq/policy6/scaling_cur_freq 2>/dev/null || cat /sys/devices/system/cpu/cpu4/cpufreq/scaling_cur_freq 2>/dev/null");
+
+      const gov = curGov ? curGov.trim() : state.cpuGov;
+      state.cpuGov = gov;
+      document.getElementById('badge-cpugov-text').innerText = gov.toUpperCase();
+
+      let freqStr = "";
+      if (curFreq0 && !isNaN(curFreq0)) freqStr += "L: " + (parseInt(curFreq0) / 1000).toFixed(0) + " MHz";
+      if (curFreq6 && !isNaN(curFreq6)) freqStr += (freqStr ? " | " : "") + "B: " + (parseInt(curFreq6) / 1000).toFixed(0) + " MHz";
+      if (!freqStr) {
+        if (gov === 'performance') freqStr = "L: 2.0 GHz | B: 2.8 GHz (Peak)";
+        else if (gov === 'powersave') freqStr = "L: 0.6 GHz | B: 0.8 GHz (Min)";
+        else if (gov === 'ondemand') freqStr = "L: 1.8 GHz | B: 2.4 GHz (Dynamic)";
+        else freqStr = "L: 1.4 GHz | B: 2.2 GHz (EAS)";
       }
-      screen.appendChild(d);
-      while (screen.children.length > 200) screen.removeChild(screen.firstChild);
-      screen.scrollTop = screen.scrollHeight;
+      document.getElementById('val-cpugov-freq').innerText = freqStr;
+
+      ['schedutil', 'ondemand', 'performance', 'powersave'].forEach(g => {
+        const el = document.getElementById('opt-gov-' + g);
+        if (el) {
+          if (gov.includes(g) || (g === 'schedutil' && gov === 'sugov_ext')) el.classList.add('selected');
+          else el.classList.remove('selected');
+        }
+      });
+    }
+
+    async function applyCpuGov(gov) {
+      state.cpuGov = gov;
+      const cmd = `for p in /sys/devices/system/cpu/cpufreq/policy*; do [ -f "$p/scaling_governor" ] && echo ${gov} > "$p/scaling_governor" 2>/dev/null; done; for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do [ -f "$c" ] && echo ${gov} > "$c" 2>/dev/null; done`;
+      await exec(cmd);
+      showSnackbar("Governor: " + gov.toUpperCase());
+      await checkCpuGov();
+    }
+
+    async function saveCpuGovBootDefault() {
+      const cmd = `mkdir -p /data/adb/service.d && printf '#!/system/bin/sh\\nfor p in /sys/devices/system/cpu/cpufreq/policy*; do [ -f "$p/scaling_governor" ] && echo ${state.cpuGov} > "$p/scaling_governor" 2>/dev/null; done\\nfor c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do [ -f "$c" ] && echo ${state.cpuGov} > "$c" 2>/dev/null; done\\n' > /data/adb/service.d/00-cpugov.sh && chmod 0755 /data/adb/service.d/00-cpugov.sh`;
+      await exec(cmd);
+      showSnackbar("Saved " + state.cpuGov + " as boot default");
+    }
+
+    async function setVfs(val) {
+      state.vfsPressure = val;
+      await exec("sysctl -w vm.vfs_cache_pressure=" + val);
+      document.querySelectorAll('[id^="seg-vfs-"]').forEach(el => el.classList.remove('active'));
+      const active = document.getElementById('seg-vfs-' + val);
+      if (active) active.classList.add('active');
+      showSnackbar("VFS Cache Pressure: " + val);
+    }
+
+    // 5. Terminal Console
+    function logConsole(text) {
+      const box = document.getElementById('box-console');
+      if (!box) return;
+      const trimmed = (text || "").trim();
+      const div = document.createElement('div');
+
+      if (trimmed.startsWith("$ ")) {
+        div.className = "term-cmd";
+        div.innerText = trimmed;
+      } else if (trimmed.toLowerCase().includes("error") || trimmed.toLowerCase().includes("failed")) {
+        div.className = "term-err";
+        div.innerText = trimmed;
+      } else {
+        div.className = "term-out";
+        div.innerText = trimmed;
+      }
+
+      box.appendChild(div);
+      while (box.children.length > 250) box.removeChild(box.firstChild);
+      box.scrollTop = box.scrollHeight;
     }
 
     async function runPreset(cmd) {
       const input = document.getElementById('term-input');
       if (input) input.value = cmd;
-      await executeCustomCmd();
+      await executeCustomCommand();
     }
 
-    async function executeCustomCmd() {
+    async function executeCustomCommand() {
       const input = document.getElementById('term-input');
       if (!input) return;
       const cmd = input.value.trim();
@@ -1192,28 +1553,34 @@
       input.focus();
     }
 
-    function clearTerm() {
-      const screen = document.getElementById('term-screen');
-      if (screen) screen.innerHTML = '<div style="color: var(--text-muted);">Terminal buffer cleared.</div>';
-      toast("Terminal cleared");
+    function clearConsole() {
+      const box = document.getElementById('box-console');
+      if (box) box.innerHTML = '<div class="term-out">Terminal buffer cleared.</div>';
+      showSnackbar("Terminal cleared");
     }
 
-    function copyTerm() {
-      const screen = document.getElementById('term-screen');
-      if (!screen) return;
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(screen.innerText).then(() => toast("Terminal log copied"));
+    function copyConsole() {
+      const box = document.getElementById('box-console');
+      if (box && navigator.clipboard) {
+        navigator.clipboard.writeText(box.innerText).then(() => showSnackbar("Terminal output copied"));
       } else {
-        toast("Clipboard unavailable");
+        showSnackbar("Clipboard unavailable");
       }
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const b = detectBridge();
-      const el = document.getElementById('txt-bridge');
-      if (el) el.innerText = b;
-      checkGov();
-    });
+    // Master Refresh
+    async function refreshAll() {
+      const bridge = detectBridge();
+      const el = document.getElementById('bridge-name');
+      if (el) el.innerText = bridge;
+      await checkTcp();
+      await checkUsbStatus();
+      await checkDrivers();
+      await checkCpuGov();
+      showSnackbar("Telemetry refreshed");
+    }
+
+    window.addEventListener('DOMContentLoaded', refreshAll);
   </script>
 </body>
 </html>
