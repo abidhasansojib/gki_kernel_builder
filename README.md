@@ -28,7 +28,7 @@ Please do thorough research and understand the features included before flashing
   - **USB WiFi Dongle Support**: Realtek (`rtw88` 802.11ac, `rtl8xxxu`, `rtl8187`), Atheros (`ath9k_htc`, `carl9170`), MediaTek (`mt7601u`, `mt76x0u`, `mt76x2u`), and Ralink (`rt2800usb`).
   - **USB Ethernet Adapters**: CDC-ECM, CDC-NCM, Realtek RTL8152, and ASIX AX88179.
   - **Bluetooth RFCOMM & SDR**: Native RFCOMM TTY and RTL-SDR (`rtl28xxu`) support.
-- 📱 **Material 3 Kernel Manager WebUI**: Standalone mobile-optimized dashboard built into `Nethunter-Wireless-Modules.zip` with live hardware telemetry, dynamic TCP congestion switching (BBR3/BBR/Cubic), BadUSB mode switching, dynamic module loading, MGLRU/RAM control, and rooted web terminal console.
+- 📱 **Kernel Manager WebUI**: Built into the NetHunter module to easily manage TCP (BBR3), BadUSB, driver modules, RAM/MGLRU, and run terminal commands with one-tap reset buttons.
 - 📦 **Flashable NetHunter Wireless Module**: Automatically packages compiled `.ko` driver modules, official Linux firmware, zero-drain native ueventd rules, WebUI, and Action launcher into a single flashable module (`Nethunter-Wireless-Modules.zip`).
 - 🛡️ **Baseband Guard (BBG)**: LSM security module for critical partition write protection.
 - 📦 **DroidSpaces-OSS**: Lightweight container runtime support with SYSVIPC kABI fixes.
@@ -76,19 +76,16 @@ The kernel and accompanying flashable `Nethunter-Wireless-Modules.zip` module pr
 
 ---
 
-## 📱 NetHunter Kernel Manager WebUI Dashboard
+## 📱 NetHunter WebUI Dashboard
 
-The flashable `Nethunter-Wireless-Modules.zip` module integrates an interactive **Material 3 Kernel Manager WebUI** (`webroot/index.html`) accessible directly within your root manager:
+Included in `Nethunter-Wireless-Modules.zip`. Open it directly inside your root manager (KernelSU / SukiSU) via the **WebUI** button:
 
-* 🌐 **Direct Root Bridge Execution**: Native interface support for **KernelSU-Next**, **SukiSU-Ultra**, and **ReSukiSU** WebUI bridges (`window.ksu` / `window.suki`).
-* 📶 **Dynamic TCP Congestion Switcher**: Live detection of all in-kernel algorithms (`BBR3`, `BBR`, `Cubic`, `WestWood`, etc.) from `/proc/sys/net/ipv4/tcp_available_congestion_control`. Features one-tap switching and automatic boot persistence via `/data/adb/service.d/00-bbr.sh`.
-* 🦆 **BadUSB HID & Gadget Switcher**: Toggle effortlessly between Stock Android USB (MTP + ADB), BadUSB HID Keyboard & Mouse (`/dev/hidg0`, `/dev/hidg1`), USB Mass Storage, and RNDIS Ethernet. Includes an on-screen DuckyScript test keystroke injector.
-* 🔌 **Dynamic Driver & Firmware Manager**: Filter and view 75+ modular drivers by category (WiFi, Serial, Ethernet, SDR, CAN). Auto-loads kernel modules from `lkm/` with automatic multi-tier dependency resolution and safe reverse-order unbinding.
-* 🧠 **Memory & MGLRU Telemetry**: Real-time `/proc/meminfo` calculation ($Used = Total - Available$), ZRAM compression algorithm & disk size telemetry, VFS cache pressure adjustments, swappiness tuning, and one-tap MGLRU `0x0007` locking.
-* ⚡ **Optimized CPU Governor Default**: Pre-configured with the responsive `schedutil` governor by default in kernel and boot services, keeping the UI clean while allowing fine-grained user tuning via external tools like FKM.
-* 💻 **Rooted Terminal Console**: Built-in dark terminal with command history, preset diagnostic shortcuts (`uname -a`, `lsmod`, `ip link`, `dmesg`), and clipboard export.
-* 🔄 **Subsystem Reset Buttons**: Dedicated Reset button on every menu to safely revert network, USB, driver, or memory settings back to kernel defaults.
-* 📂 **Root Manager Action & WebUI Integration**: Fully integrated with the root manager's native **WebUI** and **Action** button (`action.sh`) for seamless one-tap access directly inside the manager app.
+* **TCP Control**: Switch between available congestion algorithms (BBR3, CUBIC, etc.) with one tap.
+* **USB / BadUSB**: Toggle USB mode between Stock Android, HID Keyboard/Mouse (`/dev/hidg*`), Mass Storage, and RNDIS.
+* **Drivers & Modules**: View available external WiFi, serial, and SDR drivers and load them automatically.
+* **Memory & MGLRU**: Check real-time RAM usage, enable MGLRU, and clear RAM cache.
+* **Root Terminal**: Run quick shell commands (`dmesg`, `lsmod`, `uname -a`) with root access.
+* **Reset to Defaults**: Each section includes a reset button to easily restore default settings.
 
 ---
 
