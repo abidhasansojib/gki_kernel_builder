@@ -1512,7 +1512,11 @@
 
     async function applyTcp(algo) {
       state.tcp = algo;
-      await exec("sysctl -w net.ipv4.tcp_congestion_control=" + algo);
+      if (algo === 'bbr3') {
+        await exec("sysctl -w net.ipv4.tcp_congestion_control=bbr3 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=bbr");
+      } else {
+        await exec("sysctl -w net.ipv4.tcp_congestion_control=" + algo);
+      }
       showSnackbar("TCP Congestion switched to " + algo.toUpperCase());
       await checkTcp();
     }
@@ -1520,7 +1524,7 @@
     async function saveTcpBootDefault() {
       const cur = state.tcp;
       if (!cur) return;
-      const cmd = "mkdir -p /data/adb/service.d && echo '#!/system/bin/sh\\nsysctl -w net.ipv4.tcp_congestion_control=" + cur + "' > /data/adb/service.d/00-tcp.sh && chmod 0755 /data/adb/service.d/00-tcp.sh";
+      const cmd = "mkdir -p /data/adb/service.d && printf '#!/system/bin/sh\\nsysctl -w net.ipv4.tcp_congestion_control=" + cur + "\\n' > /data/adb/service.d/00-tcp.sh && chmod 0755 /data/adb/service.d/00-tcp.sh";
       await exec(cmd);
       showSnackbar("Saved " + cur + " to /data/adb/service.d/00-tcp.sh");
     }
@@ -1539,10 +1543,10 @@
       if (target) target.classList.add('active');
 
       if (val === 'stock') {
-        await exec("iptables -t mangle -D POSTROUTING -j TTL --ttl-set 64 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 65 2>/dev/null");
+        await exec("iptables -t mangle -D POSTROUTING -j TTL --ttl-set 64 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 65 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 64 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 65 2>/dev/null");
         showSnackbar("Tethering TTL restored to Stock");
       } else {
-        const cmd = "iptables -t mangle -D POSTROUTING -j TTL --ttl-set " + val + " 2>/dev/null; iptables -t mangle -A POSTROUTING -j TTL --ttl-set " + val;
+        const cmd = "iptables -t mangle -D POSTROUTING -j TTL --ttl-set " + val + " 2>/dev/null; iptables -t mangle -A POSTROUTING -j TTL --ttl-set " + val + "; ip6tables -t mangle -D POSTROUTING -j HL --hl-set " + val + " 2>/dev/null; ip6tables -t mangle -A POSTROUTING -j HL --hl-set " + val + " 2>/dev/null || true";
         await exec(cmd);
         showSnackbar("Tethering packet hop-limit locked to TTL " + val);
       }
@@ -1635,13 +1639,17 @@
             echo 1 > $G/functions/hid.usb0/protocol
             echo 1 > $G/functions/hid.usb0/subclass
             echo 8 > $G/functions/hid.usb0/report_length
-            echo -ne "\\x05\\x01\\x09\\x06\\xa1\\x01\\x05\\x07\\x19\\xe0\\x29\\xe7\\x15\\x00\\x25\\x01\\x75\\x01\\x95\\x08\\x81\\x02\\x95\\x01\\x75\\x08\\x81\\x03\\x95\\x05\\x75\\x01\\x05\\x08\\x19\\x01\\x29\\x05\\x91\\x02\\x95\\x01\\x75\\x03\\x91\\x03\\x95\\x06\\x75\\x08\\x15\\x00\\x25\\x65\\x05\\x07\\x19\\x00\\x29\\x65\\x81\\x00\\xc0" > $G/functions/hid.usb0/report_desc
+            printf '\\005\\001\\011\\006\\241\\001\\005\\007\\031\\340\\051\\347\\025\\000\\045\\001\\165\\001\\225\\010\\201\\002\\225\\001\\165\\010\\201\\003\\225\\005\\165\\001\\005\\010\\031\\001\\051\\005\\221\\002\\225\\001\\165\\003\\221\\003\\225\\006\\165\\010\\025\\000\\045\\145\\005\\007\\031\\000\\051\\145\\201\\000\\300' > $G/functions/hid.usb0/report_desc
             echo 2 > $G/functions/hid.usb1/protocol
             echo 1 > $G/functions/hid.usb1/subclass
-            echo 4 > $G/functions/hid.usb1/report_length
-            echo -ne "\\x05\\x01\\x09\\x02\\xa1\\x01\\x09\\x01\\xa1\\x00\\x05\\x09\\x19\\x01\\x29\\x03\\x15\\x00\\x25\\x01\\x95\\x03\\x75\\x01\\x81\\x02\\x95\\x01\\x75\\x05\\x81\\x03\\x05\\x01\\x09\\x30\\x09\\x31\\x15\\x81\\x25\\x7f\\x75\\x08\\x95\\x02\\x81\\x06\\xc0\\xc0" > $G/functions/hid.usb1/report_desc
+            echo 3 > $G/functions/hid.usb1/report_length
+            printf '\\005\\001\\011\\002\\241\\001\\011\\001\\241\\000\\005\\011\\031\\001\\051\\003\\025\\000\\045\\001\\225\\003\\165\\001\\201\\002\\225\\001\\165\\005\\201\\003\\005\\001\\011\\060\\011\\061\\025\\201\\045\\177\\165\\010\\225\\002\\201\\006\\300\\300' > $G/functions/hid.usb1/report_desc
             ln -sf $G/functions/hid.usb0 $CONF/ 2>/dev/null || true
             ln -sf $G/functions/hid.usb1 $CONF/ 2>/dev/null || true
+            UDC=$(getprop sys.usb.controller 2>/dev/null || cat $G/UDC 2>/dev/null || ls /sys/class/udc 2>/dev/null | head -n 1)
+            if [ -n "$UDC" ] && [ -f "$G/UDC" ]; then
+              [ -z "$(cat $G/UDC 2>/dev/null)" ] && echo "$UDC" > "$G/UDC" 2>/dev/null || true
+            fi
             chmod 0666 /dev/hidg* 2>/dev/null || true
           fi
         fi
@@ -1737,7 +1745,7 @@
 
     async function injectTestKeystroke() {
       showSnackbar("Sending scan code 0x04 ('a') to /dev/hidg0...");
-      const res = await exec("echo -ne '\\0\\0\\x04\\0\\0\\0\\0\\0' > /dev/hidg0 2>/dev/null && echo -ne '\\0\\0\\0\\0\\0\\0\\0\\0' > /dev/hidg0 2>/dev/null && echo 'OK'");
+      const res = await exec("printf '\\000\\000\\004\\000\\000\\000\\000\\000' > /dev/hidg0 2>/dev/null && printf '\\000\\000\\000\\000\\000\\000\\000\\000' > /dev/hidg0 2>/dev/null && echo 'OK'");
       if ((res && res.includes('OK')) || state.hidActive) {
         showSnackbar("Keystroke scan code acknowledged by host");
       } else {
@@ -1753,10 +1761,11 @@
       const modules = await exec("ls -d /sys/module/* 2>/dev/null");
       const list = modules ? modules.toLowerCase() : "";
 
-      function update(id, mod) {
+      function update(id, mods) {
         const el = document.getElementById(id);
         if (!el) return;
-        if (list.includes('/sys/module/' + mod)) {
+        const isLoaded = mods.some(m => list.includes('/sys/module/' + m));
+        if (isLoaded) {
           el.innerText = "ACTIVE";
           el.className = "m3-chip success";
         } else {
@@ -1765,12 +1774,12 @@
         }
       }
 
-      update('drv-mt7601u', 'mt7601u');
-      update('drv-rtw88', 'rtw88_core');
-      update('drv-ath9k', 'ath9k_hw');
-      update('drv-rtl8xxxu', 'rtl8xxxu');
-      update('drv-zd1211', 'zd1211rw');
-      update('drv-mac80211', 'mac80211');
+      update('drv-mt7601u', ['mt7601u', 'mt76_usb', 'mt76']);
+      update('drv-rtw88', ['rtw88_core', 'rtw88_usb', 'rtw88_8822c', 'rtw88_8821c']);
+      update('drv-ath9k', ['ath9k_htc', 'ath9k_hw', 'ath9k_common', 'ath']);
+      update('drv-rtl8xxxu', ['rtl8xxxu', 'rtlwifi', 'rtl8192cu', 'rtl8188eu']);
+      update('drv-zd1211', ['zd1211rw']);
+      update('drv-mac80211', ['mac80211', 'cfg80211']);
 
       const ifaces = await exec("ip -br link show 2>/dev/null || ifconfig -a 2>/dev/null");
       const box = document.getElementById('box-interfaces');
