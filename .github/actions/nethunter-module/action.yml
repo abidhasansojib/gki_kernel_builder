@@ -94,13 +94,19 @@ runs:
         cp -rf "$FIRMWARE_DIR/"* "$STAGING_DIR/vendor/firmware/" 2>/dev/null || true
         cp -rf "$FIRMWARE_DIR/"* "$STAGING_DIR/vendor/etc/firmware/" 2>/dev/null || true
 
+        echo "=== Installing NetHunter Module WebUI Dashboard ==="
+        mkdir -p "$STAGING_DIR/webroot"
+        if [ -f "${{ github.action_path }}/webroot/index.html" ]; then
+          cp -vf "${{ github.action_path }}/webroot/index.html" "$STAGING_DIR/webroot/"
+        fi
+
         echo "=== Creating Module Metadata & Scripts ==="
         printf 'id=nethunter_wireless_modules\n' > "$STAGING_DIR/module.prop"
         printf 'name=Nethunter Wireless,HID Driver & Modules\n' >> "$STAGING_DIR/module.prop"
-        printf 'version=v1.2\n' >> "$STAGING_DIR/module.prop"
-        printf 'versionCode=120\n' >> "$STAGING_DIR/module.prop"
+        printf 'version=v1.3\n' >> "$STAGING_DIR/module.prop"
+        printf 'versionCode=130\n' >> "$STAGING_DIR/module.prop"
         printf 'author=abidhasansojib\n' >> "$STAGING_DIR/module.prop"
-        printf 'description=External USB WiFi (RTW88, RTL8xxxu, ATH9K-HTC, CARL9170, RT2800, MT76, ZD1211), BadUSB HID Gadget permissions, SDR, CAN-Bus, and NetHunter drivers for Android 16 (6.12) GKI\n' >> "$STAGING_DIR/module.prop"
+        printf 'description=External USB WiFi (RTW88, RTL8xxxu, ATH9K-HTC, CARL9170, RT2800, MT76, ZD1211), BadUSB HID Gadget, TCP Congestion Switcher & WebUI Manager for Android 16 (6.12) GKI\n' >> "$STAGING_DIR/module.prop"
 
         # --- Flashing Script (customize.sh) ---
         cat << 'EOF' > "$STAGING_DIR/customize.sh"
@@ -110,12 +116,15 @@ runs:
         ui_print "************************************************"
         ui_print "   Nethunter Wireless, HID Driver & Modules     "
         ui_print "    Android 16 GKI (Linux 6.12) Driver Stack    "
+        ui_print "       Features: WebUI, TCP Switcher, BadUSB    "
         ui_print "    Author: abidhasansojib                      "
         ui_print "************************************************"
         ui_print "- Installing unified driver stack into lkm/..."
         ui_print "- Configuring dynamic firmware detection..."
+        ui_print "- Installing WebUI Manager dashboard..."
 
         set_perm_recursive "$MODPATH" 0 0 0755 0644
+        set_perm_recursive "$MODPATH/webroot" 0 0 0755 0644
         set_perm "$MODPATH/service.sh" 0 0 0755
         set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
         EOF

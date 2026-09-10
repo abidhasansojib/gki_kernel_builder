@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NetHunter Module & Kernel Manager</title>
+  <style>
+    :root {
+      --bg: #090d13;
+      --card-bg: #121820;
+      --card-border: #1e2632;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --primary: #388bfd;
+      --primary-hover: #58a6ff;
+      --accent: #f85149;
+      --accent-green: #3fb950;
+      --accent-purple: #bc8cff;
+      --accent-cyan: #39c5bb;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 30px; }
+
+    /* Header */
+    .header {
+      background: linear-gradient(180deg, #161f2c 0%, var(--bg) 100%);
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    .header-content { display: flex; align-items: center; justify-content: space-between; max-width: 600px; margin: 0 auto; }
+    .title-group { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 36px; height: 36px; border-radius: 8px; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); display: flex; align-items: center; justify-content: center; color: var(--accent); font-weight: bold; font-size: 20px; }
+    .title-text h1 { font-size: 17px; font-weight: 700; color: #fff; letter-spacing: 0.2px; }
+    .title-text p { font-size: 11px; color: var(--text-muted); }
+    .badge-refresh { background: var(--card-border); border: none; color: var(--text); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    .badge-refresh:active { background: var(--primary); }
+
+    /* Navigation Tabs */
+    .nav-tabs { display: flex; gap: 6px; padding: 12px 16px; max-width: 600px; margin: 0 auto; overflow-x: auto; scrollbar-width: none; }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+    .tab-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+    .tab-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+    /* Main Container */
+    .container { max-width: 600px; margin: 0 auto; padding: 0 16px; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* Cards */
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .card-title { font-size: 14px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .status-pill { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; text-transform: uppercase; }
+    .status-pill.active { background: rgba(63,185,80,0.15); color: var(--accent-green); border: 1px solid rgba(63,185,80,0.3); }
+    .status-pill.inactive { background: rgba(139,148,158,0.15); color: var(--text-muted); border: 1px solid var(--card-border); }
+
+    /* Key-Value List */
+    .kv-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .kv-row:last-child { border-bottom: none; }
+    .kv-label { color: var(--text-muted); }
+    .kv-val { color: #fff; font-weight: 600; font-family: monospace; font-size: 12px; }
+
+    /* Action Buttons */
+    .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .btn-full { width: 100%; margin-top: 10px; }
+    .btn { background: var(--card-border); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.15s; display: flex; flex-direction: column; gap: 4px; }
+    .btn .btn-subtitle { font-size: 11px; color: var(--text-muted); font-weight: normal; }
+    .btn:active { transform: scale(0.98); }
+    .btn-bbr { border-left: 4px solid var(--primary); }
+    .btn-bbr:hover { background: rgba(56,139,253,0.1); border-color: var(--primary); }
+    .btn-westwood { border-left: 4px solid var(--accent-cyan); }
+    .btn-westwood:hover { background: rgba(57,197,187,0.1); border-color: var(--accent-cyan); }
+    .btn-cubic { border-left: 4px solid var(--accent-purple); }
+    .btn-action { background: var(--primary); border: none; text-align: center; justify-content: center; align-items: center; padding: 12px; font-size: 13px; }
+    .btn-action:active { background: var(--primary-hover); }
+    .btn-danger { background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); color: var(--accent); }
+
+    /* Module / Driver Item */
+    .mod-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .mod-item:last-child { border-bottom: none; }
+    .mod-info { display: flex; flex-direction: column; gap: 2px; }
+    .mod-name { font-size: 13px; font-weight: 600; color: #fff; font-family: monospace; }
+    .mod-desc { font-size: 11px; color: var(--text-muted); }
+
+    /* Log Box */
+    .log-box { background: #06090e; border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px; color: #a5d6ff; max-height: 160px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; margin-top: 10px; }
+
+    /* Banner info */
+    .info-banner { background: rgba(56,139,253,0.08); border: 1px solid rgba(56,139,253,0.25); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #79c0ff; margin-bottom: 14px; line-height: 1.4; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-content">
+      <div class="title-group">
+        <div class="logo-icon">🐉</div>
+        <div class="title-text">
+          <h1>NetHunter Wireless Manager</h1>
+          <p id="kernel-info">Loading kernel environment...</p>
+        </div>
+      </div>
+      <button class="badge-refresh" onclick="refreshAll()">↻ Refresh</button>
+    </div>
+  </header>
+
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('tcp')">📡 TCP Control</button>
+    <button class="tab-btn" onclick="switchTab('drivers')">📶 WiFi Drivers</button>
+    <button class="tab-btn" onclick="switchTab('badusb')">🦆 BadUSB HID</button>
+    <button class="tab-btn" onclick="switchTab('perf')">⚡ Memory & Perf</button>
+  </nav>
+
+  <main class="container">
+
+    <!-- TAB 1: TCP CONGESTION CONTROL -->
+    <section id="pane-tcp" class="tab-pane active">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📡 Active TCP Congestion Control</div>
+          <span id="tcp-active-pill" class="status-pill active">CHECKING...</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-label">Current Algorithm:</span>
+          <span id="tcp-current-val" class="kv-val">-</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-label">Available in Kernel:</span>
+          <span id="tcp-available-val" class="kv-val">-</span>
+        </div>
+      </div>
+
+      <div class="info-banner">
+        💡 <b>Tip:</b> Use <b>Westwood+</b> when on lossy Wi-Fi or moving cellular networks. Use <b>BBRv3</b> for peak throughput, fast media streaming, and low bufferbloat.
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom: 12px;">⚡ Switch Congestion Algorithm</div>
+        <div class="btn-grid">
+          <button class="btn btn-westwood" onclick="setTcp('westwood')">
+            <span>📡 Westwood+</span>
+            <span class="btn-subtitle">Best for Wi-Fi & cellular packet loss</span>
+          </button>
+          <button class="btn btn-bbr" onclick="setTcp('bbr3')">
+            <span>🚀 BBRv3</span>
+            <span class="btn-subtitle">Maximum bandwidth & peak speed</span>
+          </button>
+          <button class="btn btn-bbr" onclick="setTcp('bbr')">
+            <span>⚡ BBRv1</span>
+            <span class="btn-subtitle">Classic BBR model</span>
+          </button>
+          <button class="btn btn-cubic" onclick="setTcp('cubic')">
+            <span>🔄 CUBIC</span>
+            <span class="btn-subtitle">Standard Linux default</span>
+          </button>
+        </div>
+
+        <button class="btn btn-action btn-full" onclick="saveTcpBootDefault()">
+          💾 Save Current Algorithm as Boot Default
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📜 Terminal Output</div>
+        <div id="tcp-log" class="log-box">Ready.</div>
+      </div>
+    </section>
+
+    <!-- TAB 2: WIRELESS DRIVERS -->
+    <section id="pane-drivers" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📶 NetHunter OTG WiFi Drivers</div>
+          <span id="drivers-active-pill" class="status-pill active">SCANNING...</span>
+        </div>
+
+        <div class="mod-item">
+          <div class="mod-info">
+            <span class="mod-name">mt7601u</span>
+            <span class="mod-desc">MediaTek MT7601U USB Dongles</span>
+          </div>
+          <span id="stat-mt7601u" class="status-pill inactive">STANDBY</span>
+        </div>
+
+        <div class="mod-item">
+          <div class="mod-info">
+            <span class="mod-name">rtw88_core / rtw88_usb</span>
+            <span class="mod-desc">Realtek 8822BU/CU, 8821CU, 8723DU (AC)</span>
+          </div>
+          <span id="stat-rtw88" class="status-pill inactive">STANDBY</span>
+        </div>
+
+        <div class="mod-item">
+          <div class="mod-info">
+            <span class="mod-name">ath9k_htc / ath</span>
+            <span class="mod-desc">Atheros AR9271 / TP-Link TL-WN722N v1</span>
+          </div>
+          <span id="stat-ath9k" class="status-pill inactive">STANDBY</span>
+        </div>
+
+        <div class="mod-item">
+          <div class="mod-info">
+            <span class="mod-name">rtl8xxxu / rtlwifi</span>
+            <span class="mod-desc">Realtek RTL8188EUS, RTL8188FU, RTL8192EU</span>
+          </div>
+          <span id="stat-rtl8xxxu" class="status-pill inactive">STANDBY</span>
+        </div>
+
+        <div class="mod-item">
+          <div class="mod-info">
+            <span class="mod-name">zd1211rw</span>
+            <span class="mod-desc">ZyDAS ZD1211 / ZD1211B USB</span>
+          </div>
+          <span id="stat-zd1211" class="status-pill inactive">STANDBY</span>
+        </div>
+
+        <div class="mod-item">
+          <div class="mod-info">
+            <span class="mod-name">mac80211 & cfg80211</span>
+            <span class="mod-desc">Linux Wireless Core Injection Stack</span>
+          </div>
+          <span id="stat-mac80211" class="status-pill inactive">STANDBY</span>
+        </div>
+
+        <button class="btn btn-action btn-full" onclick="reloadDrivers()">
+          🔄 Multi-Pass Load All Drivers into RAM
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🌐 Active Network Interfaces</div>
+        <div id="iface-log" class="log-box">Scanning interfaces...</div>
+      </div>
+    </section>
+
+    <!-- TAB 3: BADUSB & HID ARSENAL -->
+    <section id="pane-badusb" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🦆 BadUSB Gadget Status</div>
+          <span id="hid-status-pill" class="status-pill inactive">INACTIVE</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-label">Keyboard Device Node:</span>
+          <span id="hid-node-status" class="kv-val">/dev/hidg0 (Missing)</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-label">Mouse Device Node:</span>
+          <span id="hid-mouse-status" class="kv-val">/dev/hidg1 (Missing)</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-label">Node Permissions:</span>
+          <span id="hid-perm-status" class="kv-val">-</span>
+        </div>
+      </div>
+
+      <div class="info-banner">
+        ⚠️ <b>Note:</b> `/dev/hidg0` is created dynamically by the kernel when enabled in <b>NetHunter App &rarr; USB Arsenal &rarr; HID Keyboard &rarr; Set USB State</b>.
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom: 10px;">🧪 Test Keystroke Injection</div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+          Injects raw HID keycode for letter 'a' into `/dev/hidg0` to test kernel endpoint response.
+        </p>
+        <button class="btn btn-action btn-full" onclick="testBadUsb()">
+          ⌨️ Send Test Keystroke ('a')
+        </button>
+        <div id="badusb-log" class="log-box">Waiting for test...</div>
+      </div>
+    </section>
+
+    <!-- TAB 4: MEMORY & PERFORMANCE -->
+    <section id="pane-perf" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🧠 Multi-Gen LRU (MGLRU)</div>
+          <span id="mglru-pill" class="status-pill active">ACTIVE</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-label">MGLRU Capabilities:</span>
+          <span id="mglru-val" class="kv-val">-</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-label">VFS Cache Pressure:</span>
+          <span id="vfs-val" class="kv-val">-</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-label">ZRAM Algorithm:</span>
+          <span id="zram-algo-val" class="kv-val">-</span>
+        </div>
+
+        <button class="btn btn-action btn-full" onclick="forceMglru()">
+          🚀 Force MGLRU Full Capabilities (Caps 7)
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🚀 Android ART App Optimization</div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+          Pre-compiles installed apps into native machine code (dexopt) to eliminate CPU launch spikes.
+        </p>
+        <button class="btn btn-action btn-full" onclick="runDexopt()">
+          ⚙️ Run Background Dexopt (Speed-Profile)
+        </button>
+        <div id="perf-log" class="log-box">Ready.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Universal Shell Execution Bridge (KernelSU / SukiSU / APatch / WebView)
+    async function exec(cmd) {
+      if (window.ksu && typeof window.ksu.exec === 'function') {
+        try {
+          const res = window.ksu.exec(cmd);
+          if (res instanceof Promise) {
+            const data = await res;
+            return typeof data === 'object' ? (data.stdout || data.stderr || "") : String(data);
+          }
+          if (typeof res === 'object') return res.stdout || res.stderr || "";
+          if (typeof res === 'string') {
+            try { const p = JSON.parse(res); return p.stdout || p.stderr || res; } catch(e) { return res; }
+          }
+          return String(res);
+        } catch(e) {
+          return new Promise((resolve) => {
+            try {
+              window.ksu.exec(cmd, (errno, stdout, stderr) => {
+                resolve(stdout || stderr || "");
+              });
+            } catch(err) {
+              resolve("Bridge Error: " + err.message);
+            }
+          });
+        }
+      }
+      return "[Standalone Demo Mode] Command: " + cmd;
+    }
+
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('pane-' + name).classList.add('active');
+      if (name === 'drivers') checkDrivers();
+      if (name === 'badusb') checkBadUsb();
+      if (name === 'perf') checkPerf();
+    }
+
+    function log(elementId, text) {
+      const el = document.getElementById(elementId);
+      if (el) el.innerText = text;
+    }
+
+    async function refreshAll() {
+      await checkKernel();
+      await checkTcp();
+      await checkDrivers();
+      await checkBadUsb();
+      await checkPerf();
+    }
+
+    async function checkKernel() {
+      const uname = await exec("uname -r");
+      document.getElementById('kernel-info').innerText = uname ? uname.trim() : "Linux GKI 6.12";
+    }
+
+    async function checkTcp() {
+      const cur = await exec("cat /proc/sys/net/ipv4/tcp_congestion_control 2>/dev/null");
+      const avail = await exec("cat /proc/sys/net/ipv4/tcp_available_congestion_control 2>/dev/null");
+      const trimmed = cur ? cur.trim() : "unknown";
+      document.getElementById('tcp-current-val').innerText = trimmed;
+      document.getElementById('tcp-available-val').innerText = avail ? avail.trim() : "-";
+      document.getElementById('tcp-active-pill').innerText = trimmed.toUpperCase();
+    }
+
+    async function setTcp(algo) {
+      log('tcp-log', "Applying TCP Congestion: " + algo + "...");
+      const res = await exec("sysctl -w net.ipv4.tcp_congestion_control=" + algo);
+      log('tcp-log', res.trim());
+      await checkTcp();
+    }
+
+    async function saveTcpBootDefault() {
+      const cur = document.getElementById('tcp-current-val').innerText;
+      if (!cur || cur === "-") return;
+      log('tcp-log', "Saving " + cur + " as boot default in /data/adb/service.d/00-tcp.sh...");
+      const script = "mkdir -p /data/adb/service.d && echo '#!/system/bin/sh\\nsysctl -w net.ipv4.tcp_congestion_control=" + cur + "' > /data/adb/service.d/00-tcp.sh && chmod 0755 /data/adb/service.d/00-tcp.sh";
+      await exec(script);
+      log('tcp-log', "✅ Successfully saved " + cur + " to /data/adb/service.d/00-tcp.sh!");
+    }
+
+    async function checkDrivers() {
+      const modules = await exec("ls -d /sys/module/* 2>/dev/null");
+      const list = modules ? modules.toLowerCase() : "";
+
+      function update(id, mod) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (list.includes('/sys/module/' + mod)) {
+          el.innerText = "ACTIVE IN RAM";
+          el.className = "status-pill active";
+        } else {
+          el.innerText = "STANDBY";
+          el.className = "status-pill inactive";
+        }
+      }
+
+      update('stat-mt7601u', 'mt7601u');
+      update('stat-rtw88', 'rtw88_core');
+      update('stat-ath9k', 'ath9k_hw');
+      update('stat-rtl8xxxu', 'rtl8xxxu');
+      update('stat-zd1211', 'zd1211rw');
+      update('stat-mac80211', 'mac80211');
+
+      const ifaces = await exec("ip -br link show 2>/dev/null || ifconfig -a 2>/dev/null");
+      log('iface-log', ifaces ? ifaces.trim() : "No active interfaces found");
+      document.getElementById('drivers-active-pill').innerText = "ONLINE";
+    }
+
+    async function reloadDrivers() {
+      log('iface-log', "Executing driver multi-pass loader...");
+      await exec("sh /data/adb/modules/nethunter_wireless_modules/service.sh 2>&1");
+      await checkDrivers();
+    }
+
+    async function checkBadUsb() {
+      const hid0 = await exec("ls -l /dev/hidg0 2>/dev/null");
+      const hid1 = await exec("ls -l /dev/hidg1 2>/dev/null");
+      const pill = document.getElementById('hid-status-pill');
+      const node = document.getElementById('hid-node-status');
+      const mouse = document.getElementById('hid-mouse-status');
+      const perm = document.getElementById('hid-perm-status');
+
+      if (hid0 && hid0.includes('/dev/hidg0')) {
+        pill.innerText = "ACTIVE";
+        pill.className = "status-pill active";
+        node.innerText = "/dev/hidg0 (Ready)";
+        perm.innerText = hid0.split(" ")[0];
+      } else {
+        pill.innerText = "STANDBY";
+        pill.className = "status-pill inactive";
+        node.innerText = "Not Created (Use USB Arsenal)";
+        perm.innerText = "-";
+      }
+
+      if (hid1 && hid1.includes('/dev/hidg1')) {
+        mouse.innerText = "/dev/hidg1 (Ready)";
+      } else {
+        mouse.innerText = "Not Created";
+      }
+    }
+
+    async function testBadUsb() {
+      log('badusb-log', "Testing keystroke write to /dev/hidg0...");
+      const res = await exec("echo -ne '\\0\\0\\x04\\0\\0\\0\\0\\0' > /dev/hidg0 && echo -ne '\\0\\0\\0\\0\\0\\0\\0\\0' > /dev/hidg0 && echo 'SUCCESS'");
+      if (res && res.includes('SUCCESS')) {
+        log('badusb-log', "✅ SUCCESS! HID gadget accepted keystroke packet 'a'.");
+      } else {
+        log('badusb-log', "⚠️ Result: " + (res.trim() || "Write failed (Enable HID Keyboard in NetHunter app first)"));
+      }
+      await checkBadUsb();
+    }
+
+    async function checkPerf() {
+      const mglru = await exec("cat /sys/kernel/mm/lru_gen/enabled 2>/dev/null");
+      const vfs = await exec("cat /proc/sys/vm/vfs_cache_pressure 2>/dev/null");
+      const zram = await exec("cat /sys/block/zram0/comp_algorithm 2>/dev/null");
+
+      document.getElementById('mglru-val').innerText = mglru ? mglru.trim() : "Disabled";
+      document.getElementById('vfs-val').innerText = vfs ? vfs.trim() : "100";
+      document.getElementById('zram-algo-val').innerText = zram ? zram.trim() : "lz4";
+    }
+
+    async function forceMglru() {
+      log('perf-log', "Applying MGLRU Caps 7...");
+      const res = await exec("echo 7 > /sys/kernel/mm/lru_gen/enabled 2>&1");
+      await checkPerf();
+      log('perf-log', "MGLRU updated: " + document.getElementById('mglru-val').innerText);
+    }
+
+    async function runDexopt() {
+      log('perf-log', "Starting background dexopt (speed-profile). This takes 1-2 minutes...");
+      exec("cmd package compile -m speed-profile -a > /dev/null 2>&1 &");
+      setTimeout(() => {
+        log('perf-log', "Dexopt job running in background.");
+      }, 1000);
+    }
+
+    // Auto-load on startup
+    window.addEventListener('DOMContentLoaded', refreshAll);
+  </script>
+</body>
+</html>
