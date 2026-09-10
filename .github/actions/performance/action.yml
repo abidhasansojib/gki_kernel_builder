@@ -112,3 +112,14 @@ runs:
         config_list: |
           CONFIG_LRU_GEN=y
           CONFIG_LRU_GEN_ENABLED=y
+
+    - name: Enable CPU Frequency Governors
+      uses: ./.github/actions/set-kernel-config
+      with:
+        config_list: |
+          CONFIG_CPU_FREQ=y
+          CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y
+          CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+          CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+          CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+          CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y

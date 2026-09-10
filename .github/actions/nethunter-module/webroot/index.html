@@ -1440,6 +1440,116 @@
     <!-- ==================================================== -->
     <div id="tab-perf" class="tab-view">
       
+      <!-- CPU Governors & Performance Profiles -->
+      <div class="m3-card">
+        <div class="m3-card-header">
+          <div class="m3-card-title-group">
+            <span class="m3-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                <rect x="9" y="9" width="6" height="6"></rect>
+                <line x1="9" y1="1" x2="9" y2="4"></line>
+                <line x1="15" y1="1" x2="15" y2="4"></line>
+                <line x1="9" y1="20" x2="9" y2="23"></line>
+                <line x1="15" y1="20" x2="15" y2="23"></line>
+                <line x1="20" y1="9" x2="23" y2="9"></line>
+                <line x1="20" y1="14" x2="23" y2="14"></line>
+                <line x1="1" y1="9" x2="4" y2="9"></line>
+                <line x1="1" y1="14" x2="4" y2="14"></line>
+              </svg>
+              CPU Governors & Profiles
+            </span>
+            <span class="m3-card-subtitle">Frequency scaling, energy-aware scheduling & cluster tuning</span>
+          </div>
+          <span id="badge-cpugov" class="m3-chip active">
+            <span class="m3-chip-dot"></span>
+            <span id="badge-cpugov-text">SCHEDUTIL</span>
+          </span>
+        </div>
+
+        <div class="m3-telemetry-group">
+          <div class="m3-telemetry-row">
+            <span class="m3-telemetry-key">Active Governor</span>
+            <span id="val-cpugov-current" class="m3-telemetry-val">-</span>
+          </div>
+          <div class="m3-telemetry-row">
+            <span class="m3-telemetry-key">Available Governors</span>
+            <span id="val-cpugov-avail" class="m3-telemetry-val">-</span>
+          </div>
+          <div class="m3-telemetry-row">
+            <span class="m3-telemetry-key">CPU Topology / Clusters</span>
+            <span id="val-cpugov-clusters" class="m3-telemetry-val">-</span>
+          </div>
+          <div class="m3-telemetry-row">
+            <span class="m3-telemetry-key">Cluster Frequencies</span>
+            <span id="val-cpugov-freq" class="m3-telemetry-val">-</span>
+          </div>
+        </div>
+
+        <div class="m3-banner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <div>
+            <b>Governor Guidance:</b> <b>schedutil</b> is the modern Energy-Aware Scheduling (EAS) standard for optimal daily battery and smoothness. <b>ondemand</b> ramps to max frequency instantly upon load spike for high responsiveness. <b>performance</b> locks peak clocks for gaming.
+          </div>
+        </div>
+
+        <!-- 4 Profile Options Grid -->
+        <div class="m3-options-grid">
+          <div id="opt-gov-schedutil" class="m3-option-card" onclick="applyCpuGov('schedutil')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">Efficient (schedutil)</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+            <span class="m3-option-desc">EAS dynamic scaling per task energy cost</span>
+          </div>
+
+          <div id="opt-gov-ondemand" class="m3-option-card" onclick="applyCpuGov('ondemand')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">Responsive (ondemand)</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            </div>
+            <span class="m3-option-desc">Fast clock ramp-up on load for snappy UI</span>
+          </div>
+
+          <div id="opt-gov-performance" class="m3-option-card" onclick="applyCpuGov('performance')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">Gaming (performance)</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+            </div>
+            <span class="m3-option-desc">Locks maximum clocks for zero frame drops</span>
+          </div>
+
+          <div id="opt-gov-powersave" class="m3-option-card" onclick="applyCpuGov('powersave')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">Battery (powersave)</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+            </div>
+            <span class="m3-option-desc">Caps frequencies to min for longest standby</span>
+          </div>
+        </div>
+
+        <button class="m3-btn m3-btn-tonal" onclick="saveCpuGovBootDefault()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          Persist Selected Governor at Boot
+        </button>
+
+        <button class="m3-btn m3-btn-outlined" onclick="resetCpuGovStock()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+          Reset CPU Governor to Stock Android
+        </button>
+      </div>
+
       <div class="m3-card">
         <div class="m3-card-header">
           <div class="m3-card-title-group">
@@ -1627,10 +1737,19 @@
     <button class="m3-nav-item" onclick="navTo('perf', this)">
       <div class="m3-nav-pill">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 20V10M12 20V4M6 20v-6"></path>
+          <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+          <rect x="9" y="9" width="6" height="6"></rect>
+          <line x1="9" y1="1" x2="9" y2="4"></line>
+          <line x1="15" y1="1" x2="15" y2="4"></line>
+          <line x1="9" y1="20" x2="9" y2="23"></line>
+          <line x1="15" y1="20" x2="15" y2="23"></line>
+          <line x1="20" y1="9" x2="23" y2="9"></line>
+          <line x1="20" y1="14" x2="23" y2="14"></line>
+          <line x1="1" y1="9" x2="4" y2="9"></line>
+          <line x1="1" y1="14" x2="4" y2="14"></line>
         </svg>
       </div>
-      <span class="m3-nav-label">Memory</span>
+      <span class="m3-nav-label">CPU & RAM</span>
     </button>
 
     <button class="m3-nav-item" onclick="navTo('console', this)">
@@ -1654,6 +1773,10 @@
       ipForward: false,
       optimisticDad: true,
       hidActive: false,
+      cpuGov: "schedutil",
+      availGovs: "sugov_ext schedutil ondemand performance powersave",
+      cpuClusters: "2 Clusters",
+      cpuFreq: "Dynamic",
       mglruCaps: "0x0007",
       vfsPressure: 60,
       zramAlgo: "lz4",
@@ -2384,9 +2507,78 @@
     }
 
     // ====================================================
-    // 4. MEMORY MANAGEMENT & MGLRU
+    // 4. PERFORMANCE TUNING (CPU GOVERNORS & MEMORY)
     // ====================================================
+    async function checkCpuGov() {
+      const curGov = await exec("cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor 2>/dev/null || cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null");
+      const availGovs = await exec("cat /sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors 2>/dev/null || cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors 2>/dev/null");
+      const curFreq0 = await exec("cat /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq 2>/dev/null || cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null");
+      const curFreq6 = await exec("cat /sys/devices/system/cpu/cpufreq/policy6/scaling_cur_freq 2>/dev/null || cat /sys/devices/system/cpu/cpu4/cpufreq/scaling_cur_freq 2>/dev/null || cat /sys/devices/system/cpu/cpu7/cpufreq/scaling_cur_freq 2>/dev/null");
+      const policies = await exec("ls -d /sys/devices/system/cpu/cpufreq/policy* 2>/dev/null | wc -l");
+
+      const gov = curGov ? curGov.trim() : state.cpuGov;
+      state.cpuGov = gov;
+      const govBadge = document.getElementById('badge-cpugov-text');
+      if (govBadge) govBadge.innerText = gov.toUpperCase();
+      const valCur = document.getElementById('val-cpugov-current');
+      if (valCur) valCur.innerText = gov;
+      const valAvail = document.getElementById('val-cpugov-avail');
+      if (valAvail) valAvail.innerText = availGovs ? availGovs.trim() : state.availGovs;
+
+      const pCount = policies ? parseInt(policies.trim()) : 0;
+      const valClusters = document.getElementById('val-cpugov-clusters');
+      if (valClusters) {
+        valClusters.innerText = pCount > 0 ? pCount + ' Clusters Active' : 'Topology Active';
+      }
+
+      let freqStr = "";
+      if (curFreq0 && !isNaN(curFreq0)) {
+        freqStr += "L: " + (parseInt(curFreq0) / 1000).toFixed(0) + " MHz";
+      }
+      if (curFreq6 && !isNaN(curFreq6)) {
+        freqStr += (freqStr ? " | " : "") + "B: " + (parseInt(curFreq6) / 1000).toFixed(0) + " MHz";
+      }
+      const valFreq = document.getElementById('val-cpugov-freq');
+      if (valFreq) valFreq.innerText = freqStr || 'Dynamic Scaling';
+
+      ['schedutil', 'ondemand', 'performance', 'powersave'].forEach(g => {
+        const el = document.getElementById('opt-gov-' + g);
+        if (el) {
+          if (gov.includes(g) || (g === 'schedutil' && gov === 'sugov_ext')) {
+            el.classList.add('selected');
+          } else {
+            el.classList.remove('selected');
+          }
+        }
+      });
+    }
+
+    async function applyCpuGov(gov) {
+      state.cpuGov = gov;
+      const cmd = `for p in /sys/devices/system/cpu/cpufreq/policy*; do [ -f "$p/scaling_governor" ] && echo ${gov} > "$p/scaling_governor" 2>/dev/null; done; for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do [ -f "$c" ] && echo ${gov} > "$c" 2>/dev/null; done`;
+      await exec(cmd);
+      showSnackbar("CPU Governor switched to " + gov.toUpperCase());
+      await checkCpuGov();
+    }
+
+    async function saveCpuGovBootDefault() {
+      const cur = state.cpuGov;
+      if (!cur) return;
+      const cmd = "mkdir -p /data/adb/service.d && printf '#!/system/bin/sh\\nfor p in /sys/devices/system/cpu/cpufreq/policy*; do [ -f \"$p/scaling_governor\" ] && echo " + cur + " > \"$p/scaling_governor\" 2>/dev/null; done\\nfor c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do [ -f \"$c\" ] && echo " + cur + " > \"$c\" 2>/dev/null; done\\n' > /data/adb/service.d/00-cpugov.sh && chmod 0755 /data/adb/service.d/00-cpugov.sh";
+      await exec(cmd);
+      showSnackbar("Saved " + cur + " to /data/adb/service.d/00-cpugov.sh");
+    }
+
+    async function resetCpuGovStock() {
+      showSnackbar("Restoring default Android CPU Governor...");
+      const cmd = "rm -f /data/adb/service.d/00-cpugov.sh; for p in /sys/devices/system/cpu/cpufreq/policy*; do [ -f \"$p/scaling_available_governors\" ] && (grep -q 'sugov_ext' \"$p/scaling_available_governors\" && echo sugov_ext > \"$p/scaling_governor\" || echo schedutil > \"$p/scaling_governor\") 2>/dev/null; done";
+      await exec(cmd);
+      await checkCpuGov();
+      showSnackbar("CPU Governor restored to Stock Android (schedutil/sugov_ext)");
+    }
+
     async function checkPerf() {
+      await checkCpuGov();
       const mglru = await exec("cat /sys/kernel/mm/lru_gen/enabled 2>/dev/null");
       const vfs = await exec("cat /proc/sys/vm/vfs_cache_pressure 2>/dev/null");
       const zramAlgo = await exec("cat /sys/block/zram0/comp_algorithm 2>/dev/null");

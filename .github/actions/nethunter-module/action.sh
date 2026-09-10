@@ -22,6 +22,7 @@ am start -a android.intent.action.VIEW -d "file:///storage/emulated/0/nethunter_
 # 3. Output quick diagnostics
 echo ""
 echo "[+] Kernel Release: $(uname -r 2>/dev/null || echo 'Unknown')"
+echo "[+] Active CPU Governor: $(cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor 2>/dev/null || cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null || echo 'Unknown')"
 echo "[+] TCP Congestion Control: $(cat /proc/sys/net/ipv4/tcp_congestion_control 2>/dev/null || echo 'Unknown')"
 echo "[+] Active Qdisc: $(cat /proc/sys/net/core/default_qdisc 2>/dev/null || echo 'Unknown')"
 echo "[+] MGLRU Capabilities: $(cat /sys/kernel/mm/lru_gen/enabled 2>/dev/null || echo 'Not Supported')"
