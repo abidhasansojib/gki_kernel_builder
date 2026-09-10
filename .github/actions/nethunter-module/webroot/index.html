@@ -1013,18 +1013,18 @@
     <!-- ==================================================== -->
     <div id="tab-drivers" class="tab-view">
       
-      <!-- NetHunter Module Auto-Loader -->
+      <!-- Available Kernel Modules Card -->
       <div class="m3-card">
         <div class="m3-card-header">
           <div class="m3-card-title-group">
-            <span class="m3-card-title">NetHunter Module Auto-Loader</span>
-            <span class="m3-card-subtitle">Auto-detects and loads modules from module lkm storage</span>
+            <span class="m3-card-title">Available Kernel Modules</span>
+            <span class="m3-card-subtitle">Detected in NetHunter module and system</span>
           </div>
           <span class="m3-chip success" id="badge-modules-count">SCANNING</span>
         </div>
 
         <button class="m3-btn m3-btn-filled" onclick="loadAllAvailableModules()">
-          ⚡ Auto-Load All NetHunter Modules
+          ⚡ Auto-Load All Available Modules
         </button>
 
         <!-- Category Filters -->
@@ -1041,23 +1041,14 @@
         <div id="module-list-container" style="max-height: 380px; overflow-y: auto; padding-right: 2px;">
           <!-- Rendered dynamically by JavaScript -->
         </div>
-
-        <!-- Custom .ko File Loader -->
-        <div style="margin-top: 10px; border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 10px;">
-          <span style="font-size: 11px; font-weight: 600; color: var(--md-sys-color-on-surface-variant); display: block; margin-bottom: 4px;">Load Custom .ko Path</span>
-          <div class="m3-input-row" style="margin: 0;">
-            <input id="in-manual-mod" type="text" class="m3-text-input" placeholder="Custom .ko path or module name" />
-            <button class="m3-btn-inline" onclick="loadManualModule()">Load</button>
-          </div>
-        </div>
       </div>
 
-      <!-- Detected Firmwares -->
+      <!-- Available Firmwares Card -->
       <div class="m3-card">
         <div class="m3-card-header">
           <div class="m3-card-title-group">
-            <span class="m3-card-title">Detected Wireless Firmware</span>
-            <span class="m3-card-subtitle">Searched in /vendor/firmware & modules</span>
+            <span class="m3-card-title">Available Firmwares</span>
+            <span class="m3-card-subtitle">Searched in /vendor/firmware & module paths</span>
           </div>
         </div>
 
@@ -1092,17 +1083,6 @@
           </div>
           <span id="fw-rtl8xxxu" class="m3-chip">SCANNING</span>
         </div>
-      </div>
-
-      <!-- Network Interfaces -->
-      <div class="m3-card">
-        <div class="m3-card-header">
-          <div class="m3-card-title-group">
-            <span class="m3-card-title">Network Interfaces</span>
-            <span class="m3-card-subtitle">Active links & IP addresses</span>
-          </div>
-        </div>
-        <div id="box-interfaces" class="root-term-screen" style="min-height: 80px; max-height: 130px; border-radius: 10px;">Scanning interfaces...</div>
       </div>
 
       <!-- Reset Drivers Defaults -->
@@ -1806,10 +1786,6 @@
       updateFw('fw-ath9k', 'htc_9271.fw');
       updateFw('fw-rtw88', 'rtw8822c_fw.bin');
       updateFw('fw-rtl8xxxu', 'rtl8188eufw.bin');
-
-      const ifaces = await exec("ip -br link show 2>/dev/null || ifconfig -a 2>/dev/null");
-      const box = document.getElementById('box-interfaces');
-      if (box) box.innerText = ifaces ? ifaces.trim() : "No active interfaces found.";
     }
 
     async function autoLoadModule(modName) {
@@ -1878,26 +1854,8 @@
       showSnackbar("All NetHunter modules synchronized");
     }
 
-    async function loadManualModule() {
-      const input = document.getElementById('in-manual-mod');
-      if (!input) return;
-      const mod = input.value.trim();
-      if (!mod) {
-        showSnackbar("Please enter a module name or path");
-        return;
-      }
-      showSnackbar("Loading module: " + mod + "...");
-      await exec("modprobe " + mod + " 2>&1 || insmod " + mod + " 2>&1 || ksud insmod " + mod + " 2>&1 || true");
-      state.loadedModules.add(mod.replace('.ko', ''));
-      input.value = "";
-      showSnackbar("Module load command dispatched");
-      await checkDriversAndFirmwares();
-    }
-
     async function resetDriversDefaults() {
       showSnackbar("Unloading extra driver modules...");
-      const input = document.getElementById('in-manual-mod');
-      if (input) input.value = "";
       const names = NETHUNTER_MODULES.map(m => m.name).join(" ");
       await exec("rmmod " + names + " 2>/dev/null || true");
       state.loadedModules.clear();
