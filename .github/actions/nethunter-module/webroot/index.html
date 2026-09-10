@@ -1013,82 +1013,42 @@
     <!-- ==================================================== -->
     <div id="tab-drivers" class="tab-view">
       
-      <!-- Manual Module Loader -->
+      <!-- NetHunter Module Auto-Loader -->
       <div class="m3-card">
         <div class="m3-card-header">
           <div class="m3-card-title-group">
-            <span class="m3-card-title">Manual Module Loader</span>
-            <span class="m3-card-subtitle">Load kernel modules on demand</span>
-          </div>
-        </div>
-
-        <div class="m3-input-row">
-          <input id="in-manual-mod" type="text" class="m3-text-input" placeholder="Module name or .ko path (e.g. mt7601u)" />
-          <button class="m3-btn-inline" onclick="loadManualModule()">Load</button>
-        </div>
-
-        <!-- Quick Module Loader Chips -->
-        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;">
-          <button class="root-term-chip" onclick="quickLoadModule('mt7601u')">+ mt7601u</button>
-          <button class="root-term-chip" onclick="quickLoadModule('rtw88_usb')">+ rtw88_usb</button>
-          <button class="root-term-chip" onclick="quickLoadModule('ath9k_htc')">+ ath9k_htc</button>
-          <button class="root-term-chip" onclick="quickLoadModule('rtl8xxxu')">+ rtl8xxxu</button>
-          <button class="root-term-chip" onclick="quickLoadModule('zd1211rw')">+ zd1211rw</button>
-        </div>
-
-        <button class="m3-btn m3-btn-filled" style="margin-top: 10px;" onclick="reloadDrivers()">
-          Execute Multi-Pass Module Loader (All)
-        </button>
-      </div>
-
-      <!-- Detected Kernel Modules -->
-      <div class="m3-card">
-        <div class="m3-card-header">
-          <div class="m3-card-title-group">
-            <span class="m3-card-title">Detected Kernel Modules</span>
-            <span class="m3-card-subtitle">Real-time /sys/module inspection</span>
+            <span class="m3-card-title">NetHunter Module Auto-Loader</span>
+            <span class="m3-card-subtitle">Auto-detects and loads modules from module lkm storage</span>
           </div>
           <span class="m3-chip success" id="badge-modules-count">SCANNING</span>
         </div>
 
-        <div class="m3-list-tile" style="cursor: default;">
-          <div class="m3-list-tile-content">
-            <span class="m3-list-tile-title">mt7601u</span>
-            <span class="m3-list-tile-subtitle">MediaTek MT7601U USB</span>
-          </div>
-          <span id="drv-mt7601u" class="m3-chip">CHECKING</span>
+        <button class="m3-btn m3-btn-filled" onclick="loadAllAvailableModules()">
+          ⚡ Auto-Load All NetHunter Modules
+        </button>
+
+        <!-- Category Filters -->
+        <div style="display: flex; gap: 6px; overflow-x: auto; padding: 6px 0 8px 0; -webkit-overflow-scrolling: touch;">
+          <button id="filter-mod-all" class="root-term-chip active" onclick="setModuleFilter('all')">All (24)</button>
+          <button id="filter-mod-wifi" class="root-term-chip" onclick="setModuleFilter('wifi')">Wi-Fi (12)</button>
+          <button id="filter-mod-serial" class="root-term-chip" onclick="setModuleFilter('serial')">Serial (5)</button>
+          <button id="filter-mod-net" class="root-term-chip" onclick="setModuleFilter('net')">Ethernet (4)</button>
+          <button id="filter-mod-sdr" class="root-term-chip" onclick="setModuleFilter('sdr')">SDR (3)</button>
+          <button id="filter-mod-can" class="root-term-chip" onclick="setModuleFilter('can')">CAN (3)</button>
         </div>
 
-        <div class="m3-list-tile" style="cursor: default;">
-          <div class="m3-list-tile-content">
-            <span class="m3-list-tile-title">rtw88_core / rtw88_usb</span>
-            <span class="m3-list-tile-subtitle">Realtek 8822CU, 8821CU, 8812AU</span>
-          </div>
-          <span id="drv-rtw88" class="m3-chip">CHECKING</span>
+        <!-- Dynamic Module List Container -->
+        <div id="module-list-container" style="max-height: 380px; overflow-y: auto; padding-right: 2px;">
+          <!-- Rendered dynamically by JavaScript -->
         </div>
 
-        <div class="m3-list-tile" style="cursor: default;">
-          <div class="m3-list-tile-content">
-            <span class="m3-list-tile-title">ath9k_htc</span>
-            <span class="m3-list-tile-subtitle">Atheros AR9271 (TP-Link WN722N)</span>
+        <!-- Custom .ko File Loader -->
+        <div style="margin-top: 10px; border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 10px;">
+          <span style="font-size: 11px; font-weight: 600; color: var(--md-sys-color-on-surface-variant); display: block; margin-bottom: 4px;">Load Custom .ko Path</span>
+          <div class="m3-input-row" style="margin: 0;">
+            <input id="in-manual-mod" type="text" class="m3-text-input" placeholder="Custom .ko path or module name" />
+            <button class="m3-btn-inline" onclick="loadManualModule()">Load</button>
           </div>
-          <span id="drv-ath9k" class="m3-chip">CHECKING</span>
-        </div>
-
-        <div class="m3-list-tile" style="cursor: default;">
-          <div class="m3-list-tile-content">
-            <span class="m3-list-tile-title">rtl8xxxu</span>
-            <span class="m3-list-tile-subtitle">Realtek RTL8188EUS, RTL8192EU</span>
-          </div>
-          <span id="drv-rtl8xxxu" class="m3-chip">CHECKING</span>
-        </div>
-
-        <div class="m3-list-tile" style="cursor: default;">
-          <div class="m3-list-tile-content">
-            <span class="m3-list-tile-title">mac80211 & cfg80211 (WEXT=y)</span>
-            <span class="m3-list-tile-subtitle">Packet Injection Core Framework</span>
-          </div>
-          <span id="drv-mac80211" class="m3-chip success">BUILTIN</span>
         </div>
       </div>
 
@@ -1361,7 +1321,8 @@
       swappiness: 60,
       zramAlgo: "lz4",
       zramSize: "8.0 GB",
-      ramSummary: "7.8 GB / 12 GB Free"
+      ramSummary: "7.8 GB / 12 GB Free",
+      loadedModules: new Set(["mac80211", "cfg80211", "mt7601u"])
     };
 
     function showSnackbar(msg) {
@@ -1469,9 +1430,11 @@
       if (cmd.includes("uname -a")) return "Linux localhost 6.12.30-android16-9-gki #1 SMP PREEMPT aarch64 Android";
       if (cmd.includes("dmesg")) return "[    0.000000] Linux version 6.12.30-android16-9-gki\n[    0.142010] NetHunter GKI: HID Gadget Subsystem loaded\n[    0.354120] TCP: Westwood+, BBRv3 registered";
       if (cmd.includes("free")) return "Mem: 11845M total, 4120M used, 7725M free\nSwap: 8192M total, 350M used";
-      if (cmd.includes("lsmod") || cmd.includes("/proc/modules")) return "mt7601u 114688 0\nrtw88_core 262144 0\nmac80211 950272 1 rtw88_core\ncfg80211 778240 2 mac80211,rtw88_core";
-      if (cmd.includes("firmware")) return "mt7601u.bin:found\nhtc_9271.fw:found\nrtw8822c_fw.bin:found";
-      if (cmd.includes("ip -br link") || cmd.includes("ifconfig")) return "lo UNKNOWN 00:00:00:00:00:00\nwlan0 UP a4:c3:f0:12:34:56\nrmnet_data0 UP 10.42.0.1";
+      if (cmd.includes("sys/module") || cmd.includes("lsmod") || cmd.includes("/proc/modules")) {
+        return Array.from(state.loadedModules).map(m => "/sys/module/" + m + "\n" + m + " 100000 0").join("\n");
+      }
+      if (cmd.includes("firmware")) return "mt7601u.bin:found\nhtc_9271.fw:found\nrtw8822c_fw.bin:found\nrtl8188eufw.bin:found";
+      if (cmd.includes("ip -br link") || cmd.includes("ifconfig")) return "lo UNKNOWN 00:00:00:00:00:00\nwlan0 UP a4:c3:f0:12:34:56\nwlan1 UP 00:c0:ca:98:76:54\nrmnet_data0 UP 10.42.0.1";
       return "OK";
     }
 
@@ -1721,28 +1684,111 @@
       showSnackbar("USB reset to Stock Android (MTP + ADB, HID disabled)");
     }
 
-    // 3. Drivers & Firmware Detection
+    // 3. Drivers & Firmware Subsystem (Auto-Detected from NetHunter Module)
+    const NETHUNTER_MODULES = [
+      // Wi-Fi Drivers
+      { name: "mt7601u", file: "mt7601u.ko", cat: "wifi", desc: "MediaTek MT7601U USB Wi-Fi", deps: ["cfg80211", "mac80211"] },
+      { name: "rtw88_usb", file: "rtw88_usb.ko", cat: "wifi", desc: "Realtek RTL8821CU / 8822CU", deps: ["cfg80211", "mac80211", "rtw88_core"] },
+      { name: "rtw88_8822cu", file: "rtw88_8822cu.ko", cat: "wifi", desc: "Realtek 8822CU 802.11ac Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_usb"] },
+      { name: "rtw88_8821cu", file: "rtw88_8821cu.ko", cat: "wifi", desc: "Realtek 8821CU 802.11ac Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_usb"] },
+      { name: "ath9k_htc", file: "ath9k_htc.ko", cat: "wifi", desc: "Atheros AR9271 (WN722N v1)", deps: ["cfg80211", "mac80211"] },
+      { name: "rtl8xxxu", file: "rtl8xxxu.ko", cat: "wifi", desc: "Realtek RTL8188EUS / RTL8192EU", deps: ["cfg80211", "mac80211"] },
+      { name: "carl9170", file: "carl9170.ko", cat: "wifi", desc: "Atheros AR9170 USB 802.11n", deps: ["cfg80211", "mac80211"] },
+      { name: "rt2800usb", file: "rt2800usb.ko", cat: "wifi", desc: "Ralink RT2870 / RT3070", deps: ["cfg80211", "mac80211"] },
+      { name: "zd1211rw", file: "zd1211rw.ko", cat: "wifi", desc: "ZyDAS ZD1211 / ZD1211B", deps: ["cfg80211", "mac80211"] },
+      { name: "rtl8187", file: "rtl8187.ko", cat: "wifi", desc: "Realtek RTL8187 (Alfa AWUS036H)", deps: ["cfg80211", "mac80211"] },
+      { name: "mac80211", file: "mac80211.ko", cat: "wifi", desc: "Packet Injection Engine (WEXT=y)", deps: ["cfg80211"] },
+      { name: "cfg80211", file: "cfg80211.ko", cat: "wifi", desc: "Wireless Configuration Core", deps: [] },
+
+      // USB Serial & Interface Adapters
+      { name: "ch341", file: "ch341.ko", cat: "serial", desc: "CH340 / CH341 USB Serial", deps: ["usbserial"] },
+      { name: "cp210x", file: "cp210x.ko", cat: "serial", desc: "Silicon Labs CP210x Serial", deps: ["usbserial"] },
+      { name: "ftdi_sio", file: "ftdi_sio.ko", cat: "serial", desc: "FTDI FT232 USB Serial", deps: ["usbserial"] },
+      { name: "pl2303", file: "pl2303.ko", cat: "serial", desc: "Prolific PL2303 Serial", deps: ["usbserial"] },
+      { name: "cdc_acm", file: "cdc_acm.ko", cat: "serial", desc: "USB CDC ACM Serial Device", deps: [] },
+
+      // USB Ethernet Adapters
+      { name: "r8152", file: "r8152.ko", cat: "net", desc: "Realtek RTL8152/8153 Gigabit LAN", deps: [] },
+      { name: "asix", file: "asix.ko", cat: "net", desc: "ASIX AX8817X USB Ethernet", deps: [] },
+      { name: "ax88179_178a", file: "ax88179_178a.ko", cat: "net", desc: "ASIX AX88179 USB 3.0 Gigabit", deps: [] },
+      { name: "cdc_ether", file: "cdc_ether.ko", cat: "net", desc: "CDC Ethernet USB Dongle", deps: [] },
+
+      // Software-Defined Radio (SDR)
+      { name: "hackrf", file: "hackrf.ko", cat: "sdr", desc: "Great Scott Gadgets HackRF SDR", deps: [] },
+      { name: "airspy", file: "airspy.ko", cat: "sdr", desc: "Airspy Software Defined Radio", deps: [] },
+      { name: "msi2500", file: "msi2500.ko", cat: "sdr", desc: "Mirics MSi2500 SDR Receiver", deps: [] },
+
+      // CAN Bus Diagnostics
+      { name: "can", file: "can.ko", cat: "can", desc: "Controller Area Network Core", deps: [] },
+      { name: "can_raw", file: "can_raw.ko", cat: "can", desc: "Raw CAN Protocol Sockets", deps: ["can"] },
+      { name: "vcan", file: "vcan.ko", cat: "can", desc: "Virtual CAN Tunnel Device", deps: ["can"] }
+    ];
+
+    let currentModuleFilter = 'all';
+
+    function setModuleFilter(cat) {
+      currentModuleFilter = cat;
+      document.querySelectorAll('[id^="filter-mod-"]').forEach(el => el.classList.remove('active'));
+      const activeBtn = document.getElementById('filter-mod-' + cat);
+      if (activeBtn) activeBtn.classList.add('active');
+      renderModuleList();
+    }
+
+    function renderModuleList() {
+      const container = document.getElementById('module-list-container');
+      if (!container) return;
+
+      const filtered = NETHUNTER_MODULES.filter(m => currentModuleFilter === 'all' || m.cat === currentModuleFilter);
+
+      let html = "";
+      filtered.forEach(mod => {
+        const isLoaded = state.loadedModules.has(mod.name) || state.loadedModules.has(mod.name.replace(/_/g, '-'));
+        const chipClass = isLoaded ? "m3-chip success" : "m3-chip";
+        const chipText = isLoaded ? "LOADED" : "AVAILABLE";
+        const actionBtn = isLoaded
+          ? `<button class="root-term-chip" style="color: var(--md-sys-color-error); border-color: rgba(255,180,171,0.35);" onclick="unloadModule('${mod.name}')">Unload</button>`
+          : `<button class="root-term-chip" style="color: var(--md-sys-color-primary); border-color: var(--md-sys-color-primary);" onclick="autoLoadModule('${mod.name}')">+ Load</button>`;
+
+        html += `
+          <div class="m3-list-tile" style="margin-bottom: 6px; padding: 8px 10px;">
+            <div class="m3-list-tile-content" style="min-width: 0; margin-right: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="m3-list-tile-title" style="font-size: 13px;">${mod.name}</span>
+                <span style="font-size: 10px; color: var(--md-sys-color-outline); font-family: var(--font-family-mono);">${mod.file}</span>
+              </div>
+              <span class="m3-list-tile-subtitle" style="font-size: 11px;">${mod.desc}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+              <span class="${chipClass}">${chipText}</span>
+              ${actionBtn}
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
     async function checkDriversAndFirmwares() {
       const modules = await exec("ls -d /sys/module/* 2>/dev/null || cat /proc/modules 2>/dev/null");
       const list = modules ? modules.toLowerCase() : "";
 
-      let count = 0;
-      const update = (id, names) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const loaded = names.some(m => list.includes(m));
-        if (loaded) count++;
-        el.innerText = loaded ? "LOADED" : "READY";
-        el.className = loaded ? "m3-chip success" : "m3-chip";
-      };
+      state.loadedModules.clear();
+      NETHUNTER_MODULES.forEach(m => {
+        const norm = m.name.toLowerCase();
+        const alt = norm.replace(/_/g, '-');
+        if (list.includes("/" + norm) || list.includes(" " + norm + " ") || list.startsWith(norm + " ") ||
+            list.includes("/" + alt) || list.includes(" " + alt + " ") || list.startsWith(alt + " ")) {
+          state.loadedModules.add(m.name);
+        }
+      });
 
-      update('drv-mt7601u', ['mt7601u', 'mt76_usb']);
-      update('drv-rtw88', ['rtw88_core', 'rtw88_usb']);
-      update('drv-ath9k', ['ath9k_htc', 'ath9k']);
-      update('drv-rtl8xxxu', ['rtl8xxxu', 'rtlwifi']);
-
+      const loadedCount = state.loadedModules.size;
+      const totalCount = NETHUNTER_MODULES.length;
       const badgeCount = document.getElementById('badge-modules-count');
-      if (badgeCount) badgeCount.innerText = count + " LOADED";
+      if (badgeCount) badgeCount.innerText = `${loadedCount} LOADED • ${totalCount} IN MODULE`;
+
+      renderModuleList();
 
       // Detect Firmwares
       const fwCheck = await exec(`for f in mt7601u.bin htc_9271.fw rtw8822c_fw.bin rtl8188eufw.bin; do for d in /vendor/firmware /system/etc/firmware /data/adb/modules/nethunter_wireless_modules/firmware /lib/firmware; do [ -f "$d/$f" ] && echo "$f:found" && break; done; done`);
@@ -1766,6 +1812,72 @@
       if (box) box.innerText = ifaces ? ifaces.trim() : "No active interfaces found.";
     }
 
+    async function autoLoadModule(modName) {
+      showSnackbar("Auto-loading " + modName + " from NetHunter module...");
+      const target = NETHUNTER_MODULES.find(m => m.name === modName);
+      const deps = (target && target.deps) ? target.deps : [];
+
+      const script = `
+        MDIR=""
+        for d in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/modules/*; do
+          [ -d "$d/lkm" ] && MDIR="$d/lkm" && break
+        done
+        ${deps.map(dep => `
+          if [ -n "$MDIR" ] && [ -f "$MDIR/${dep}.ko" ]; then
+            insmod "$MDIR/${dep}.ko" 2>/dev/null || ksud insmod "$MDIR/${dep}.ko" 2>/dev/null || true
+          else
+            modprobe ${dep} 2>/dev/null || true
+          fi
+        `).join('\n')}
+        if [ -n "$MDIR" ] && [ -f "$MDIR/${modName}.ko" ]; then
+          insmod "$MDIR/${modName}.ko" 2>/dev/null || ksud insmod "$MDIR/${modName}.ko" 2>/dev/null || true
+        else
+          modprobe ${modName} 2>/dev/null || true
+        fi
+      `;
+      await exec(script);
+      state.loadedModules.add(modName);
+      deps.forEach(d => state.loadedModules.add(d));
+      await checkDriversAndFirmwares();
+      showSnackbar("Module " + modName + " loaded");
+    }
+
+    async function unloadModule(modName) {
+      showSnackbar("Unloading " + modName + "...");
+      await exec("rmmod " + modName + " 2>/dev/null || rmmod " + modName.replace(/_/g, '-') + " 2>/dev/null || true");
+      state.loadedModules.delete(modName);
+      await checkDriversAndFirmwares();
+      showSnackbar("Unloaded " + modName);
+    }
+
+    async function loadAllAvailableModules() {
+      showSnackbar("Auto-loading all available NetHunter modules...");
+      const script = `
+        MDIR=""
+        for d in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/modules/*; do
+          [ -d "$d/lkm" ] && MDIR="$d" && break
+        done
+        if [ -n "$MDIR" ] && [ -f "$MDIR/service.sh" ]; then
+          sh "$MDIR/service.sh" 2>&1
+        elif [ -n "$MDIR" ] && [ -d "$MDIR/lkm" ]; then
+          for pass in 1 2 3; do
+            for ko in "$MDIR/lkm"/*.ko; do
+              [ -f "$ko" ] && (insmod "$ko" 2>/dev/null || ksud insmod "$ko" 2>/dev/null || true)
+            done
+          done
+        else
+          modprobe mt7601u 2>/dev/null || true
+          modprobe rtw88_usb 2>/dev/null || true
+          modprobe ath9k_htc 2>/dev/null || true
+          modprobe rtl8xxxu 2>/dev/null || true
+        fi
+      `;
+      await exec(script);
+      NETHUNTER_MODULES.forEach(m => state.loadedModules.add(m.name));
+      await checkDriversAndFirmwares();
+      showSnackbar("All NetHunter modules synchronized");
+    }
+
     async function loadManualModule() {
       const input = document.getElementById('in-manual-mod');
       if (!input) return;
@@ -1775,31 +1887,22 @@
         return;
       }
       showSnackbar("Loading module: " + mod + "...");
-      const res = await exec("modprobe " + mod + " 2>&1 || insmod " + mod + " 2>&1 || ksud insmod " + mod + " 2>&1");
+      await exec("modprobe " + mod + " 2>&1 || insmod " + mod + " 2>&1 || ksud insmod " + mod + " 2>&1 || true");
+      state.loadedModules.add(mod.replace('.ko', ''));
       input.value = "";
       showSnackbar("Module load command dispatched");
       await checkDriversAndFirmwares();
-    }
-
-    async function quickLoadModule(mod) {
-      showSnackbar("Loading " + mod + "...");
-      await exec("modprobe " + mod + " 2>/dev/null || insmod /data/adb/modules/nethunter_wireless_modules/lkm/" + mod + ".ko 2>/dev/null || true");
-      showSnackbar("Loaded " + mod);
-      await checkDriversAndFirmwares();
-    }
-
-    async function reloadDrivers() {
-      showSnackbar("Executing multi-pass module loader...");
-      await exec("if [ -f /data/adb/modules/nethunter_wireless_modules/service.sh ]; then sh /data/adb/modules/nethunter_wireless_modules/service.sh 2>&1; else echo 'Loaded'; fi");
-      await checkDriversAndFirmwares();
-      showSnackbar("Wireless drivers synchronized");
     }
 
     async function resetDriversDefaults() {
       showSnackbar("Unloading extra driver modules...");
       const input = document.getElementById('in-manual-mod');
       if (input) input.value = "";
-      await exec("rmmod mt7601u rtw88_8822cu rtw88_8821cu rtw88_usb rtw88_core ath9k_htc rtl8xxxu zd1211rw 2>/dev/null || true");
+      const names = NETHUNTER_MODULES.map(m => m.name).join(" ");
+      await exec("rmmod " + names + " 2>/dev/null || true");
+      state.loadedModules.clear();
+      state.loadedModules.add("mac80211");
+      state.loadedModules.add("cfg80211");
       await checkDriversAndFirmwares();
       showSnackbar("External modules unloaded and drivers reset");
     }
