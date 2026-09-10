@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>NetHunter System Console</title>
+  <title>Kernel Manager</title>
   <style>
     :root {
       /* Material 3 Dark Color System */
@@ -1018,8 +1018,7 @@
         </svg>
       </div>
       <div class="top-app-bar-title-group">
-        <span class="top-app-bar-title">NetHunter Manager</span>
-        <span id="top-kernel-ver" class="top-app-bar-subtitle">Android 16 GKI 6.12</span>
+        <span class="top-app-bar-title">Kernel Manager</span>
       </div>
     </div>
     <button class="btn-icon-m3" onclick="refreshAll()" title="Refresh System Telemetry">
@@ -1568,7 +1567,7 @@
         <div id="box-console" class="term-output">
           <div class="term-row term-sys">
             <span class="term-time">[00:00:00]</span>
-            <span class="term-text">NetHunter Kernel Diagnostics Terminal (Linux GKI)</span>
+            <span class="term-text">Kernel Diagnostics Terminal (Linux GKI)</span>
           </div>
           <div class="term-row term-sys">
             <span class="term-time">[00:00:00]</span>
@@ -1952,7 +1951,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = "nethunter_terminal_" + new Date().toISOString().replace(/[:.]/g, '-') + ".log";
+      a.download = "kernel_terminal_" + new Date().toISOString().replace(/[:.]/g, '-') + ".log";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -2435,8 +2434,6 @@
 
     // Master Refresh
     async function refreshAll() {
-      const uname = await exec("uname -r 2>/dev/null");
-      if (uname) document.getElementById('top-kernel-ver').innerText = uname.trim();
       updateBridgeBadge();
       await checkTcp();
       await checkUsbStatus();

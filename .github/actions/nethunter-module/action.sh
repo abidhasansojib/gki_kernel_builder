@@ -2,7 +2,7 @@
 MODDIR=${0%/*}
 
 echo "=========================================="
-echo " NetHunter Wireless & HID Kernel Manager "
+echo "              Kernel Manager              "
 echo "=========================================="
 
 # 1. Sync latest WebUI to internal storage
@@ -14,7 +14,7 @@ if [ -f "$MODDIR/webroot/index.html" ]; then
 fi
 
 # 2. Launch WebUI in browser / system viewer
-echo "[*] Opening NetHunter WebUI..."
+echo "[*] Opening Kernel Manager WebUI..."
 am start -a android.intent.action.VIEW -d "file:///data/adb/modules/nethunter_wireless_modules/webroot/index.html" -t "text/html" 2>/dev/null || \
 am start -a android.intent.action.VIEW -d "file:///storage/emulated/0/nethunter_webui.html" -t "text/html" 2>/dev/null || \
 am start -a android.intent.action.VIEW -d "file:///storage/emulated/0/nethunter_webui.html" 2>/dev/null || true
