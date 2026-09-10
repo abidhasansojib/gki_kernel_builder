@@ -78,9 +78,9 @@ The kernel and accompanying flashable `Nethunter-Wireless-Modules.zip` module pr
 
 ## 📱 NetHunter Kernel Manager WebUI Dashboard
 
-The flashable `Nethunter-Wireless-Modules.zip` module integrates an interactive **Material 3 Kernel Manager WebUI** (`webroot/index.html`) accessible directly within your root manager or mobile browser:
+The flashable `Nethunter-Wireless-Modules.zip` module integrates an interactive **Material 3 Kernel Manager WebUI** (`webroot/index.html`) accessible directly within your root manager:
 
-* 🌐 **Direct Root Bridge Execution**: Native interface support for **KernelSU-Next**, **SukiSU-Ultra**, and **ReSukiSU** WebUI bridges (`window.ksu` / `window.suki`). Automatically detects environment and provides a graceful, safe read-only preview mode when opened in standard web browsers.
+* 🌐 **Direct Root Bridge Execution**: Native interface support for **KernelSU-Next**, **SukiSU-Ultra**, and **ReSukiSU** WebUI bridges (`window.ksu` / `window.suki`).
 * 📶 **Dynamic TCP Congestion Switcher**: Live detection of all in-kernel algorithms (`BBR3`, `BBR`, `Cubic`, `WestWood`, etc.) from `/proc/sys/net/ipv4/tcp_available_congestion_control`. Features one-tap switching and automatic boot persistence via `/data/adb/service.d/00-bbr.sh`.
 * 🦆 **BadUSB HID & Gadget Switcher**: Toggle effortlessly between Stock Android USB (MTP + ADB), BadUSB HID Keyboard & Mouse (`/dev/hidg0`, `/dev/hidg1`), USB Mass Storage, and RNDIS Ethernet. Includes an on-screen DuckyScript test keystroke injector.
 * 🔌 **Dynamic Driver & Firmware Manager**: Filter and view 75+ modular drivers by category (WiFi, Serial, Ethernet, SDR, CAN). Auto-loads kernel modules from `lkm/` with automatic multi-tier dependency resolution and safe reverse-order unbinding.
@@ -88,7 +88,7 @@ The flashable `Nethunter-Wireless-Modules.zip` module integrates an interactive 
 * ⚡ **Optimized CPU Governor Default**: Pre-configured with the responsive `schedutil` governor by default in kernel and boot services, keeping the UI clean while allowing fine-grained user tuning via external tools like FKM.
 * 💻 **Rooted Terminal Console**: Built-in dark terminal with command history, preset diagnostic shortcuts (`uname -a`, `lsmod`, `ip link`, `dmesg`), and clipboard export.
 * 🔄 **Subsystem Reset Buttons**: Dedicated Reset button on every menu to safely revert network, USB, driver, or memory settings back to kernel defaults.
-* 📂 **Universal Storage Sync & Action Launcher**: WebUI is automatically synced to `/storage/emulated/0/Download/nethunter_webui.html` on boot (including TWRP recovery installs) and can be opened immediately via the root manager's **Action** button (`action.sh`).
+* 📂 **Root Manager Action & WebUI Integration**: Fully integrated with the root manager's native **WebUI** and **Action** button (`action.sh`) for seamless one-tap access directly inside the manager app.
 
 ---
 
@@ -118,8 +118,7 @@ The flashable `Nethunter-Wireless-Modules.zip` module integrates an interactive 
 3. **External USB WiFi & NetHunter WebUI Manager (Optional)**:
    - Download the `Nethunter-Wireless-Modules.zip` module from the release.
    - Flash it in your KernelSU-Next, SukiSU-Ultra, or ReSukiSU manager.
-   - Tap **WebUI** under the module in your root manager to launch the interactive Kernel Manager dashboard with live root execution!
-   - Alternatively, tap **Action** or open `/storage/emulated/0/Download/nethunter_webui.html` in your browser.
+   - Tap **WebUI** (or **Action**) under the module in your root manager to launch the interactive Kernel Manager dashboard with live root execution!
 
 ---
 

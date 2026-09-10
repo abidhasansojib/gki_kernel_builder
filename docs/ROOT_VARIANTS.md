@@ -123,10 +123,9 @@ flowchart TD
 4. **Resilient Driver Loading & Unloading**:
    * **Multi-Tier Dependency Resolution**: Loads base silicon modules (`rtw88_8822c`, `rtw88_8821c`, `rtw88_core`, `mac80211`, `cfg80211`) before binding USB interface frontends.
    * **Reverse-Order Driver Unloading**: Resets external drivers in reverse dependency order to prevent kernel `"device or resource busy"` unbind errors.
-5. **Recovery & Public Storage Synchronization**:
-   * Dual-pass synchronization: copies `webroot/index.html` to `/storage/emulated/0/Download/nethunter_webui.html` both at installation (`customize.sh`) and at late boot (`service.sh`).
-   * Ensures the file is populated and accessible even when flashed from TWRP/OrangeFox recovery prior to storage decryption.
-   * Launched safely via `action.sh` avoiding Android `/data/adb` cross-application file exposure restrictions.
+5. **Action Launcher & Manager Integration**:
+   * Adheres to standard KernelSU-Next, SukiSU-Ultra, and ReSukiSU WebUI specifications (`webroot/` and `action.sh`).
+   * Operates directly inside the Root Manager app with interactive root bridge execution.
 
 ---
 
