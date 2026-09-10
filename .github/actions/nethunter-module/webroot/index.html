@@ -1418,7 +1418,8 @@
       document.querySelectorAll('.m3-nav-item').forEach(el => el.classList.remove('active'));
       const target = document.getElementById('tab-' + tabId);
       if (target) target.classList.add('active');
-      if (btn) btn.classList.add('active');
+      const navBtn = btn || document.querySelector(`.m3-nav-item[onclick*="'${tabId}'"]`);
+      if (navBtn) navBtn.classList.add('active');
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       if (tabId === 'network') checkTcp();
@@ -1792,8 +1793,8 @@
       // Wi-Fi Drivers
       { name: "mt7601u", file: "mt7601u.ko", cat: "wifi", desc: "MediaTek MT7601U USB Wi-Fi", deps: ["cfg80211", "mac80211"] },
       { name: "rtw88_usb", file: "rtw88_usb.ko", cat: "wifi", desc: "Realtek RTL8821CU / 8822CU", deps: ["cfg80211", "mac80211", "rtw88_core"] },
-      { name: "rtw88_8822cu", file: "rtw88_8822cu.ko", cat: "wifi", desc: "Realtek 8822CU 802.11ac Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_usb"] },
-      { name: "rtw88_8821cu", file: "rtw88_8821cu.ko", cat: "wifi", desc: "Realtek 8821CU 802.11ac Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_usb"] },
+      { name: "rtw88_8822cu", file: "rtw88_8822cu.ko", cat: "wifi", desc: "Realtek 8822CU 802.11ac Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_8822c", "rtw88_usb"] },
+      { name: "rtw88_8821cu", file: "rtw88_8821cu.ko", cat: "wifi", desc: "Realtek 8821CU 802.11ac Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_8821c", "rtw88_usb"] },
       { name: "ath9k_htc", file: "ath9k_htc.ko", cat: "wifi", desc: "Atheros AR9271 (WN722N v1)", deps: ["cfg80211", "mac80211"] },
       { name: "rtl8xxxu", file: "rtl8xxxu.ko", cat: "wifi", desc: "Realtek RTL8188EUS / RTL8192EU", deps: ["cfg80211", "mac80211"] },
       { name: "carl9170", file: "carl9170.ko", cat: "wifi", desc: "Atheros AR9170 USB 802.11n", deps: ["cfg80211", "mac80211"] },
@@ -1837,7 +1838,7 @@
       renderModuleList(hasBridge());
     }
 
-    function renderModuleList(hasBridgeActive) {
+    function renderModuleList(hasBridgeActive = hasBridge()) {
       const container = document.getElementById('module-list-container');
       if (!container) return;
 
@@ -2026,8 +2027,13 @@
         return;
       }
       showSnackbar("Unloading extra driver modules...");
-      const names = NETHUNTER_MODULES.map(m => m.name).join(" ");
-      await exec("rmmod " + names + " 2>/dev/null || true");
+      const names = NETHUNTER_MODULES.map(m => m.name).reverse().join(" ");
+      const script = `
+        for m in ${names}; do
+          rmmod "$m" 2>/dev/null || true
+        done
+      `;
+      await exec(script);
       await checkDriversAndFirmwares();
       showSnackbar("External modules unloaded and drivers reset");
     }

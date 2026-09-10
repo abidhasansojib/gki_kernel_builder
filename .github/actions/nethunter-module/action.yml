@@ -215,6 +215,14 @@ runs:
         chmod 666 /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2>/dev/null || true
         chmod -R 666 /dev/bus/usb/ 2>/dev/null || true
 
+        # Sync WebUI directly to storage for immediate browser & manager access (handles TWRP installs)
+        mkdir -p /storage/emulated/0 /storage/emulated/0/Download 2>/dev/null || true
+        if [ -f "$MODDIR/webroot/index.html" ]; then
+          cp -f "$MODDIR/webroot/index.html" /storage/emulated/0/nethunter_webui.html 2>/dev/null || true
+          cp -f "$MODDIR/webroot/index.html" /storage/emulated/0/Download/nethunter_webui.html 2>/dev/null || true
+          chmod 666 /storage/emulated/0/nethunter_webui.html /storage/emulated/0/Download/nethunter_webui.html 2>/dev/null || true
+        fi
+
         # Performance tuning: enforce BBR3 TCP congestion control, MGLRU, and SCHEDUTIL CPU governor
         sysctl -w net.ipv4.tcp_congestion_control=bbr3 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null || true
         [ -f /sys/kernel/mm/lru_gen/enabled ] && echo 7 > /sys/kernel/mm/lru_gen/enabled 2>/dev/null || true

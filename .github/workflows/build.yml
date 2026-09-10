@@ -469,9 +469,6 @@ jobs:
           kernel_version: "6.12"
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
-      - name: Initialize Config Fragment
-        run: touch "${{ github.workspace }}/gki.fragment"
-
       - name: Build Kernel (with Vendor Module Bypass)
         env:
           SOURCE_DATE_EPOCH: ${{ env.SOURCE_DATE_EPOCH }}
