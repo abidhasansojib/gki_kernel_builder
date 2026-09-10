@@ -483,6 +483,15 @@ jobs:
         with:
           file_name: ${{ steps.extract.outputs.file_name }}
 
+      - name: 📦 Upload NetHunter Module Artifact
+        if: ${{ inputs.use_nethunter }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.extract.outputs.file_name }}-NetHunter-Wireless-Modules
+          path: ${{ github.workspace }}/Nethunter-Wireless-Modules.zip
+          if-no-files-found: warn
+          compression-level: 0
+
       - name: 📱 Fetch Matching Root Manager APK
         uses: ./.github/actions/fetch-root-managers
         with:
