@@ -803,9 +803,9 @@
       </div>
     </div>
     <div style="display: flex; align-items: center; gap: 8px;">
-      <span id="bridge-chip" class="m3-chip success">
+      <span id="bridge-chip" class="m3-chip">
         <span class="m3-chip-dot"></span>
-        <span id="bridge-name">Root Active</span>
+        <span id="bridge-name">Detecting...</span>
       </span>
       <button class="btn-icon-m3" onclick="refreshAll()" title="Refresh Telemetry">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -817,6 +817,18 @@
   </header>
 
   <div class="app-container">
+
+    <!-- No Root Bridge Alert Banner (shown when opened in regular browser) -->
+    <div id="banner-no-bridge" style="display: none; margin-bottom: 12px; padding: 10px 14px; border-radius: var(--md-shape-corner-md); background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); font-size: 12px; line-height: 1.4; color: #fbbf24; align-items: flex-start; gap: 8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <div>
+        <strong>Opened in Web Browser:</strong> Root manager bridge not detected. To manage kernel settings and read real-time telemetry, open this page inside the <strong>KernelSU, SukiSU, or APatch</strong> WebUI manager.
+      </div>
+    </div>
 
     <!-- ==================================================== -->
     <!-- TAB 1: NETWORK & PROTOCOLS                           -->
@@ -830,23 +842,33 @@
             <span class="m3-card-title">TCP Congestion Stack</span>
             <span class="m3-card-subtitle">Throughput & transmission engine</span>
           </div>
-          <span id="badge-tcp" class="m3-chip active">
+          <span id="badge-tcp" class="m3-chip">
             <span class="m3-chip-dot"></span>
-            <span id="badge-tcp-text">BBR</span>
+            <span id="badge-tcp-text">--</span>
           </span>
         </div>
 
-        <div class="m3-telemetry-box">
+        <div class="m3-telemetry-box" style="margin-bottom: 6px;">
           <span class="m3-telemetry-key">Active Algorithm & Qdisc</span>
-          <span class="m3-telemetry-val" id="val-tcp-summary">bbr • fq_codel</span>
+          <span class="m3-telemetry-val" id="val-tcp-summary">--</span>
+        </div>
+
+        <div class="m3-telemetry-box" style="margin-bottom: 8px;">
+          <span class="m3-telemetry-key">Available in Kernel (/proc)</span>
+          <span class="m3-telemetry-val" id="val-tcp-avail" style="font-size: 11px;">--</span>
+        </div>
+
+        <!-- Dynamic Available TCP Protocols Container -->
+        <div id="tcp-chips-container" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
+          <!-- Dynamically populated from /proc/sys/net/ipv4/tcp_available_congestion_control -->
         </div>
 
         <!-- 3 Clean TCP Options -->
         <div class="m3-options-grid">
-          <div id="opt-tcp-bbr3" class="m3-option-card selected" onclick="applyTcp('bbr3')">
+          <div id="opt-tcp-bbr3" class="m3-option-card" onclick="applyTcp('bbr3')">
             <div class="m3-option-header">
               <span class="m3-option-title">BBRv3</span>
-              <span class="m3-chip active">DEFAULT</span>
+              <span class="m3-chip" id="chip-tcp-bbr3">--</span>
             </div>
             <span class="m3-option-desc">Model-based congestion • Max speed & low latency</span>
           </div>
@@ -854,7 +876,7 @@
           <div id="opt-tcp-westwood" class="m3-option-card" onclick="applyTcp('westwood')">
             <div class="m3-option-header">
               <span class="m3-option-title">Westwood+</span>
-              <span class="m3-chip warning">WIRELESS</span>
+              <span class="m3-chip" id="chip-tcp-westwood">--</span>
             </div>
             <span class="m3-option-desc">Loss-tolerant • Unstable Wi-Fi & cellular</span>
           </div>
@@ -862,7 +884,7 @@
           <div id="opt-tcp-cubic" class="m3-option-card" onclick="applyTcp('cubic')">
             <div class="m3-option-header">
               <span class="m3-option-title">CUBIC</span>
-              <span class="m3-chip">STOCK</span>
+              <span class="m3-chip" id="chip-tcp-cubic">--</span>
             </div>
             <span class="m3-option-desc">Standard Android cubic window growth</span>
           </div>
@@ -941,28 +963,28 @@
             <span class="m3-card-title">USB Gadget & HID Subsystem</span>
             <span class="m3-card-subtitle">Android stock default with dynamic HID toggles</span>
           </div>
-          <span id="badge-usb-mode" class="m3-chip success">
+          <span id="badge-usb-mode" class="m3-chip">
             <span class="m3-chip-dot"></span>
-            <span id="badge-usb-text">STOCK MTP</span>
+            <span id="badge-usb-text">--</span>
           </span>
         </div>
 
         <!-- Live Endpoint Indicators & Progress -->
         <div class="m3-telemetry-box" style="margin-bottom: 8px;">
           <span class="m3-telemetry-key">HID Keyboard (/dev/hidg0)</span>
-          <span class="m3-telemetry-val" id="val-hidg0-status" style="color: var(--md-sys-color-on-surface-variant);">DISABLED</span>
+          <span class="m3-telemetry-val" id="val-hidg0-status" style="color: var(--md-sys-color-on-surface-variant);">--</span>
         </div>
         <div class="m3-telemetry-box" style="margin-bottom: 12px;">
           <span class="m3-telemetry-key">HID Mouse (/dev/hidg1)</span>
-          <span class="m3-telemetry-val" id="val-hidg1-status" style="color: var(--md-sys-color-on-surface-variant);">DISABLED</span>
+          <span class="m3-telemetry-val" id="val-hidg1-status" style="color: var(--md-sys-color-on-surface-variant);">--</span>
         </div>
 
         <!-- USB Function Cards -->
         <div class="m3-options-grid">
-          <div id="opt-usb-stock" class="m3-option-card selected" onclick="setUsbMode('stock')">
+          <div id="opt-usb-stock" class="m3-option-card" onclick="setUsbMode('stock')">
             <div class="m3-option-header">
               <span class="m3-option-title">Stock Android</span>
-              <span class="m3-chip active">DEFAULT</span>
+              <span class="m3-chip" id="chip-usb-stock">DEFAULT</span>
             </div>
             <span class="m3-option-desc">Stock MTP + ADB hardware config</span>
           </div>
@@ -1020,7 +1042,7 @@
             <span class="m3-card-title">Available Kernel Modules</span>
             <span class="m3-card-subtitle">Detected in NetHunter module and system</span>
           </div>
-          <span class="m3-chip success" id="badge-modules-count">SCANNING</span>
+          <span class="m3-chip" id="badge-modules-count">--</span>
         </div>
 
         <button class="m3-btn m3-btn-filled" onclick="loadAllAvailableModules()">
@@ -1057,7 +1079,7 @@
             <span class="m3-list-tile-title">mt7601u.bin</span>
             <span class="m3-list-tile-subtitle">MediaTek firmware</span>
           </div>
-          <span id="fw-mt7601u" class="m3-chip">SCANNING</span>
+          <span id="fw-mt7601u" class="m3-chip">--</span>
         </div>
 
         <div class="m3-list-tile" style="cursor: default;">
@@ -1065,7 +1087,7 @@
             <span class="m3-list-tile-title">htc_9271.fw</span>
             <span class="m3-list-tile-subtitle">Atheros AR9271 firmware</span>
           </div>
-          <span id="fw-ath9k" class="m3-chip">SCANNING</span>
+          <span id="fw-ath9k" class="m3-chip">--</span>
         </div>
 
         <div class="m3-list-tile" style="cursor: default;">
@@ -1073,7 +1095,7 @@
             <span class="m3-list-tile-title">rtw8822c_fw.bin</span>
             <span class="m3-list-tile-subtitle">Realtek 8822C firmware</span>
           </div>
-          <span id="fw-rtw88" class="m3-chip">SCANNING</span>
+          <span id="fw-rtw88" class="m3-chip">--</span>
         </div>
 
         <div class="m3-list-tile" style="cursor: default;">
@@ -1081,7 +1103,7 @@
             <span class="m3-list-tile-title">rtl8188eufw.bin</span>
             <span class="m3-list-tile-subtitle">Realtek 8188EU firmware</span>
           </div>
-          <span id="fw-rtl8xxxu" class="m3-chip">SCANNING</span>
+          <span id="fw-rtl8xxxu" class="m3-chip">--</span>
         </div>
       </div>
 
@@ -1107,23 +1129,23 @@
             <span class="m3-card-title">Memory & Cache (MGLRU)</span>
             <span class="m3-card-subtitle">Kernel page reclaim & swap efficiency</span>
           </div>
-          <span id="badge-mglru" class="m3-chip success">
+          <span id="badge-mglru" class="m3-chip">
             <span class="m3-chip-dot"></span>
-            <span>0x0007 ACTIVE</span>
+            <span>--</span>
           </span>
         </div>
 
         <div class="m3-telemetry-box" style="margin-bottom: 6px;">
           <span class="m3-telemetry-key">MGLRU Capabilities</span>
-          <span class="m3-telemetry-val" id="val-mglru-caps">0x0007</span>
+          <span class="m3-telemetry-val" id="val-mglru-caps">--</span>
         </div>
         <div class="m3-telemetry-box" style="margin-bottom: 6px;">
           <span class="m3-telemetry-key">System Memory Available</span>
-          <span class="m3-telemetry-val" id="val-ram-summary">7.8 GB / 12 GB Free</span>
+          <span class="m3-telemetry-val" id="val-ram-summary">--</span>
         </div>
         <div class="m3-telemetry-box" style="margin-bottom: 10px;">
           <span class="m3-telemetry-key">ZRAM Compressed Swap</span>
-          <span class="m3-telemetry-val" id="val-zram-summary">8.0 GB • LZ4</span>
+          <span class="m3-telemetry-val" id="val-zram-summary">--</span>
         </div>
 
         <button class="m3-btn m3-btn-filled" onclick="forceMglru()">
@@ -1146,20 +1168,20 @@
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
           <span style="font-size: 11px; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">VFS Cache Pressure</span>
-          <span style="font-size: 11px; font-weight: 700; color: var(--md-sys-color-primary);" id="val-vfs-pressure">60</span>
+          <span style="font-size: 11px; font-weight: 700; color: var(--md-sys-color-primary);" id="val-vfs-pressure">--</span>
         </div>
         <div class="m3-segmented-control">
           <button id="seg-vfs-50" class="m3-segment-btn" onclick="setVfs(50)">50 (High Cache)</button>
-          <button id="seg-vfs-60" class="m3-segment-btn active" onclick="setVfs(60)">60 (Balanced)</button>
+          <button id="seg-vfs-60" class="m3-segment-btn" onclick="setVfs(60)">60 (Balanced)</button>
           <button id="seg-vfs-100" class="m3-segment-btn" onclick="setVfs(100)">100 (Default)</button>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 4px;">
           <span style="font-size: 11px; font-weight: 600; color: var(--md-sys-color-on-surface-variant);">Kernel Swappiness</span>
-          <span style="font-size: 11px; font-weight: 700; color: var(--md-sys-color-primary);" id="val-swappiness">60</span>
+          <span style="font-size: 11px; font-weight: 700; color: var(--md-sys-color-primary);" id="val-swappiness">--</span>
         </div>
         <div class="m3-segmented-control">
-          <button id="seg-swap-60" class="m3-segment-btn active" onclick="setSwappiness(60)">60 (Stock)</button>
+          <button id="seg-swap-60" class="m3-segment-btn" onclick="setSwappiness(60)">60 (Stock)</button>
           <button id="seg-swap-100" class="m3-segment-btn" onclick="setSwappiness(100)">100 (Balanced)</button>
           <button id="seg-swap-150" class="m3-segment-btn" onclick="setSwappiness(150)">150 (ZRAM)</button>
         </div>
@@ -1204,7 +1226,7 @@
 
         <!-- Terminal Screen Output -->
         <div id="box-console" class="root-term-screen">
-          <div class="term-row-out">Linux 6.12.30 Android GKI Root Shell Ready.</div>
+          <div class="term-row-out">Initializing root shell...</div>
         </div>
 
         <!-- Interactive Command Line -->
@@ -1214,15 +1236,6 @@
           <button class="root-term-btn" onclick="executeCustomCommand()">Run</button>
         </div>
       </div>
-
-      <!-- Reset Terminal Defaults -->
-      <button class="m3-btn m3-btn-reset" onclick="resetTerminalDefaults()" style="margin-top: 10px;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-          <path d="M3 3v5h5"></path>
-        </svg>
-        Reset Terminal Buffer
-      </button>
     </div>
 
   </div>
@@ -1288,22 +1301,37 @@
 
   <script>
     const state = {
-      tcp: "bbr",
-      qdisc: "fq_codel",
+      bridge: null,
+      tcp: "",
+      availableTcps: [],
+      qdisc: "",
       ttl: "stock",
       ipForward: false,
-      optimisticDad: true,
+      optimisticDad: false,
       usbMode: "stock",
       hidg0: false,
       hidg1: false,
-      mglruCaps: "0x0007",
-      vfsPressure: 60,
-      swappiness: 60,
-      zramAlgo: "lz4",
-      zramSize: "8.0 GB",
-      ramSummary: "7.8 GB / 12 GB Free",
-      loadedModules: new Set(["mac80211", "cfg80211", "mt7601u"])
+      mglruCaps: "",
+      vfsPressure: null,
+      swappiness: null,
+      zramAlgo: "",
+      zramSize: "",
+      ramSummary: "",
+      loadedModules: new Set()
     };
+
+    function detectBridge() {
+      if (typeof window.ksu !== 'undefined' && typeof window.ksu.exec === 'function') return "KernelSU";
+      if (typeof window.sukisu !== 'undefined' && typeof window.sukisu.exec === 'function') return "SukiSU";
+      if (typeof window.resukisu !== 'undefined' && typeof window.resukisu.exec === 'function') return "ReSukiSU";
+      if (typeof window.apatch !== 'undefined' && typeof window.apatch.exec === 'function') return "APatch";
+      if (typeof window.KernelSU !== 'undefined' && typeof window.KernelSU.exec === 'function') return "KernelSU";
+      return null;
+    }
+
+    function hasBridge() {
+      return detectBridge() !== null;
+    }
 
     function showSnackbar(msg) {
       if (window.ksu && typeof window.ksu.toast === 'function') {
@@ -1314,14 +1342,21 @@
         try { window.apatch.toast(msg); } catch(e) {}
       }
       const bar = document.getElementById('m3-snackbar');
-      bar.innerText = msg;
-      bar.classList.add('show');
-      clearTimeout(window._sbTimer);
-      window._sbTimer = setTimeout(() => { bar.classList.remove('show'); }, 2200);
+      if (bar) {
+        bar.innerText = msg;
+        bar.classList.add('show');
+        clearTimeout(window._sbTimer);
+        window._sbTimer = setTimeout(() => { bar.classList.remove('show'); }, 2200);
+      }
     }
 
     // Universal Shell Execution Engine
     async function exec(cmd) {
+      const bridge = detectBridge();
+      if (!bridge) {
+        logConsole("[Browser Mode] Shell unavailable: root bridge required for '" + cmd + "'");
+        return null;
+      }
       logConsole("$ " + cmd);
       const runner = (window.ksu && typeof window.ksu.exec === 'function') ? window.ksu.exec.bind(window.ksu) :
                      (window.sukisu && typeof window.sukisu.exec === 'function') ? window.sukisu.exec.bind(window.sukisu) :
@@ -1329,102 +1364,53 @@
                      (window.apatch && typeof window.apatch.exec === 'function') ? window.apatch.exec.bind(window.apatch) :
                      (window.KernelSU && typeof window.KernelSU.exec === 'function') ? window.KernelSU.exec.bind(window.KernelSU) : null;
       
-      if (runner) {
-        try {
-          const res = runner(cmd);
-          if (res instanceof Promise) {
-            const data = await res;
-            return formatOutput(data);
-          }
-          if (typeof res === 'object' || typeof res === 'string') return formatOutput(res);
-        } catch(e) {
-          return new Promise(resolve => {
-            try {
-              runner(cmd, (code, stdout, stderr) => {
-                const out = stdout || stderr || "";
-                if (out.trim()) logConsole(out.trim());
-                resolve(out);
-              });
-            } catch(err) {
-              resolve("");
-            }
-          });
-        }
-      }
+      if (!runner) return null;
 
-      // Root Fallback Simulator
-      return simulateShell(cmd);
+      try {
+        const res = runner(cmd);
+        if (res instanceof Promise) {
+          const data = await res;
+          return formatOutput(data);
+        }
+        if (res !== undefined && res !== null) {
+          return formatOutput(res);
+        }
+      } catch(e) {
+        return new Promise(resolve => {
+          try {
+            runner(cmd, (code, stdout, stderr) => {
+              const out = stdout || stderr || "";
+              if (out && out.trim()) logConsole(out.trim());
+              resolve(out);
+            });
+          } catch(err) {
+            logConsole("Error: " + (err.message || err));
+            resolve(null);
+          }
+        });
+      }
+      return null;
     }
 
     function formatOutput(res) {
-      if (!res) return "";
+      if (res === null || res === undefined) return "";
       if (typeof res === 'string') {
         try {
           const p = JSON.parse(res);
-          const out = p.stdout || p.stderr || res;
-          if (out.trim()) logConsole(out.trim());
-          return out;
+          const out = (p.stdout !== undefined) ? (p.stdout || p.stderr || "") : res;
+          if (out && typeof out === 'string' && out.trim()) logConsole(out.trim());
+          return typeof out === 'string' ? out : JSON.stringify(out);
         } catch(e) {
           if (res.trim()) logConsole(res.trim());
           return res;
         }
       }
       if (typeof res === 'object') {
-        const out = res.stdout || res.stderr || "";
-        if (out.trim()) logConsole(out.trim());
+        const out = (res.stdout !== undefined) ? (res.stdout || res.stderr || "") : JSON.stringify(res);
+        if (out && typeof out === 'string' && out.trim()) logConsole(out.trim());
         return out;
       }
       return String(res);
-    }
-
-    function simulateShell(cmd) {
-      if (cmd.includes("tcp_congestion_control=")) {
-        const m = cmd.match(/tcp_congestion_control=([a-z0-9_]+)/);
-        if (m) state.tcp = m[1];
-      }
-      if (cmd.includes("default_qdisc=")) {
-        const m = cmd.match(/default_qdisc=([a-z0-9_]+)/);
-        if (m) state.qdisc = m[1];
-      }
-      if (cmd.includes("vfs_cache_pressure=")) {
-        const m = cmd.match(/vfs_cache_pressure=([0-9]+)/);
-        if (m) state.vfsPressure = parseInt(m[1]);
-      }
-      if (cmd.includes("swappiness=")) {
-        const m = cmd.match(/swappiness=([0-9]+)/);
-        if (m) state.swappiness = parseInt(m[1]);
-      }
-      if (cmd.includes("cat /proc/sys/net/ipv4/tcp_congestion_control")) return state.tcp;
-      if (cmd.includes("cat /proc/sys/net/core/default_qdisc")) return state.qdisc;
-      if (cmd.includes("cat /proc/sys/net/ipv4/ip_forward")) return state.ipForward ? "1" : "0";
-      if (cmd.includes("cat /proc/sys/net/ipv6/conf/all/optimistic_dad")) return state.optimisticDad ? "1" : "0";
-      if (cmd.includes("ls -l /dev/hidg0")) return state.hidg0 ? "crw-rw---- 1 root root 241, 0 /dev/hidg0" : "";
-      if (cmd.includes("ls -l /dev/hidg1")) return state.hidg1 ? "crw-rw---- 1 root root 241, 1 /dev/hidg1" : "";
-      if (cmd.includes("cat /sys/kernel/mm/lru_gen/enabled")) return state.mglruCaps;
-      if (cmd.includes("cat /proc/sys/vm/vfs_cache_pressure")) return String(state.vfsPressure);
-      if (cmd.includes("cat /proc/sys/vm/swappiness")) return String(state.swappiness);
-      if (cmd.includes("cat /sys/block/zram0/comp_algorithm")) return "[lz4] lzo zstd";
-      if (cmd.includes("cat /sys/block/zram0/disksize")) return "8589934592";
-      if (cmd.includes("cat /proc/meminfo")) return "MemTotal: 12288000 kB\nMemFree: 2154000 kB\nMemAvailable: 7854000 kB\nSwapTotal: 8388608 kB\nSwapFree: 7982000 kB";
-      if (cmd.includes("uname -r")) return "6.12.30-android16-9-gki";
-      if (cmd.includes("uname -a")) return "Linux localhost 6.12.30-android16-9-gki #1 SMP PREEMPT aarch64 Android";
-      if (cmd.includes("dmesg")) return "[    0.000000] Linux version 6.12.30-android16-9-gki\n[    0.142010] NetHunter GKI: HID Gadget Subsystem loaded\n[    0.354120] TCP: Westwood+, BBRv3 registered";
-      if (cmd.includes("free")) return "Mem: 11845M total, 4120M used, 7725M free\nSwap: 8192M total, 350M used";
-      if (cmd.includes("sys/module") || cmd.includes("lsmod") || cmd.includes("/proc/modules")) {
-        return Array.from(state.loadedModules).map(m => "/sys/module/" + m + "\n" + m + " 100000 0").join("\n");
-      }
-      if (cmd.includes("firmware")) return "mt7601u.bin:found\nhtc_9271.fw:found\nrtw8822c_fw.bin:found\nrtl8188eufw.bin:found";
-      if (cmd.includes("ip -br link") || cmd.includes("ifconfig")) return "lo UNKNOWN 00:00:00:00:00:00\nwlan0 UP a4:c3:f0:12:34:56\nwlan1 UP 00:c0:ca:98:76:54\nrmnet_data0 UP 10.42.0.1";
-      return "OK";
-    }
-
-    function detectBridge() {
-      if (window.ksu) return "KernelSU";
-      if (window.sukisu) return "SukiSU";
-      if (window.resukisu) return "ReSukiSU";
-      if (window.apatch) return "APatch";
-      if (window.KernelSU) return "KernelSU";
-      return "Root Active";
     }
 
     function navTo(tabId, btn) {
@@ -1441,42 +1427,122 @@
       if (tabId === 'memory') checkMemory();
     }
 
-    // 1. Network
+    // 1. Network & Dynamic TCP Stack
     async function checkTcp() {
-      const cur = await exec("cat /proc/sys/net/ipv4/tcp_congestion_control 2>/dev/null");
-      const qdisc = await exec("cat /proc/sys/net/core/default_qdisc 2>/dev/null");
-      const ipFwd = await exec("cat /proc/sys/net/ipv4/ip_forward 2>/dev/null");
-      const optDad = await exec("cat /proc/sys/net/ipv6/conf/all/optimistic_dad 2>/dev/null");
+      const badgeTcp = document.getElementById('badge-tcp');
+      const badgeTcpText = document.getElementById('badge-tcp-text');
+      const summary = document.getElementById('val-tcp-summary');
+      const availEl = document.getElementById('val-tcp-avail');
+      const chipsContainer = document.getElementById('tcp-chips-container');
 
-      const trimmed = cur ? cur.trim() : state.tcp;
-      state.tcp = trimmed;
-      const q = qdisc ? qdisc.trim() : state.qdisc;
-      state.qdisc = q;
-
-      document.getElementById('badge-tcp-text').innerText = trimmed.toUpperCase();
-      document.getElementById('val-tcp-summary').innerText = trimmed + " • " + q;
-
-      ['bbr3', 'westwood', 'cubic'].forEach(a => {
-        const el = document.getElementById('opt-tcp-' + a);
-        if (el) {
-          if (trimmed === a || ((trimmed === 'bbr' || trimmed === 'bbr3') && a === 'bbr3')) el.classList.add('selected');
-          else el.classList.remove('selected');
+      if (!hasBridge()) {
+        if (badgeTcp) badgeTcp.className = "m3-chip warning";
+        if (badgeTcpText) badgeTcpText.innerText = "NO BRIDGE";
+        if (summary) summary.innerText = "-- (Bridge Required)";
+        if (availEl) availEl.innerText = "-- (Bridge Required)";
+        if (chipsContainer) {
+          chipsContainer.innerHTML = '<span style="font-size: 11px; color: var(--md-sys-color-outline);">Open in KernelSU / APatch WebUI to read kernel TCP stack</span>';
         }
-      });
+        ['bbr3', 'westwood', 'cubic'].forEach(a => {
+          const el = document.getElementById('opt-tcp-' + a);
+          if (el) el.classList.remove('selected');
+          const chip = document.getElementById('chip-tcp-' + a);
+          if (chip) { chip.innerText = "BRIDGE REQ"; chip.className = "m3-chip"; }
+        });
+        const swFwd = document.getElementById('switch-ip-forward');
+        const subFwd = document.getElementById('sub-ip-forward');
+        if (swFwd) swFwd.classList.remove('checked');
+        if (subFwd) subFwd.innerText = "-- (Bridge Required)";
+        const swDad = document.getElementById('switch-opt-dad');
+        if (swDad) swDad.classList.remove('checked');
+        return;
+      }
 
+      const [cur, avail, qdisc, ipFwd, optDad] = await Promise.all([
+        exec("cat /proc/sys/net/ipv4/tcp_congestion_control 2>/dev/null"),
+        exec("cat /proc/sys/net/ipv4/tcp_available_congestion_control 2>/dev/null"),
+        exec("cat /proc/sys/net/core/default_qdisc 2>/dev/null"),
+        exec("cat /proc/sys/net/ipv4/ip_forward 2>/dev/null"),
+        exec("cat /proc/sys/net/ipv6/conf/all/optimistic_dad 2>/dev/null")
+      ]);
+
+      const trimmedCur = cur ? cur.trim() : "";
+      const trimmedAvail = avail ? avail.trim() : "";
+      const trimmedQ = qdisc ? qdisc.trim() : "";
+
+      state.tcp = trimmedCur || "unknown";
+      state.qdisc = trimmedQ || "unknown";
+      state.availableTcps = trimmedAvail ? trimmedAvail.split(/\s+/).filter(Boolean) : [];
+
+      if (badgeTcpText) badgeTcpText.innerText = state.tcp.toUpperCase();
+      if (badgeTcp) badgeTcp.className = "m3-chip success";
+      if (summary) summary.innerText = state.tcp + " • " + state.qdisc;
+      if (availEl) availEl.innerText = state.availableTcps.length ? state.availableTcps.join(", ") : "--";
+
+      // Render interactive buttons for all detected available TCP protocols
+      if (chipsContainer) {
+        if (state.availableTcps.length > 0) {
+          chipsContainer.innerHTML = state.availableTcps.map(p => {
+            const isCur = (p === state.tcp) || (p === 'bbr' && state.tcp === 'bbr3');
+            const cls = isCur ? "root-term-chip active" : "root-term-chip";
+            const style = isCur ? "border-color: var(--md-sys-color-primary); font-weight: 700;" : "";
+            return `<button class="${cls}" style="${style}" onclick="applyTcp('${p}')">${p.toUpperCase()}${isCur ? ' (ACTIVE)' : ''}</button>`;
+          }).join(" ");
+        } else {
+          chipsContainer.innerHTML = '<span style="font-size: 11px; color: var(--md-sys-color-outline);">No protocols returned by /proc</span>';
+        }
+      }
+
+      // Check presets availability
+      const hasBbr = state.availableTcps.includes('bbr') || state.availableTcps.includes('bbr3');
+      const hasWestwood = state.availableTcps.includes('westwood');
+      const hasCubic = state.availableTcps.includes('cubic');
+
+      const updateCard = (id, targetAlgo, isAvailable, defaultBadge) => {
+        const card = document.getElementById('opt-tcp-' + id);
+        const chip = document.getElementById('chip-tcp-' + id);
+        const isSelected = (state.tcp === targetAlgo) || (id === 'bbr3' && (state.tcp === 'bbr' || state.tcp === 'bbr3'));
+        if (card) card.classList.toggle('selected', isSelected);
+        if (chip) {
+          if (isSelected) {
+            chip.innerText = "ACTIVE";
+            chip.className = "m3-chip success";
+          } else if (isAvailable) {
+            chip.innerText = defaultBadge;
+            chip.className = "m3-chip";
+          } else {
+            chip.innerText = "NOT BUILTIN";
+            chip.className = "m3-chip warning";
+          }
+        }
+      };
+
+      updateCard('bbr3', 'bbr3', hasBbr, 'RECOMMENDED');
+      updateCard('westwood', 'westwood', hasWestwood, 'WIRELESS');
+      updateCard('cubic', 'cubic', hasCubic, 'STOCK');
+
+      // Packet Scheduler (Qdisc)
       document.querySelectorAll('[id^="seg-qdisc-"]').forEach(el => el.classList.remove('active'));
-      const activeQ = document.getElementById('seg-qdisc-' + q);
+      const activeQ = document.getElementById('seg-qdisc-' + state.qdisc);
       if (activeQ) activeQ.classList.add('active');
 
+      // Switches
       state.ipForward = ipFwd && ipFwd.trim() === "1";
-      document.getElementById('switch-ip-forward').classList.toggle('checked', state.ipForward);
-      document.getElementById('sub-ip-forward').innerText = state.ipForward ? "Routing enabled (1)" : "Routing disabled (0)";
+      const swFwd = document.getElementById('switch-ip-forward');
+      const subFwd = document.getElementById('sub-ip-forward');
+      if (swFwd) swFwd.classList.toggle('checked', state.ipForward);
+      if (subFwd) subFwd.innerText = state.ipForward ? "Routing enabled (1)" : "Routing disabled (0)";
 
       state.optimisticDad = optDad && optDad.trim() === "1";
-      document.getElementById('switch-opt-dad').classList.toggle('checked', state.optimisticDad);
+      const swDad = document.getElementById('switch-opt-dad');
+      if (swDad) swDad.classList.toggle('checked', state.optimisticDad);
     }
 
     async function applyTcp(algo) {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       state.tcp = algo;
       if (algo === 'bbr3') await exec("sysctl -w net.ipv4.tcp_congestion_control=bbr3 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=bbr");
       else await exec("sysctl -w net.ipv4.tcp_congestion_control=" + algo);
@@ -1485,11 +1551,19 @@
     }
 
     async function saveTcpBootDefault() {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       await exec(`mkdir -p /data/adb/service.d && printf '#!/system/bin/sh\\nsysctl -w net.ipv4.tcp_congestion_control=${state.tcp}\\n' > /data/adb/service.d/00-tcp.sh && chmod 0755 /data/adb/service.d/00-tcp.sh`);
       showSnackbar("Saved " + state.tcp + " as boot default");
     }
 
     async function applyQdisc(qdisc) {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       state.qdisc = qdisc;
       await exec("sysctl -w net.core.default_qdisc=" + qdisc);
       showSnackbar("Qdisc set to " + qdisc);
@@ -1497,6 +1571,10 @@
     }
 
     async function setTtl(val) {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       state.ttl = String(val);
       document.querySelectorAll('[id^="seg-ttl-"]').forEach(el => el.classList.remove('active'));
       const t = document.getElementById('seg-ttl-' + val);
@@ -1512,6 +1590,10 @@
     }
 
     async function toggleIpForward() {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       state.ipForward = !state.ipForward;
       const val = state.ipForward ? "1" : "0";
       await exec("sysctl -w net.ipv4.ip_forward=" + val);
@@ -1521,6 +1603,10 @@
     }
 
     async function toggleOptimisticDad() {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       state.optimisticDad = !state.optimisticDad;
       const val = state.optimisticDad ? "1" : "0";
       await exec("sysctl -w net.ipv6.conf.all.optimistic_dad=" + val);
@@ -1529,25 +1615,46 @@
     }
 
     async function resetNetworkDefaults() {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       showSnackbar("Restoring network settings to defaults...");
       await exec("sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=cubic; sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 64 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 65 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 64 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 65 2>/dev/null; sysctl -w net.ipv4.ip_forward=0 2>/dev/null; sysctl -w net.ipv6.conf.all.optimistic_dad=1 2>/dev/null; rm -f /data/adb/service.d/00-tcp.sh 2>/dev/null; rm -f /data/adb/service.d/01-ttl.sh 2>/dev/null || true");
       await checkTcp();
-      showSnackbar("Network settings reset to defaults (BBRv3, FQ_Codel, Stock TTL)");
+      showSnackbar("Network settings reset to defaults");
     }
 
     // 2. USB & HID Subsystem
     async function checkUsbStatus() {
-      const h0 = await exec("ls -l /dev/hidg0 2>/dev/null");
-      const h1 = await exec("ls -l /dev/hidg1 2>/dev/null");
-
-      state.hidg0 = Boolean(h0 && h0.includes('/dev/hidg0'));
-      state.hidg1 = Boolean(h1 && h1.includes('/dev/hidg1'));
-
       const elH0 = document.getElementById('val-hidg0-status');
       const elH1 = document.getElementById('val-hidg1-status');
+      const badge = document.getElementById('badge-usb-text');
+      const badgeChip = document.getElementById('badge-usb-mode');
+
+      if (!hasBridge()) {
+        if (elH0) { elH0.innerText = "-- (Bridge Required)"; elH0.style.color = "var(--md-sys-color-on-surface-variant)"; }
+        if (elH1) { elH1.innerText = "-- (Bridge Required)"; elH1.style.color = "var(--md-sys-color-on-surface-variant)"; }
+        if (badge) badge.innerText = "NO BRIDGE";
+        if (badgeChip) badgeChip.className = "m3-chip warning";
+        ['stock', 'hid', 'storage', 'rndis'].forEach(m => {
+          const c = document.getElementById('opt-usb-' + m);
+          if (c) c.classList.remove('selected');
+        });
+        return;
+      }
+
+      const [h0, h1, usbCfg] = await Promise.all([
+        exec("[ -c /dev/hidg0 ] && echo '1' || echo '0'"),
+        exec("[ -c /dev/hidg1 ] && echo '1' || echo '0'"),
+        exec("getprop sys.usb.config 2>/dev/null")
+      ]);
+
+      state.hidg0 = (h0 && h0.trim() === '1');
+      state.hidg1 = (h1 && h1.trim() === '1');
 
       if (state.hidg0) {
-        elH0.innerText = "ENABLED (" + (h0.split(" ")[0] || "crw-rw----") + ")";
+        elH0.innerText = "ENABLED (/dev/hidg0)";
         elH0.style.color = "var(--md-sys-color-success)";
       } else {
         elH0.innerText = "DISABLED";
@@ -1555,38 +1662,46 @@
       }
 
       if (state.hidg1) {
-        elH1.innerText = "ENABLED (" + (h1.split(" ")[0] || "crw-rw----") + ")";
+        elH1.innerText = "ENABLED (/dev/hidg1)";
         elH1.style.color = "var(--md-sys-color-success)";
       } else {
         elH1.innerText = "DISABLED";
         elH1.style.color = "var(--md-sys-color-on-surface-variant)";
       }
 
-      const badge = document.getElementById('badge-usb-text');
-      if (state.hidg0) {
+      const cfg = (usbCfg || "").toLowerCase();
+
+      if (state.hidg0 || state.hidg1) {
         badge.innerText = "HID ACTIVE";
-        document.getElementById('badge-usb-mode').className = "m3-chip success";
-      } else if (state.usbMode === 'storage') {
+        badgeChip.className = "m3-chip success";
+        state.usbMode = 'hid';
+      } else if (cfg.includes('mass_storage')) {
         badge.innerText = "MASS STORAGE";
-        document.getElementById('badge-usb-mode').className = "m3-chip active";
-      } else if (state.usbMode === 'rndis') {
+        badgeChip.className = "m3-chip active";
+        state.usbMode = 'storage';
+      } else if (cfg.includes('rndis')) {
         badge.innerText = "RNDIS ACTIVE";
-        document.getElementById('badge-usb-mode').className = "m3-chip active";
+        badgeChip.className = "m3-chip active";
+        state.usbMode = 'rndis';
       } else {
-        badge.innerText = "STOCK MTP";
-        document.getElementById('badge-usb-mode').className = "m3-chip";
+        badge.innerText = "STOCK ANDROID";
+        badgeChip.className = "m3-chip";
+        state.usbMode = 'stock';
       }
 
       ['stock', 'hid', 'storage', 'rndis'].forEach(m => {
         const c = document.getElementById('opt-usb-' + m);
         if (c) {
-          if (m === state.usbMode) c.classList.add('selected');
-          else c.classList.remove('selected');
+          c.classList.toggle('selected', m === state.usbMode);
         }
       });
     }
 
     async function setUsbMode(mode) {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       state.usbMode = mode;
       showSnackbar("Configuring USB mode: " + mode.toUpperCase() + "...");
 
@@ -1652,6 +1767,10 @@
     }
 
     async function injectTestKeystroke() {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       showSnackbar("Sending scan code 0x04 ('a') to /dev/hidg0...");
       await exec("printf '\\000\\000\\004\\000\\000\\000\\000\\000' > /dev/hidg0 2>/dev/null && printf '\\000\\000\\000\\000\\000\\000\\000\\000' > /dev/hidg0 2>/dev/null && echo 'OK'");
       showSnackbar("Keystroke scan code transmitted to /dev/hidg0");
@@ -1659,6 +1778,10 @@
     }
 
     async function resetUsbDefaults() {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       showSnackbar("Restoring USB to Stock Android (MTP + ADB)...");
       await setUsbMode('stock');
       showSnackbar("USB reset to Stock Android (MTP + ADB, HID disabled)");
@@ -1711,10 +1834,10 @@
       document.querySelectorAll('[id^="filter-mod-"]').forEach(el => el.classList.remove('active'));
       const activeBtn = document.getElementById('filter-mod-' + cat);
       if (activeBtn) activeBtn.classList.add('active');
-      renderModuleList();
+      renderModuleList(hasBridge());
     }
 
-    function renderModuleList() {
+    function renderModuleList(hasBridgeActive) {
       const container = document.getElementById('module-list-container');
       if (!container) return;
 
@@ -1722,12 +1845,25 @@
 
       let html = "";
       filtered.forEach(mod => {
-        const isLoaded = state.loadedModules.has(mod.name) || state.loadedModules.has(mod.name.replace(/_/g, '-'));
-        const chipClass = isLoaded ? "m3-chip success" : "m3-chip";
-        const chipText = isLoaded ? "LOADED" : "AVAILABLE";
-        const actionBtn = isLoaded
-          ? `<button class="root-term-chip" style="color: var(--md-sys-color-error); border-color: rgba(255,180,171,0.35);" onclick="unloadModule('${mod.name}')">Unload</button>`
-          : `<button class="root-term-chip" style="color: var(--md-sys-color-primary); border-color: var(--md-sys-color-primary);" onclick="autoLoadModule('${mod.name}')">+ Load</button>`;
+        let chipClass = "m3-chip";
+        let chipText = "AVAILABLE";
+        let actionBtn = "";
+
+        if (!hasBridgeActive) {
+          chipText = "BRIDGE REQ";
+          actionBtn = `<button class="root-term-chip" style="opacity: 0.5;" onclick="showSnackbar('Root bridge required: open in KernelSU / APatch')">Bridge Req</button>`;
+        } else {
+          const isLoaded = state.loadedModules.has(mod.name) || state.loadedModules.has(mod.name.replace(/_/g, '-'));
+          if (isLoaded) {
+            chipClass = "m3-chip success";
+            chipText = "LOADED";
+            actionBtn = `<button class="root-term-chip" style="color: var(--md-sys-color-error); border-color: rgba(255,180,171,0.35);" onclick="unloadModule('${mod.name}')">Unload</button>`;
+          } else {
+            chipClass = "m3-chip";
+            chipText = "AVAILABLE";
+            actionBtn = `<button class="root-term-chip" style="color: var(--md-sys-color-primary); border-color: var(--md-sys-color-primary);" onclick="autoLoadModule('${mod.name}')">+ Load</button>`;
+          }
+        }
 
         html += `
           <div class="m3-list-tile" style="margin-bottom: 6px; padding: 8px 10px;">
@@ -1750,30 +1886,49 @@
     }
 
     async function checkDriversAndFirmwares() {
-      const modules = await exec("ls -d /sys/module/* 2>/dev/null || cat /proc/modules 2>/dev/null");
-      const list = modules ? modules.toLowerCase() : "";
+      const badgeCount = document.getElementById('badge-modules-count');
+
+      if (!hasBridge()) {
+        if (badgeCount) {
+          badgeCount.innerText = "BRIDGE REQUIRED";
+          badgeCount.className = "m3-chip warning";
+        }
+        ['fw-mt7601u', 'fw-ath9k', 'fw-rtw88', 'fw-rtl8xxxu'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) { el.innerText = "BRIDGE REQUIRED"; el.className = "m3-chip"; }
+        });
+        renderModuleList(false);
+        return;
+      }
+
+      const [modules, fwCheck] = await Promise.all([
+        exec("cat /proc/modules 2>/dev/null || ls -1 /sys/module 2>/dev/null"),
+        exec(`for f in mt7601u.bin htc_9271.fw rtw8822c_fw.bin rtl8188eufw.bin; do for d in /vendor/firmware /system/etc/firmware /data/adb/modules/nethunter_wireless_modules/firmware /lib/firmware; do [ -f "$d/$f" ] && echo "$f:found" && break; done; done`)
+      ]);
+
+      const list = modules ? ("\n" + modules.toLowerCase() + "\n") : "";
 
       state.loadedModules.clear();
       NETHUNTER_MODULES.forEach(m => {
         const norm = m.name.toLowerCase();
         const alt = norm.replace(/_/g, '-');
-        if (list.includes("/" + norm) || list.includes(" " + norm + " ") || list.startsWith(norm + " ") ||
-            list.includes("/" + alt) || list.includes(" " + alt + " ") || list.startsWith(alt + " ")) {
+        if (list.includes("\n" + norm + " ") || list.includes("\n" + norm + "\n") ||
+            list.includes("\n" + alt + " ") || list.includes("\n" + alt + "\n")) {
           state.loadedModules.add(m.name);
         }
       });
 
       const loadedCount = state.loadedModules.size;
       const totalCount = NETHUNTER_MODULES.length;
-      const badgeCount = document.getElementById('badge-modules-count');
-      if (badgeCount) badgeCount.innerText = `${loadedCount} LOADED • ${totalCount} IN MODULE`;
+      if (badgeCount) {
+        badgeCount.innerText = `${loadedCount} LOADED • ${totalCount} AVAILABLE`;
+        badgeCount.className = loadedCount > 0 ? "m3-chip success" : "m3-chip";
+      }
 
-      renderModuleList();
+      renderModuleList(true);
 
-      // Detect Firmwares
-      const fwCheck = await exec(`for f in mt7601u.bin htc_9271.fw rtw8822c_fw.bin rtl8188eufw.bin; do for d in /vendor/firmware /system/etc/firmware /data/adb/modules/nethunter_wireless_modules/firmware /lib/firmware; do [ -f "$d/$f" ] && echo "$f:found" && break; done; done`);
+      // Real-time firmware detection
       const fwStr = fwCheck ? fwCheck.toLowerCase() : "";
-
       const updateFw = (id, fname) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -1789,6 +1944,10 @@
     }
 
     async function autoLoadModule(modName) {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       showSnackbar("Auto-loading " + modName + " from NetHunter module...");
       const target = NETHUNTER_MODULES.find(m => m.name === modName);
       const deps = (target && target.deps) ? target.deps : [];
@@ -1819,6 +1978,10 @@
     }
 
     async function unloadModule(modName) {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       showSnackbar("Unloading " + modName + "...");
       await exec("rmmod " + modName + " 2>/dev/null || rmmod " + modName.replace(/_/g, '-') + " 2>/dev/null || true");
       state.loadedModules.delete(modName);
@@ -1827,6 +1990,10 @@
     }
 
     async function loadAllAvailableModules() {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       showSnackbar("Auto-loading all available NetHunter modules...");
       const script = `
         MDIR=""
@@ -1849,94 +2016,142 @@
         fi
       `;
       await exec(script);
-      NETHUNTER_MODULES.forEach(m => state.loadedModules.add(m.name));
       await checkDriversAndFirmwares();
       showSnackbar("All NetHunter modules synchronized");
     }
 
     async function resetDriversDefaults() {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       showSnackbar("Unloading extra driver modules...");
       const names = NETHUNTER_MODULES.map(m => m.name).join(" ");
       await exec("rmmod " + names + " 2>/dev/null || true");
-      state.loadedModules.clear();
-      state.loadedModules.add("mac80211");
-      state.loadedModules.add("cfg80211");
       await checkDriversAndFirmwares();
       showSnackbar("External modules unloaded and drivers reset");
     }
 
-    // 4. Memory & MGLRU
+    // 4. Memory & Dynamic MGLRU
     async function checkMemory() {
-      const mglru = await exec("cat /sys/kernel/mm/lru_gen/enabled 2>/dev/null");
-      const vfs = await exec("cat /proc/sys/vm/vfs_cache_pressure 2>/dev/null");
-      const swap = await exec("cat /proc/sys/vm/swappiness 2>/dev/null");
-      const zramAlgo = await exec("cat /sys/block/zram0/comp_algorithm 2>/dev/null");
-      const zramSize = await exec("cat /sys/block/zram0/disksize 2>/dev/null");
-      const meminfo = await exec("cat /proc/meminfo 2>/dev/null");
-
-      const mglruVal = mglru ? mglru.trim() : state.mglruCaps;
-      state.mglruCaps = mglruVal;
-      const elMglru = document.getElementById('val-mglru-caps');
-      if (elMglru) elMglru.innerText = mglruVal;
-
       const badgeMglru = document.getElementById('badge-mglru');
-      if (badgeMglru) {
-        const isActive = mglruVal.includes('0x') || mglruVal === '1' || mglruVal === '7';
-        badgeMglru.className = isActive ? "m3-chip success" : "m3-chip";
-        badgeMglru.innerHTML = `<span class="m3-chip-dot"></span><span>${isActive ? 'ACTIVE (' + mglruVal + ')' : 'INACTIVE'}</span>`;
+      const elMglru = document.getElementById('val-mglru-caps');
+      const elRam = document.getElementById('val-ram-summary');
+      const elZram = document.getElementById('val-zram-summary');
+      const elVfs = document.getElementById('val-vfs-pressure');
+      const elSwap = document.getElementById('val-swappiness');
+
+      if (!hasBridge()) {
+        if (badgeMglru) {
+          badgeMglru.className = "m3-chip warning";
+          badgeMglru.innerHTML = `<span class="m3-chip-dot"></span><span>BRIDGE REQUIRED</span>`;
+        }
+        if (elMglru) elMglru.innerText = "-- (Bridge Required)";
+        if (elRam) elRam.innerText = "-- (Bridge Required)";
+        if (elZram) elZram.innerText = "-- (Bridge Required)";
+        if (elVfs) elVfs.innerText = "--";
+        if (elSwap) elSwap.innerText = "--";
+        document.querySelectorAll('[id^="seg-vfs-"]').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('[id^="seg-swap-"]').forEach(el => el.classList.remove('active'));
+        return;
       }
 
-      const vfsVal = vfs ? vfs.trim() : String(state.vfsPressure);
-      state.vfsPressure = parseInt(vfsVal) || 60;
-      const elVfs = document.getElementById('val-vfs-pressure');
-      if (elVfs) elVfs.innerText = vfsVal;
+      const [mglru, vfs, swap, zramAlgo, zramSize, meminfo] = await Promise.all([
+        exec("cat /sys/kernel/mm/lru_gen/enabled 2>/dev/null"),
+        exec("cat /proc/sys/vm/vfs_cache_pressure 2>/dev/null"),
+        exec("cat /proc/sys/vm/swappiness 2>/dev/null"),
+        exec("cat /sys/block/zram0/comp_algorithm 2>/dev/null"),
+        exec("cat /sys/block/zram0/disksize 2>/dev/null"),
+        exec("cat /proc/meminfo 2>/dev/null")
+      ]);
 
-      document.querySelectorAll('[id^="seg-vfs-"]').forEach(el => el.classList.remove('active'));
-      const activeVfs = document.getElementById('seg-vfs-' + state.vfsPressure);
-      if (activeVfs) activeVfs.classList.add('active');
+      // MGLRU Check
+      const mglruVal = mglru ? mglru.trim() : "";
+      state.mglruCaps = mglruVal;
+      if (elMglru) elMglru.innerText = mglruVal || "Not Supported";
+      if (badgeMglru) {
+        const isActive = mglruVal && (mglruVal.includes('0x') ? parseInt(mglruVal, 16) > 0 : parseInt(mglruVal, 10) > 0);
+        badgeMglru.className = isActive ? "m3-chip success" : "m3-chip";
+        badgeMglru.innerHTML = `<span class="m3-chip-dot"></span><span>${isActive ? 'ACTIVE (' + mglruVal + ')' : (mglruVal ? 'DISABLED' : 'NOT SUPPORTED')}</span>`;
+      }
 
-      const swapVal = swap ? swap.trim() : String(state.swappiness);
-      state.swappiness = parseInt(swapVal) || 60;
-      const elSwap = document.getElementById('val-swappiness');
-      if (elSwap) elSwap.innerText = swapVal;
+      // Real-time RAM parse from /proc/meminfo
+      if (meminfo) {
+        let totalKb = 0, availKb = 0, freeKb = 0, buffersKb = 0, cachedKb = 0;
+        const mTot = meminfo.match(/MemTotal:\s+(\d+)\s+kB/i);
+        const mAvail = meminfo.match(/MemAvailable:\s+(\d+)\s+kB/i);
+        const mFree = meminfo.match(/MemFree:\s+(\d+)\s+kB/i);
+        const mBuf = meminfo.match(/Buffers:\s+(\d+)\s+kB/i);
+        const mCached = meminfo.match(/^Cached:\s+(\d+)\s+kB/im);
 
-      document.querySelectorAll('[id^="seg-swap-"]').forEach(el => el.classList.remove('active'));
-      const activeSwap = document.getElementById('seg-swap-' + state.swappiness);
-      if (activeSwap) activeSwap.classList.add('active');
+        if (mTot) totalKb = parseInt(mTot[1], 10);
+        if (mAvail) availKb = parseInt(mAvail[1], 10);
+        if (mFree) freeKb = parseInt(mFree[1], 10);
+        if (mBuf) buffersKb = parseInt(mBuf[1], 10);
+        if (mCached) cachedKb = parseInt(mCached[1], 10);
 
-      let algoStr = state.zramAlgo;
+        if (!availKb && freeKb) {
+          availKb = freeKb + buffersKb + cachedKb;
+        }
+
+        if (totalKb > 0) {
+          const totalGb = (totalKb / (1024 * 1024)).toFixed(1);
+          const availGb = (availKb / (1024 * 1024)).toFixed(1);
+          const usedGb = (Math.max(0, totalKb - availKb) / (1024 * 1024)).toFixed(1);
+          state.ramSummary = `${availGb} GB Free / ${totalGb} GB (${usedGb} GB used)`;
+        } else {
+          state.ramSummary = "Parsing failed";
+        }
+      } else {
+        state.ramSummary = "Telemetry unavailable";
+      }
+      if (elRam) elRam.innerText = state.ramSummary;
+
+      // ZRAM
+      let algoStr = "";
       if (zramAlgo) {
-        const m = zramAlgo.match(/\[([a-z0-9_-]+)\]/);
+        const m = zramAlgo.match(/\[([a-z0-9_-]+)\]/i);
         algoStr = m ? m[1] : zramAlgo.trim();
       }
       state.zramAlgo = algoStr;
 
-      let sizeStr = state.zramSize;
-      if (zramSize && !isNaN(zramSize)) {
-        sizeStr = (parseInt(zramSize) / (1024 * 1024 * 1024)).toFixed(1) + " GB";
+      let sizeStr = "";
+      if (zramSize && !isNaN(zramSize.trim())) {
+        const bytes = parseInt(zramSize.trim(), 10);
+        if (bytes >= 1073741824) {
+          sizeStr = (bytes / 1073741824).toFixed(1) + " GB";
+        } else {
+          sizeStr = Math.round(bytes / 1048576) + " MB";
+        }
       }
       state.zramSize = sizeStr;
 
-      const elZram = document.getElementById('val-zram-summary');
-      if (elZram) elZram.innerText = sizeStr + " • " + algoStr.toUpperCase();
+      if (elZram) elZram.innerText = (sizeStr && algoStr) ? `${sizeStr} • ${algoStr.toUpperCase()}` : (sizeStr || algoStr || "Disabled");
 
-      if (meminfo) {
-        let totalKb = 0, availKb = 0;
-        const mTot = meminfo.match(/MemTotal:\s+(\d+)\s+kB/);
-        const mAvail = meminfo.match(/MemAvailable:\s+(\d+)\s+kB/);
-        if (mTot) totalKb = parseInt(mTot[1]);
-        if (mAvail) availKb = parseInt(mAvail[1]);
-        if (totalKb > 0 && availKb > 0) {
-          const availGb = (availKb / (1024 * 1024)).toFixed(1);
-          const totalGb = (totalKb / (1024 * 1024)).toFixed(1);
-          state.ramSummary = `${availGb} GB / ${totalGb} GB Free`;
-        }
+      // VFS Cache Pressure
+      if (vfs) {
+        state.vfsPressure = parseInt(vfs.trim(), 10) || 60;
+        if (elVfs) elVfs.innerText = String(state.vfsPressure);
+        document.querySelectorAll('[id^="seg-vfs-"]').forEach(el => el.classList.remove('active'));
+        const activeVfs = document.getElementById('seg-vfs-' + state.vfsPressure);
+        if (activeVfs) activeVfs.classList.add('active');
       }
-      const elRam = document.getElementById('val-ram-summary');
-      if (elRam) elRam.innerText = state.ramSummary;
+
+      // Swappiness
+      if (swap) {
+        state.swappiness = parseInt(swap.trim(), 10) || 60;
+        if (elSwap) elSwap.innerText = String(state.swappiness);
+        document.querySelectorAll('[id^="seg-swap-"]').forEach(el => el.classList.remove('active'));
+        const activeSwap = document.getElementById('seg-swap-' + state.swappiness);
+        if (activeSwap) activeSwap.classList.add('active');
+      }
     }
 
     async function forceMglru() {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       state.mglruCaps = "0x0007";
       await exec("echo 7 > /sys/kernel/mm/lru_gen/enabled 2>/dev/null || echo 1 > /sys/kernel/mm/lru_gen/enabled || true");
       await checkMemory();
@@ -1944,6 +2159,10 @@
     }
 
     async function dropCaches() {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       showSnackbar("Reclaiming inactive file & page cache...");
       await exec("sync && echo 3 > /proc/sys/vm/drop_caches");
       await checkMemory();
@@ -1951,6 +2170,10 @@
     }
 
     async function setVfs(val) {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       state.vfsPressure = val;
       await exec("sysctl -w vm.vfs_cache_pressure=" + val);
       document.querySelectorAll('[id^="seg-vfs-"]').forEach(el => el.classList.remove('active'));
@@ -1962,6 +2185,10 @@
     }
 
     async function setSwappiness(val) {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       state.swappiness = val;
       await exec("sysctl -w vm.swappiness=" + val);
       document.querySelectorAll('[id^="seg-swap-"]').forEach(el => el.classList.remove('active'));
@@ -1973,13 +2200,17 @@
     }
 
     async function resetMemoryDefaults() {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        return;
+      }
       showSnackbar("Restoring memory & MGLRU to kernel defaults...");
       await exec("sysctl -w vm.vfs_cache_pressure=100 2>/dev/null; sysctl -w vm.swappiness=60 2>/dev/null; echo 7 > /sys/kernel/mm/lru_gen/enabled 2>/dev/null || echo 1 > /sys/kernel/mm/lru_gen/enabled 2>/dev/null; rm -f /data/adb/service.d/00-memory.sh 2>/dev/null || true");
       await checkMemory();
       showSnackbar("Memory & MGLRU reset to kernel defaults");
     }
 
-    // 4. Root Terminal Engine
+    // 5. Root Terminal Engine
     const termHistory = [];
     let termHistoryIdx = -1;
 
@@ -1987,12 +2218,13 @@
       const box = document.getElementById('box-console');
       if (!box) return;
       const trimmed = (text || "").trim();
+      if (!trimmed) return;
       const div = document.createElement('div');
 
       if (trimmed.startsWith("$ ")) {
         div.className = "term-row-cmd";
         div.innerHTML = `<span class="term-prompt-hash">#</span><span>${trimmed.substring(2)}</span>`;
-      } else if (trimmed.toLowerCase().includes("error") || trimmed.toLowerCase().includes("failed") || trimmed.toLowerCase().includes("permission denied")) {
+      } else if (trimmed.toLowerCase().includes("error") || trimmed.toLowerCase().includes("failed") || trimmed.toLowerCase().includes("permission denied") || trimmed.includes("unavailable")) {
         div.className = "term-row-err";
         div.innerText = trimmed;
       } else {
@@ -2039,6 +2271,15 @@
       termHistory.push(cmd);
       termHistoryIdx = termHistory.length;
       input.value = "";
+
+      if (!hasBridge()) {
+        logConsole("$ " + cmd);
+        logConsole("Error: Cannot execute command. Root bridge not attached.");
+        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        input.focus();
+        return;
+      }
+
       await exec(cmd);
       input.focus();
     }
@@ -2058,26 +2299,43 @@
       }
     }
 
-    function resetTerminalDefaults() {
-      termHistory.length = 0;
-      termHistoryIdx = -1;
-      const input = document.getElementById('term-input');
-      if (input) input.value = "";
-      const box = document.getElementById('box-console');
-      if (box) box.innerHTML = '<div class="term-row-out">Terminal buffer reset. Root shell ready.</div>';
-      showSnackbar("Terminal buffer reset");
-    }
-
     // Master Refresh
     async function refreshAll() {
       const bridge = detectBridge();
-      const el = document.getElementById('bridge-name');
-      if (el) el.innerText = bridge;
+      const elBridge = document.getElementById('bridge-name');
+      const chipBridge = document.getElementById('bridge-chip');
+      const bannerNoBridge = document.getElementById('banner-no-bridge');
+
+      if (bridge) {
+        if (elBridge) elBridge.innerText = bridge;
+        if (chipBridge) chipBridge.className = "m3-chip success";
+        if (bannerNoBridge) bannerNoBridge.style.display = "none";
+      } else {
+        if (elBridge) elBridge.innerText = "No Root Bridge";
+        if (chipBridge) chipBridge.className = "m3-chip warning";
+        if (bannerNoBridge) bannerNoBridge.style.display = "flex";
+      }
+
+      // Initialize terminal prompt status message if clean
+      const box = document.getElementById('box-console');
+      if (box && (!box.innerHTML || box.innerHTML.includes('Initializing') || box.innerHTML.includes('Terminal buffer cleared'))) {
+        if (bridge) {
+          box.innerHTML = `<div class="term-row-out">[${bridge} Root Bridge Attached] Linux root shell ready.</div>`;
+        } else {
+          box.innerHTML = `<div class="term-row-err">[No Root Bridge Detected] Opened in standard browser mode.</div><div class="term-row-out">To run root commands and control kernel settings, open this WebUI inside KernelSU, SukiSU, or APatch Manager.</div>`;
+        }
+      }
+
       await checkTcp();
       await checkUsbStatus();
       await checkDriversAndFirmwares();
       await checkMemory();
-      showSnackbar("Telemetry updated");
+
+      if (bridge) {
+        showSnackbar("Kernel telemetry updated (" + bridge + ")");
+      } else {
+        showSnackbar("Browser Mode: Root bridge required for live controls");
+      }
     }
 
     window.addEventListener('DOMContentLoaded', refreshAll);
