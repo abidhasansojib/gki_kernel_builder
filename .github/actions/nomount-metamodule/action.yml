@@ -63,16 +63,24 @@ runs:
         (
           cd "$ko_loader_dir"
           make TARGET=aarch64-linux
-          mv ko-loader "$source_dir/bin/ko-loader-arm64"
+          bin_name="lkmloader"
+          [ -f "ko-loader" ] && bin_name="ko-loader"
+          cp -f "$bin_name" "$source_dir/bin/lkmloader-arm64"
+          cp -f "$bin_name" "$source_dir/bin/ko-loader-arm64"
           make clean
           make TARGET=arm-linux
-          mv ko-loader "$source_dir/bin/ko-loader-arm"
+          bin_name="lkmloader"
+          [ -f "ko-loader" ] && bin_name="ko-loader"
+          cp -f "$bin_name" "$source_dir/bin/lkmloader-arm"
+          cp -f "$bin_name" "$source_dir/bin/ko-loader-arm"
         )
 
         cp -a "$source_dir/module" "$module_dir"
         mkdir -p "$module_dir/bin"
         install -m 0755 "$source_dir/bin/nm-arm64" "$module_dir/bin/nm-arm64"
         install -m 0755 "$source_dir/bin/nm-arm" "$module_dir/bin/nm-arm"
+        install -m 0755 "$source_dir/bin/lkmloader-arm64" "$module_dir/bin/lkmloader-arm64"
+        install -m 0755 "$source_dir/bin/lkmloader-arm" "$module_dir/bin/lkmloader-arm"
         install -m 0755 "$source_dir/bin/ko-loader-arm64" "$module_dir/bin/ko-loader-arm64"
         install -m 0755 "$source_dir/bin/ko-loader-arm" "$module_dir/bin/ko-loader-arm"
         sed -i "s/^versionCode=.*/versionCode=1/" "$module_dir/module.prop"
