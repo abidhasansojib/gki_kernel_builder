@@ -71,3 +71,44 @@ runs:
         patch -p1 -F3 --forward < "${{ github.workspace }}/kernel_patches/common/silence_system_logspam.patch" || true
 
         echo "✅ Performance patches applied successfully"
+
+    - name: Force MGLRU Enabled by Default
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        set -euo pipefail
+        echo "=== Patching mm/vmscan.c to force MGLRU enabled by default ==="
+        python3 - << 'PYEOF'
+        import sys, os
+
+        file_path = "mm/vmscan.c"
+        if not os.path.isfile(file_path):
+            print(f"Warning: {file_path} not found, skipping MGLRU patch")
+            sys.exit(0)
+
+        with open(file_path, "r") as f:
+            content = f.read()
+
+        if "/* Force MGLRU on" in content:
+            print("MGLRU force-enable patch already applied")
+            sys.exit(0)
+
+        target = "else if (kstrtouint(buf, 0, &caps))\n\t\treturn -EINVAL;"
+        replacement = "else if (kstrtouint(buf, 0, &caps))\n\t\treturn -EINVAL;\n\n\t/* Force MGLRU on: request all caps, kernel caps to what is supported */\n\tcaps |= BIT(LRU_GEN_CORE) | BIT(LRU_GEN_MM_WALK) | BIT(LRU_GEN_NONLEAF_YOUNG);"
+
+        if target in content:
+            content = content.replace(target, replacement, 1)
+            content = content.replace("lru_gen_change_state(enabled);", "lru_gen_change_state(true); /* always enable core */", 1)
+            with open(file_path, "w") as f:
+                f.write(content)
+            print("✅ Successfully patched mm/vmscan.c for MGLRU force-enable")
+        else:
+            print("Notice: Target pattern not found in mm/vmscan.c")
+        PYEOF
+
+    - name: Enable MGLRU Kernel Config
+      uses: ./.github/actions/set-kernel-config
+      with:
+        config_list: |
+          CONFIG_LRU_GEN=y
+          CONFIG_LRU_GEN_ENABLED=y
