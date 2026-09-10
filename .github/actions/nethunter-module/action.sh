@@ -30,5 +30,5 @@ echo "[+] MGLRU Capabilities: $(cat /sys/kernel/mm/lru_gen/enabled 2>/dev/null |
 echo ""
 echo "[*] Storage Location: /storage/emulated/0/Download/nethunter_webui.html"
 echo "[*] Tip: For LIVE ROOT controls, open via your root manager"
-echo "    (KernelSU / APatch / SukiSU -> Modules -> NetHunter -> WebUI button)."
+echo "    (KernelSU / SukiSU -> Modules -> NetHunter -> WebUI button)."
 echo "=========================================="

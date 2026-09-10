@@ -87,7 +87,7 @@ The `Nethunter-Wireless-Modules.zip` module embeds a full-featured, mobile-first
 ```mermaid
 flowchart TD
     subgraph UI["WebUI Layer (webroot/index.html)"]
-        WB[Root Bridge Detection] --> KSU[window.ksu / KernelSU / APatch]
+        WB[Root Bridge Detection] --> KSU[window.ksu / KernelSU-Next]
         WB --> SUKI[window.suki / SukiSU / ReSukiSU]
         WB --> BR[Browser Preview: Read-Only Fallback]
     end
@@ -110,7 +110,7 @@ flowchart TD
 
 ### Key Technical Characteristics:
 1. **Multi-Root Bridge Support**:
-   * Inspects `window.ksu` (KernelSU, APatch) and `window.suki` (SukiSU-Ultra, ReSukiSU).
+   * Inspects `window.ksu` (KernelSU-Next) and `window.suki` (SukiSU-Ultra, ReSukiSU).
    * Automatically disables live mutation buttons and displays informational warning chips when opened in standard unrooted mobile browsers.
 2. **Dynamic Telemetry & Parsing**:
    * **TCP Protocols**: Dynamically reads `/proc/sys/net/ipv4/tcp_available_congestion_control` and generates clickable algorithm chips for all active kernel algorithms.
@@ -136,7 +136,7 @@ Every completed build workflow produces structured release and testing assets:
 
 1. **`*-Bundle.zip`**: All-in-one release bundle containing the root flavor's `AnyKernel3.zip`, matching Manager `APK`, NetHunter driver module, and NoMount metamodule.
 2. **`AnyKernel3.zip`**: Flashable kernel installer containing the bypassed kernel `Image`.
-3. **`Nethunter-Wireless-Modules.zip`**: Flashable KernelSU-Next / SukiSU-Ultra / ReSukiSU / APatch module for external USB WiFi dongles, firmware, BadUSB, and WebUI manager.
+3. **`Nethunter-Wireless-Modules.zip`**: Flashable KernelSU-Next / SukiSU-Ultra / ReSukiSU module for external USB WiFi dongles, firmware, BadUSB, and WebUI manager.
 4. **`NoMount-Metamodule.zip`**: Standalone NoMount companion module matching the kernel's exact commit SHA.
 5. **`*-Manager.apk`**: Matching Root Manager APK automatically fetched for the selected root flavor.
 6. **`Build-Summary.md`**: Detailed provenance metadata containing compiler strings, KSU tag, commit SHAs, and active feature flags.

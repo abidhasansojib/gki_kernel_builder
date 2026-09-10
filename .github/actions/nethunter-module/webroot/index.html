@@ -826,7 +826,7 @@
         <line x1="12" y1="17" x2="12.01" y2="17"></line>
       </svg>
       <div>
-        <strong>Opened in Web Browser:</strong> Root manager bridge not detected. To manage kernel settings and read real-time telemetry, open this page inside the <strong>KernelSU, SukiSU, or APatch</strong> WebUI manager.
+        <strong>Opened in Web Browser:</strong> Root manager bridge not detected. To manage kernel settings and read real-time telemetry, open this page inside the <strong>KernelSU or SukiSU</strong> WebUI manager.
       </div>
     </div>
 
@@ -1324,7 +1324,6 @@
       if (typeof window.ksu !== 'undefined' && typeof window.ksu.exec === 'function') return "KernelSU";
       if (typeof window.sukisu !== 'undefined' && typeof window.sukisu.exec === 'function') return "SukiSU";
       if (typeof window.resukisu !== 'undefined' && typeof window.resukisu.exec === 'function') return "ReSukiSU";
-      if (typeof window.apatch !== 'undefined' && typeof window.apatch.exec === 'function') return "APatch";
       if (typeof window.KernelSU !== 'undefined' && typeof window.KernelSU.exec === 'function') return "KernelSU";
       return null;
     }
@@ -1338,8 +1337,6 @@
         try { window.ksu.toast(msg); } catch(e) {}
       } else if (window.sukisu && typeof window.sukisu.toast === 'function') {
         try { window.sukisu.toast(msg); } catch(e) {}
-      } else if (window.apatch && typeof window.apatch.toast === 'function') {
-        try { window.apatch.toast(msg); } catch(e) {}
       }
       const bar = document.getElementById('m3-snackbar');
       if (bar) {
@@ -1361,7 +1358,6 @@
       const runner = (window.ksu && typeof window.ksu.exec === 'function') ? window.ksu.exec.bind(window.ksu) :
                      (window.sukisu && typeof window.sukisu.exec === 'function') ? window.sukisu.exec.bind(window.sukisu) :
                      (window.resukisu && typeof window.resukisu.exec === 'function') ? window.resukisu.exec.bind(window.resukisu) :
-                     (window.apatch && typeof window.apatch.exec === 'function') ? window.apatch.exec.bind(window.apatch) :
                      (window.KernelSU && typeof window.KernelSU.exec === 'function') ? window.KernelSU.exec.bind(window.KernelSU) : null;
       
       if (!runner) return null;
@@ -1442,7 +1438,7 @@
         if (summary) summary.innerText = "-- (Bridge Required)";
         if (availEl) availEl.innerText = "-- (Bridge Required)";
         if (chipsContainer) {
-          chipsContainer.innerHTML = '<span style="font-size: 11px; color: var(--md-sys-color-outline);">Open in KernelSU / APatch WebUI to read kernel TCP stack</span>';
+          chipsContainer.innerHTML = '<span style="font-size: 11px; color: var(--md-sys-color-outline);">Open in KernelSU / SukiSU WebUI to read kernel TCP stack</span>';
         }
         ['bbr3', 'westwood', 'cubic'].forEach(a => {
           const el = document.getElementById('opt-tcp-' + a);
@@ -1541,7 +1537,7 @@
 
     async function applyTcp(algo) {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       state.tcp = algo;
@@ -1553,7 +1549,7 @@
 
     async function saveTcpBootDefault() {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       await exec(`mkdir -p /data/adb/service.d && printf '#!/system/bin/sh\\nsysctl -w net.ipv4.tcp_congestion_control=${state.tcp}\\n' > /data/adb/service.d/00-tcp.sh && chmod 0755 /data/adb/service.d/00-tcp.sh`);
@@ -1562,7 +1558,7 @@
 
     async function applyQdisc(qdisc) {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       state.qdisc = qdisc;
@@ -1573,7 +1569,7 @@
 
     async function setTtl(val) {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       state.ttl = String(val);
@@ -1592,7 +1588,7 @@
 
     async function toggleIpForward() {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       state.ipForward = !state.ipForward;
@@ -1605,7 +1601,7 @@
 
     async function toggleOptimisticDad() {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       state.optimisticDad = !state.optimisticDad;
@@ -1617,7 +1613,7 @@
 
     async function resetNetworkDefaults() {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       showSnackbar("Restoring network settings to defaults...");
@@ -1700,7 +1696,7 @@
 
     async function setUsbMode(mode) {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       state.usbMode = mode;
@@ -1769,7 +1765,7 @@
 
     async function injectTestKeystroke() {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       showSnackbar("Sending scan code 0x04 ('a') to /dev/hidg0...");
@@ -1780,7 +1776,7 @@
 
     async function resetUsbDefaults() {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       showSnackbar("Restoring USB to Stock Android (MTP + ADB)...");
@@ -1852,7 +1848,7 @@
 
         if (!hasBridgeActive) {
           chipText = "BRIDGE REQ";
-          actionBtn = `<button class="root-term-chip" style="opacity: 0.5;" onclick="showSnackbar('Root bridge required: open in KernelSU / APatch')">Bridge Req</button>`;
+          actionBtn = `<button class="root-term-chip" style="opacity: 0.5;" onclick="showSnackbar('Root bridge required: open in KernelSU / SukiSU')">Bridge Req</button>`;
         } else {
           const isLoaded = state.loadedModules.has(mod.name) || state.loadedModules.has(mod.name.replace(/_/g, '-'));
           if (isLoaded) {
@@ -1946,7 +1942,7 @@
 
     async function autoLoadModule(modName) {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       showSnackbar("Auto-loading " + modName + " from NetHunter module...");
@@ -1980,7 +1976,7 @@
 
     async function unloadModule(modName) {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       showSnackbar("Unloading " + modName + "...");
@@ -1992,7 +1988,7 @@
 
     async function loadAllAvailableModules() {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       showSnackbar("Auto-loading all available NetHunter modules...");
@@ -2023,7 +2019,7 @@
 
     async function resetDriversDefaults() {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       showSnackbar("Unloading extra driver modules...");
@@ -2155,7 +2151,7 @@
 
     async function forceMglru() {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       state.mglruCaps = "0x0007";
@@ -2166,7 +2162,7 @@
 
     async function dropCaches() {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       showSnackbar("Reclaiming inactive file & page cache...");
@@ -2177,7 +2173,7 @@
 
     async function setVfs(val) {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       state.vfsPressure = val;
@@ -2192,7 +2188,7 @@
 
     async function setSwappiness(val) {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       state.swappiness = val;
@@ -2207,7 +2203,7 @@
 
     async function resetMemoryDefaults() {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       showSnackbar("Restoring memory & MGLRU to kernel defaults...");
@@ -2281,7 +2277,7 @@
       if (!hasBridge()) {
         logConsole("$ " + cmd);
         logConsole("Error: Cannot execute command. Root bridge not attached.");
-        showSnackbar("Root bridge required: open in KernelSU / APatch WebUI");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         input.focus();
         return;
       }
@@ -2328,7 +2324,7 @@
         if (bridge) {
           box.innerHTML = `<div class="term-row-out">[${bridge} Root Bridge Attached] Linux root shell ready.</div>`;
         } else {
-          box.innerHTML = `<div class="term-row-err">[No Root Bridge Detected] Opened in standard browser mode.</div><div class="term-row-out">To run root commands and control kernel settings, open this WebUI inside KernelSU, SukiSU, or APatch Manager.</div>`;
+          box.innerHTML = `<div class="term-row-err">[No Root Bridge Detected] Opened in standard browser mode.</div><div class="term-row-out">To run root commands and control kernel settings, open this WebUI inside KernelSU or SukiSU Manager.</div>`;
         }
       }
 

@@ -65,7 +65,7 @@ The project supports 3 independent root implementations with automated patch res
   * USB Bluetooth dongles via `btusb.ko` with RFCOMM TTY (`rfcomm.ko`), BNEP, and HIDP.
 * **Integrated Material 3 WebUI Dashboard & Action Launcher:**
   * **Module Staging:** `webroot/index.html` (embedded within `Nethunter-Wireless-Modules.zip`).
-  * **Root Bridge Execution:** Supports KernelSU (`window.ksu`), APatch, SukiSU-Ultra, and ReSukiSU (`window.suki`). Automatically falls back to safe read-only preview mode when opened in standard web browsers.
+  * **Root Bridge Execution:** Supports KernelSU-Next (`window.ksu`), SukiSU-Ultra, and ReSukiSU (`window.suki`). Automatically falls back to safe read-only preview mode when opened in standard web browsers.
   * **Zero Fake Telemetry:** Fully dynamic real-time parsing from kernel filesystems:
     * Available TCP algorithms dynamically queried from `/proc/sys/net/ipv4/tcp_available_congestion_control`.
     * True RAM usage calculated dynamically via $\text{Used} = \text{MemTotal} - \text{MemAvailable}$ from `/proc/meminfo`.
@@ -128,7 +128,7 @@ The project supports 3 independent root implementations with automated patch res
 * **Shallow Git Clones:** Added `--depth=1` to dependency clones in `setup-build-environment/action.yml` to minimize bandwidth and checkout latency.
 * **Misc BPF Config Decoupling:** Removed duplicate BPF configs from `misc/action.yml` so `use_bpf` maintains strict control.
 * **Robust Kernel Branding Script:** Replaced `$d` deletion in `apply-kernel-branding/action.yml` with top-of-file injection to guarantee script integrity.
-* **NetHunter WebUI Dynamic Telemetry & Anti-Simulation:** Completely removed mock/simulated data; implemented strict multi-bridge detection (`KernelSU`, `APatch`, `SukiSU-Ultra`, `ReSukiSU`), dynamic `/proc/meminfo` calculation ($Used = Total - Available$), live TCP congestion control discovery, and live MGLRU/ZRAM telemetry.
+* **NetHunter WebUI Dynamic Telemetry & Anti-Simulation:** Completely removed mock/simulated data; implemented strict multi-bridge detection (`KernelSU-Next`, `SukiSU-Ultra`, `ReSukiSU`), dynamic `/proc/meminfo` calculation ($Used = Total - Available$), live TCP congestion control discovery, and live MGLRU/ZRAM telemetry.
 * **Action Launcher Public Storage Transition:** Fixed `action.sh` invoking `file:///data/adb/...` which caused `ERR_ACCESS_DENIED` in browsers due to mode `0700` permissions on `/data/adb`; redirected to `/storage/emulated/0/Download/nethunter_webui.html` and added operational bridge guidance.
 * **Late-Boot WebUI Sync for TWRP Installs:** Integrated automated storage sync into `service.sh` in `nethunter-module/action.yml` to mirror `webroot/index.html` on boot, ensuring recovery-flashed installations have internal storage WebUI mirrors populated once decrypted.
 * **RTW88 Silicon Base Module Dependency Resolution:** Added missing base silicon modules (`rtw88_8822c`, `rtw88_8821c`) to the dependency tree for `rtw88_8822cu` and `rtw88_8821cu` in WebUI module loader, preventing symbol resolution errors during insmod.
