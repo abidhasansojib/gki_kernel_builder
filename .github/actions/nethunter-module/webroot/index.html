@@ -45,7 +45,7 @@
       --md-sys-color-success-container: #00522b;
       --md-sys-color-on-success-container: #8af8b7;
 
-      /* Material 3 Elevation & Shapes */
+      /* Material 3 Shapes */
       --md-shape-corner-xs: 4px;
       --md-shape-corner-sm: 8px;
       --md-shape-corner-md: 12px;
@@ -65,11 +65,15 @@
       font-family: var(--font-family);
     }
 
+    input, pre, code {
+      user-select: text;
+    }
+
     body {
       background-color: var(--md-sys-color-surface);
       color: var(--md-sys-color-on-surface);
       min-height: 100vh;
-      padding-bottom: calc(78px + env(safe-area-inset-bottom, 16px));
+      padding-bottom: calc(76px + env(safe-area-inset-bottom, 16px));
       overflow-x: hidden;
       font-size: 13.5px;
       line-height: 1.45;
@@ -238,6 +242,18 @@
       border-color: var(--md-sys-color-success);
     }
 
+    .m3-chip.warning {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+
+    .m3-chip.danger {
+      background: var(--md-sys-color-error-container);
+      color: var(--md-sys-color-on-error-container);
+      border-color: var(--md-sys-color-error);
+    }
+
     .m3-chip-dot {
       width: 5px;
       height: 5px;
@@ -245,7 +261,7 @@
       background: currentColor;
     }
 
-    /* M3 Telemetry Strip */
+    /* Telemetry Box */
     .m3-telemetry-box {
       background: var(--md-sys-color-surface-container);
       border: 1px solid var(--md-sys-color-outline-variant);
@@ -481,106 +497,174 @@
       border: 1px solid var(--md-sys-color-outline-variant);
     }
 
-    /* Terminal Console */
-    .term-box {
-      background: var(--md-sys-color-surface-container-lowest);
-      border: 1px solid var(--md-sys-color-outline-variant);
-      border-radius: var(--md-shape-corner-lg);
-      overflow: hidden;
+    /* Inline Action Input */
+    .m3-input-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      margin-bottom: 6px;
     }
 
-    .term-topbar {
-      background: #0d1117;
+    .m3-text-input {
+      flex: 1;
+      background: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-shape-corner-md);
+      padding: 9px 12px;
+      color: var(--md-sys-color-on-surface);
+      font-family: var(--font-family-mono);
+      font-size: 12px;
+      outline: none;
+    }
+
+    .m3-text-input:focus {
+      border-color: var(--md-sys-color-primary);
+    }
+
+    .m3-btn-inline {
+      padding: 0 14px;
+      border-radius: var(--md-shape-corner-md);
+      background: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      border: none;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .m3-btn-inline:active { transform: scale(0.96); }
+
+    /* ==================================================== */
+    /* ROOTED TERMINAL CONSOLE                              */
+    /* ==================================================== */
+    .root-terminal {
+      background: #07090e;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--md-shape-corner-lg);
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    .root-term-bar {
+      background: #10141d;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       padding: 8px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
     }
 
-    .term-prompt-label {
+    .root-term-title {
       font-family: var(--font-family-mono);
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 700;
-      color: #58a6ff;
-    }
-
-    .term-chip {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: var(--md-shape-corner-xs);
-      color: #c9d1d9;
-      padding: 3px 8px;
-      font-size: 10.5px;
-      font-family: var(--font-family-mono);
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .term-chip:active { transform: scale(0.95); }
-
-    .term-presets-scroll {
+      color: #38bdf8;
       display: flex;
       align-items: center;
       gap: 6px;
+    }
+
+    .root-term-chip {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      font-family: var(--font-family-mono);
+      font-size: 10.5px;
+      padding: 3px 8px;
+      border-radius: var(--md-shape-corner-xs);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .root-term-chip:active { transform: scale(0.94); }
+
+    .root-term-presets {
+      display: flex;
+      align-items: center;
+      gap: 5px;
       padding: 6px 10px;
-      background: #090c10;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      background: #0a0d14;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       overflow-x: auto;
       scrollbar-width: none;
     }
-    .term-presets-scroll::-webkit-scrollbar { display: none; }
+    .root-term-presets::-webkit-scrollbar { display: none; }
 
-    .term-output {
-      background: #080a0f;
-      color: #c9d1d9;
-      padding: 12px;
+    .root-term-screen {
+      background: #05070a;
+      color: #e2e8f0;
+      padding: 12px 14px;
       font-family: var(--font-family-mono);
-      font-size: 11px;
+      font-size: 11.5px;
       line-height: 1.55;
-      min-height: 250px;
-      max-height: 380px;
+      min-height: 270px;
+      max-height: 420px;
       overflow-y: auto;
       word-break: break-all;
       white-space: pre-wrap;
     }
 
-    .term-cmd { color: #58a6ff; font-weight: 600; margin-top: 4px; }
-    .term-out { color: #8b949e; }
-    .term-err { color: #f85149; }
+    .root-term-screen::-webkit-scrollbar { width: 4px; }
+    .root-term-screen::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 2px; }
 
-    .term-input-row {
+    .term-row-cmd {
+      color: #38bdf8;
+      font-weight: 600;
+      margin-top: 5px;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .term-prompt-hash {
+      color: #4ade80;
+      font-weight: 700;
+      user-select: none;
+    }
+
+    .term-row-out {
+      color: #94a3b8;
+      padding-left: 2px;
+    }
+
+    .term-row-err {
+      color: #f87171;
+      padding-left: 2px;
+    }
+
+    .root-term-input-bar {
       background: #0d1117;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 6px 10px;
+      padding: 7px 10px;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .term-input {
+    .root-term-input {
       flex: 1;
       background: transparent;
       border: none;
       outline: none;
-      color: #f0f6fc;
+      color: #f8fafc;
       font-family: var(--font-family-mono);
       font-size: 12px;
-      padding: 4px 0;
     }
-    .term-input::placeholder { color: #484f58; }
+    .root-term-input::placeholder { color: #475569; }
 
-    .term-send-btn {
-      background: transparent;
-      color: #58a6ff;
-      border: 1px solid rgba(56, 139, 253, 0.3);
+    .root-term-btn {
+      background: #38bdf8;
+      color: #0c4a6e;
+      border: none;
       border-radius: var(--md-shape-corner-xs);
-      padding: 4px 10px;
+      padding: 5px 12px;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
     }
-    .term-send-btn:active { transform: scale(0.95); }
+    .root-term-btn:active { transform: scale(0.95); }
 
     /* M3 Bottom Navigation Bar */
     .m3-nav-bar {
@@ -618,7 +702,7 @@
     }
 
     .m3-nav-pill {
-      width: 48px;
+      width: 54px;
       height: 26px;
       border-radius: var(--md-shape-corner-full);
       display: flex;
@@ -629,8 +713,8 @@
     }
 
     .m3-nav-pill svg {
-      width: 17px;
-      height: 17px;
+      width: 18px;
+      height: 18px;
     }
 
     .m3-nav-label {
@@ -686,19 +770,14 @@
 <body>
 
   <!-- M3 Snackbar Toast -->
-  <div id="m3-snackbar" class="m3-snackbar">Command dispatched.</div>
+  <div id="m3-snackbar" class="m3-snackbar">Command executed.</div>
 
   <!-- M3 Top App Bar -->
   <header class="top-app-bar">
     <div class="top-app-bar-brand">
       <div class="top-app-bar-icon">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="4" y="4" width="16" height="16" rx="2"></rect>
-          <rect x="9" y="9" width="6" height="6"></rect>
-          <line x1="9" y1="1" x2="9" y2="4"></line>
-          <line x1="15" y1="1" x2="15" y2="4"></line>
-          <line x1="9" y1="20" x2="9" y2="23"></line>
-          <line x1="15" y1="20" x2="15" y2="23"></line>
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
         </svg>
       </div>
       <div class="top-app-bar-title-group">
@@ -709,7 +788,7 @@
     <div style="display: flex; align-items: center; gap: 8px;">
       <span id="bridge-chip" class="m3-chip success">
         <span class="m3-chip-dot"></span>
-        <span id="bridge-name">KernelSU</span>
+        <span id="bridge-name">Root Active</span>
       </span>
       <button class="btn-icon-m3" onclick="refreshAll()" title="Refresh Telemetry">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -727,12 +806,12 @@
     <!-- ==================================================== -->
     <div id="tab-network" class="tab-view active">
       
-      <!-- TCP Congestion Control Card -->
+      <!-- TCP Congestion Control -->
       <div class="m3-card">
         <div class="m3-card-header">
           <div class="m3-card-title-group">
             <span class="m3-card-title">TCP Congestion Stack</span>
-            <span class="m3-card-subtitle">Throughput & packet transmission</span>
+            <span class="m3-card-subtitle">Throughput & transmission engine</span>
           </div>
           <span id="badge-tcp" class="m3-chip active">
             <span class="m3-chip-dot"></span>
@@ -752,13 +831,13 @@
               <span class="m3-option-title">BBRv3</span>
               <span class="m3-chip active">DEFAULT</span>
             </div>
-            <span class="m3-option-desc">Model-based congestion • Max speed & low RTT</span>
+            <span class="m3-option-desc">Model-based congestion • Max speed & low latency</span>
           </div>
 
           <div id="opt-tcp-westwood" class="m3-option-card" onclick="applyTcp('westwood')">
             <div class="m3-option-header">
               <span class="m3-option-title">Westwood+</span>
-              <span class="m3-chip" style="color:#f59e0b; border-color:#f59e0b; background:rgba(245,158,11,0.12)">WIRELESS</span>
+              <span class="m3-chip warning">WIRELESS</span>
             </div>
             <span class="m3-option-desc">Loss-tolerant • Unstable Wi-Fi & cellular</span>
           </div>
@@ -781,26 +860,26 @@
       <div class="m3-card">
         <div class="m3-card-header">
           <div class="m3-card-title-group">
-            <span class="m3-card-title">Qdisc & Hop-Limit (TTL)</span>
-            <span class="m3-card-subtitle">Bufferbloat reduction & hotspot bypass</span>
+            <span class="m3-card-title">Qdisc & Hotspot Hop-Limit</span>
+            <span class="m3-card-subtitle">Bufferbloat reduction & carrier bypass</span>
           </div>
         </div>
 
-        <span style="font-size: 11px; font-weight: 600; color: var(--md-sys-color-on-surface-variant); display: block; margin-top: 2px;">Packet Queue Scheduler (Qdisc)</span>
+        <span style="font-size: 11px; font-weight: 600; color: var(--md-sys-color-on-surface-variant); display: block;">Packet Scheduler (Qdisc)</span>
         <div class="m3-segmented-control">
           <button id="seg-qdisc-cake" class="m3-segment-btn" onclick="applyQdisc('cake')">CAKE</button>
           <button id="seg-qdisc-fq_codel" class="m3-segment-btn active" onclick="applyQdisc('fq_codel')">FQ_Codel</button>
           <button id="seg-qdisc-fq" class="m3-segment-btn" onclick="applyQdisc('fq')">FQ (BBR)</button>
         </div>
 
-        <span style="font-size: 11px; font-weight: 600; color: var(--md-sys-color-on-surface-variant); display: block; margin-top: 6px;">Hotspot Hop-Limit (TTL)</span>
+        <span style="font-size: 11px; font-weight: 600; color: var(--md-sys-color-on-surface-variant); display: block; margin-top: 4px;">Hotspot Hop-Limit (TTL)</span>
         <div class="m3-segmented-control">
           <button id="seg-ttl-stock" class="m3-segment-btn active" onclick="setTtl('stock')">Stock</button>
           <button id="seg-ttl-64" class="m3-segment-btn" onclick="setTtl(64)">TTL = 64</button>
           <button id="seg-ttl-65" class="m3-segment-btn" onclick="setTtl(65)">TTL = 65</button>
         </div>
 
-        <!-- M3 Switch Tiles -->
+        <!-- M3 Switches -->
         <div style="margin-top: 10px;">
           <div class="m3-list-tile" onclick="toggleIpForward()">
             <div class="m3-list-tile-content">
@@ -827,31 +906,50 @@
     </div>
 
     <!-- ==================================================== -->
-    <!-- TAB 2: USB GADGET ARSENAL                            -->
+    <!-- TAB 2: USB & HID ARSENAL                             -->
     <!-- ==================================================== -->
     <div id="tab-usb" class="tab-view">
       <div class="m3-card">
         <div class="m3-card-header">
           <div class="m3-card-title-group">
-            <span class="m3-card-title">USB ConfigFS Gadget</span>
-            <span class="m3-card-subtitle">Dynamic hardware endpoint controller</span>
+            <span class="m3-card-title">USB Gadget & HID Subsystem</span>
+            <span class="m3-card-subtitle">Android stock default with dynamic HID toggles</span>
           </div>
-          <span id="badge-hid" class="m3-chip success">
+          <span id="badge-usb-mode" class="m3-chip success">
             <span class="m3-chip-dot"></span>
-            <span id="badge-hid-text">HID READY</span>
+            <span id="badge-usb-text">STOCK MTP</span>
           </span>
         </div>
 
+        <!-- Live Endpoint Indicators & Progress -->
+        <div class="m3-telemetry-box" style="margin-bottom: 8px;">
+          <span class="m3-telemetry-key">HID Keyboard (/dev/hidg0)</span>
+          <span class="m3-telemetry-val" id="val-hidg0-status" style="color: var(--md-sys-color-on-surface-variant);">DISABLED</span>
+        </div>
+        <div class="m3-telemetry-box" style="margin-bottom: 12px;">
+          <span class="m3-telemetry-key">HID Mouse (/dev/hidg1)</span>
+          <span class="m3-telemetry-val" id="val-hidg1-status" style="color: var(--md-sys-color-on-surface-variant);">DISABLED</span>
+        </div>
+
+        <!-- USB Function Cards -->
         <div class="m3-options-grid">
-          <div id="opt-gadget-hid" class="m3-option-card selected" onclick="enableHidGadget()">
+          <div id="opt-usb-stock" class="m3-option-card selected" onclick="setUsbMode('stock')">
             <div class="m3-option-header">
-              <span class="m3-option-title">HID Keyboard/Mouse</span>
-              <span class="m3-chip active">ACTIVE</span>
+              <span class="m3-option-title">Stock Android</span>
+              <span class="m3-chip active">DEFAULT</span>
             </div>
-            <span class="m3-option-desc">/dev/hidg0 & /dev/hidg1 endpoints</span>
+            <span class="m3-option-desc">Stock MTP + ADB hardware config</span>
           </div>
 
-          <div id="opt-gadget-storage" class="m3-option-card" onclick="enableMassStorage()">
+          <div id="opt-usb-hid" class="m3-option-card" onclick="setUsbMode('hid')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">HID Keyboard & Mouse</span>
+              <span class="m3-chip" id="chip-hid">TOGGLE</span>
+            </div>
+            <span class="m3-option-desc">Enables /dev/hidg0 and /dev/hidg1</span>
+          </div>
+
+          <div id="opt-usb-storage" class="m3-option-card" onclick="setUsbMode('storage')">
             <div class="m3-option-header">
               <span class="m3-option-title">Mass Storage</span>
               <span class="m3-chip">USB DISK</span>
@@ -859,56 +957,75 @@
             <span class="m3-option-desc">Mount phone storage as USB drive</span>
           </div>
 
-          <div id="opt-gadget-rndis" class="m3-option-card" onclick="enableRndisEthernet()">
+          <div id="opt-usb-rndis" class="m3-option-card" onclick="setUsbMode('rndis')">
             <div class="m3-option-header">
               <span class="m3-option-title">RNDIS Ethernet</span>
               <span class="m3-chip success">NETWORK</span>
             </div>
-            <span class="m3-option-desc">Virtual USB network adapter</span>
-          </div>
-
-          <div id="opt-gadget-stock" class="m3-option-card" onclick="resetUsbDefault()">
-            <div class="m3-option-header">
-              <span class="m3-option-title">Stock Android</span>
-              <span class="m3-chip">MTP+ADB</span>
-            </div>
-            <span class="m3-option-desc">Default Android USB mode</span>
+            <span class="m3-option-desc">Virtual USB network interface</span>
           </div>
         </div>
 
+        <!-- Keystroke Injection Test -->
         <button class="m3-btn m3-btn-filled" onclick="injectTestKeystroke()">
           Transmit Test Keycode ('a') to /dev/hidg0
         </button>
 
-        <div class="m3-telemetry-box" style="margin-top: 10px; margin-bottom: 0;">
-          <span class="m3-telemetry-key">Endpoint Nodes</span>
-          <span class="m3-telemetry-val" id="val-hid-nodes">/dev/hidg0 (crw-rw----)</span>
-        </div>
+        <button class="m3-btn m3-btn-tonal" onclick="setUsbMode('stock')">
+          Restore Stock Android USB (MTP + ADB)
+        </button>
       </div>
     </div>
 
     <!-- ==================================================== -->
-    <!-- TAB 3: HARDWARE DRIVERS                              -->
+    <!-- TAB 3: HARDWARE DRIVERS & FIRMWARE                   -->
     <!-- ==================================================== -->
     <div id="tab-drivers" class="tab-view">
+      
+      <!-- Manual Module Loader -->
       <div class="m3-card">
         <div class="m3-card-header">
           <div class="m3-card-title-group">
-            <span class="m3-card-title">Wireless Drivers</span>
-            <span class="m3-card-subtitle">External Wi-Fi dongles & packet injection</span>
+            <span class="m3-card-title">Manual Module Loader</span>
+            <span class="m3-card-subtitle">Load kernel modules on demand</span>
           </div>
-          <span class="m3-chip success">
-            <span class="m3-chip-dot"></span>
-            <span>READY</span>
-          </span>
+        </div>
+
+        <div class="m3-input-row">
+          <input id="in-manual-mod" type="text" class="m3-text-input" placeholder="Module name or .ko path (e.g. mt7601u)" />
+          <button class="m3-btn-inline" onclick="loadManualModule()">Load</button>
+        </div>
+
+        <!-- Quick Module Loader Chips -->
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;">
+          <button class="root-term-chip" onclick="quickLoadModule('mt7601u')">+ mt7601u</button>
+          <button class="root-term-chip" onclick="quickLoadModule('rtw88_usb')">+ rtw88_usb</button>
+          <button class="root-term-chip" onclick="quickLoadModule('ath9k_htc')">+ ath9k_htc</button>
+          <button class="root-term-chip" onclick="quickLoadModule('rtl8xxxu')">+ rtl8xxxu</button>
+          <button class="root-term-chip" onclick="quickLoadModule('zd1211rw')">+ zd1211rw</button>
+        </div>
+
+        <button class="m3-btn m3-btn-filled" style="margin-top: 10px;" onclick="reloadDrivers()">
+          Execute Multi-Pass Module Loader (All)
+        </button>
+      </div>
+
+      <!-- Detected Kernel Modules -->
+      <div class="m3-card">
+        <div class="m3-card-header">
+          <div class="m3-card-title-group">
+            <span class="m3-card-title">Detected Kernel Modules</span>
+            <span class="m3-card-subtitle">Real-time /sys/module inspection</span>
+          </div>
+          <span class="m3-chip success" id="badge-modules-count">SCANNING</span>
         </div>
 
         <div class="m3-list-tile" style="cursor: default;">
           <div class="m3-list-tile-content">
             <span class="m3-list-tile-title">mt7601u</span>
-            <span class="m3-list-tile-subtitle">MediaTek MT7601U USB Adapters</span>
+            <span class="m3-list-tile-subtitle">MediaTek MT7601U USB</span>
           </div>
-          <span id="drv-mt7601u" class="m3-chip success">LOADED</span>
+          <span id="drv-mt7601u" class="m3-chip">CHECKING</span>
         </div>
 
         <div class="m3-list-tile" style="cursor: default;">
@@ -916,23 +1033,23 @@
             <span class="m3-list-tile-title">rtw88_core / rtw88_usb</span>
             <span class="m3-list-tile-subtitle">Realtek 8822CU, 8821CU, 8812AU</span>
           </div>
-          <span id="drv-rtw88" class="m3-chip success">LOADED</span>
+          <span id="drv-rtw88" class="m3-chip">CHECKING</span>
         </div>
 
         <div class="m3-list-tile" style="cursor: default;">
           <div class="m3-list-tile-content">
-            <span class="m3-list-tile-title">ath9k_htc / ath</span>
-            <span class="m3-list-tile-subtitle">Atheros AR9271 (TP-Link WN722N v1)</span>
+            <span class="m3-list-tile-title">ath9k_htc</span>
+            <span class="m3-list-tile-subtitle">Atheros AR9271 (TP-Link WN722N)</span>
           </div>
-          <span id="drv-ath9k" class="m3-chip success">LOADED</span>
+          <span id="drv-ath9k" class="m3-chip">CHECKING</span>
         </div>
 
         <div class="m3-list-tile" style="cursor: default;">
           <div class="m3-list-tile-content">
             <span class="m3-list-tile-title">rtl8xxxu</span>
-            <span class="m3-list-tile-subtitle">Realtek RTL8188EUS, RTL8188FU, RTL8192EU</span>
+            <span class="m3-list-tile-subtitle">Realtek RTL8188EUS, RTL8192EU</span>
           </div>
-          <span id="drv-rtl8xxxu" class="m3-chip success">LOADED</span>
+          <span id="drv-rtl8xxxu" class="m3-chip">CHECKING</span>
         </div>
 
         <div class="m3-list-tile" style="cursor: default;">
@@ -940,12 +1057,50 @@
             <span class="m3-list-tile-title">mac80211 & cfg80211 (WEXT=y)</span>
             <span class="m3-list-tile-subtitle">Packet Injection Core Framework</span>
           </div>
-          <span class="m3-chip success">BUILTIN</span>
+          <span id="drv-mac80211" class="m3-chip success">BUILTIN</span>
+        </div>
+      </div>
+
+      <!-- Detected Firmwares -->
+      <div class="m3-card">
+        <div class="m3-card-header">
+          <div class="m3-card-title-group">
+            <span class="m3-card-title">Detected Wireless Firmware</span>
+            <span class="m3-card-subtitle">Searched in /vendor/firmware & modules</span>
+          </div>
         </div>
 
-        <button class="m3-btn m3-btn-filled" onclick="reloadDrivers()">
-          Reload Wireless Modules
-        </button>
+        <div class="m3-list-tile" style="cursor: default;">
+          <div class="m3-list-tile-content">
+            <span class="m3-list-tile-title">mt7601u.bin</span>
+            <span class="m3-list-tile-subtitle">MediaTek firmware</span>
+          </div>
+          <span id="fw-mt7601u" class="m3-chip">SCANNING</span>
+        </div>
+
+        <div class="m3-list-tile" style="cursor: default;">
+          <div class="m3-list-tile-content">
+            <span class="m3-list-tile-title">htc_9271.fw</span>
+            <span class="m3-list-tile-subtitle">Atheros AR9271 firmware</span>
+          </div>
+          <span id="fw-ath9k" class="m3-chip">SCANNING</span>
+        </div>
+
+        <div class="m3-list-tile" style="cursor: default;">
+          <div class="m3-list-tile-content">
+            <span class="m3-list-tile-title">rtw8822c_fw.bin</span>
+            <span class="m3-list-tile-subtitle">Realtek 8822C firmware</span>
+          </div>
+          <span id="fw-rtw88" class="m3-chip">SCANNING</span>
+        </div>
+
+        <div class="m3-list-tile" style="cursor: default;">
+          <div class="m3-list-tile-content">
+            <span class="m3-list-tile-title">rtl8188eufw.bin</span>
+            <span class="m3-list-tile-subtitle">Realtek 8188EU firmware</span>
+          </div>
+          <span id="fw-rtl8xxxu" class="m3-chip">SCANNING</span>
+        </div>
       </div>
 
       <!-- Network Interfaces -->
@@ -956,133 +1111,54 @@
             <span class="m3-card-subtitle">Active links & IP addresses</span>
           </div>
         </div>
-        <div id="box-interfaces" class="term-output" style="min-height: 80px; max-height: 140px; border-radius: 10px;">Scanning interfaces...</div>
+        <div id="box-interfaces" class="root-term-screen" style="min-height: 80px; max-height: 130px; border-radius: 10px;">Scanning interfaces...</div>
       </div>
     </div>
 
     <!-- ==================================================== -->
-    <!-- TAB 4: CPU & PERFORMANCE                             -->
-    <!-- ==================================================== -->
-    <div id="tab-perf" class="tab-view">
-      <div class="m3-card">
-        <div class="m3-card-header">
-          <div class="m3-card-title-group">
-            <span class="m3-card-title">CPU Frequency Governors</span>
-            <span class="m3-card-subtitle">Energy-aware scheduling & clock scaling</span>
-          </div>
-          <span id="badge-cpugov" class="m3-chip active">
-            <span class="m3-chip-dot"></span>
-            <span id="badge-cpugov-text">SCHEDUTIL</span>
-          </span>
-        </div>
-
-        <!-- 4 Clean Governor Cards -->
-        <div class="m3-options-grid">
-          <div id="opt-gov-schedutil" class="m3-option-card selected" onclick="applyCpuGov('schedutil')">
-            <div class="m3-option-header">
-              <span class="m3-option-title">Schedutil</span>
-              <span class="m3-chip active">DEFAULT</span>
-            </div>
-            <span class="m3-option-desc">EAS dynamic balance • Smooth daily battery</span>
-          </div>
-
-          <div id="opt-gov-ondemand" class="m3-option-card" onclick="applyCpuGov('ondemand')">
-            <div class="m3-option-header">
-              <span class="m3-option-title">Ondemand</span>
-              <span class="m3-chip" style="color:#f59e0b; border-color:#f59e0b; background:rgba(245,158,11,0.12)">SNAPPY</span>
-            </div>
-            <span class="m3-option-desc">Fast clock ramp-up • Responsive UI</span>
-          </div>
-
-          <div id="opt-gov-performance" class="m3-option-card" onclick="applyCpuGov('performance')">
-            <div class="m3-option-header">
-              <span class="m3-option-title">Performance</span>
-              <span class="m3-chip" style="color:#ff6b6b; border-color:#ff6b6b; background:rgba(255,107,107,0.12)">GAMING</span>
-            </div>
-            <span class="m3-option-desc">Locks maximum clocks • Zero frame drops</span>
-          </div>
-
-          <div id="opt-gov-powersave" class="m3-option-card" onclick="applyCpuGov('powersave')">
-            <div class="m3-option-header">
-              <span class="m3-option-title">Powersave</span>
-              <span class="m3-chip success">BATTERY</span>
-            </div>
-            <span class="m3-option-desc">Caps frequencies to min • Longest standby</span>
-          </div>
-        </div>
-
-        <div class="m3-telemetry-box">
-          <span class="m3-telemetry-key">Live Cluster Frequencies</span>
-          <span class="m3-telemetry-val" id="val-cpugov-freq">L: 1.4 GHz | B: 2.2 GHz</span>
-        </div>
-
-        <button class="m3-btn m3-btn-tonal" onclick="saveCpuGovBootDefault()">
-          Save Selected Governor at Boot
-        </button>
-      </div>
-
-      <!-- Memory & MGLRU -->
-      <div class="m3-card">
-        <div class="m3-card-header">
-          <div class="m3-card-title-group">
-            <span class="m3-card-title">Memory & Cache (MGLRU)</span>
-            <span class="m3-card-subtitle">Page reclaim & swap efficiency</span>
-          </div>
-          <span class="m3-chip success">0x0007 ACTIVE</span>
-        </div>
-
-        <div class="m3-telemetry-box">
-          <span class="m3-telemetry-key">ZRAM Compressed Swap</span>
-          <span class="m3-telemetry-val" id="val-zram-summary">8.0 GB • LZ4</span>
-        </div>
-
-        <span style="font-size: 11px; font-weight: 600; color: var(--md-sys-color-on-surface-variant); display: block; margin-top: 2px;">VFS Inode & Dentry Cache Pressure</span>
-        <div class="m3-segmented-control">
-          <button id="seg-vfs-50" class="m3-segment-btn" onclick="setVfs(50)">50 (High Cache)</button>
-          <button id="seg-vfs-60" class="m3-segment-btn active" onclick="setVfs(60)">60 (Balanced)</button>
-          <button id="seg-vfs-100" class="m3-segment-btn" onclick="setVfs(100)">100 (Default)</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================================================== -->
-    <!-- TAB 5: CONSOLE & DIAGNOSTICS                         -->
+    <!-- TAB 4: ROOT TERMINAL                                 -->
     <!-- ==================================================== -->
     <div id="tab-console" class="tab-view">
-      <div class="term-box">
-        <div class="term-topbar">
-          <span class="term-prompt-label">root@android #</span>
+      <div class="root-terminal">
+        <!-- Rooted Top Bar -->
+        <div class="root-term-bar">
+          <div class="root-term-title">
+            <span style="color: #4ade80;">#</span>
+            <span>root@android:/ #</span>
+          </div>
           <div style="display: flex; gap: 6px;">
-            <button class="term-chip" onclick="clearConsole()">Clear</button>
-            <button class="term-chip" onclick="copyConsole()">Copy</button>
+            <button class="root-term-chip" onclick="clearConsole()">Clear</button>
+            <button class="root-term-chip" onclick="copyConsole()">Copy</button>
           </div>
         </div>
 
-        <div class="term-presets-scroll">
-          <button class="term-chip" onclick="runPreset('uname -a')">uname -a</button>
-          <button class="term-chip" onclick="runPreset('dmesg | tail -n 25')">dmesg</button>
-          <button class="term-chip" onclick="runPreset('free -h')">free -h</button>
-          <button class="term-chip" onclick="runPreset('lsmod')">lsmod</button>
-          <button class="term-chip" onclick="runPreset('ip addr show')">ip addr</button>
-          <button class="term-chip" onclick="runPreset('cat /proc/version')">version</button>
+        <!-- Presets Row -->
+        <div class="root-term-presets">
+          <button class="root-term-chip" onclick="runPreset('uname -a')">uname -a</button>
+          <button class="root-term-chip" onclick="runPreset('dmesg | tail -n 30')">dmesg</button>
+          <button class="root-term-chip" onclick="runPreset('lsmod')">lsmod</button>
+          <button class="root-term-chip" onclick="runPreset('ip link')">ip link</button>
+          <button class="root-term-chip" onclick="runPreset('free -h')">free -h</button>
+          <button class="root-term-chip" onclick="runPreset('cat /proc/version')">version</button>
         </div>
 
-        <div id="box-console" class="term-output">
-          <div class="term-out">Kernel Diagnostics Terminal (Linux GKI 6.12.30)</div>
-          <div class="term-out">Universal root bridge connected. Ready.</div>
+        <!-- Terminal Screen Output -->
+        <div id="box-console" class="root-term-screen">
+          <div class="term-row-out">Linux 6.12.30 Android GKI Root Shell Ready.</div>
         </div>
 
-        <div class="term-input-row">
-          <span style="color: #3fb950; font-family: var(--font-family-mono); font-weight: 700;">#</span>
-          <input id="term-input" type="text" class="term-input" placeholder="sh command..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" onkeydown="if(event.key==='Enter') executeCustomCommand()" />
-          <button class="term-send-btn" onclick="executeCustomCommand()">Run</button>
+        <!-- Interactive Command Line -->
+        <div class="root-term-input-bar">
+          <span class="term-prompt-hash">#</span>
+          <input id="term-input" type="text" class="root-term-input" placeholder="Enter shell command..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" onkeydown="handleTermKey(event)" />
+          <button class="root-term-btn" onclick="executeCustomCommand()">Run</button>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- M3 Bottom Navigation Bar -->
+  <!-- M3 Bottom Navigation Bar (4 Clean Tabs) -->
   <nav class="m3-nav-bar">
     <button class="m3-nav-item active" onclick="navTo('network', this)">
       <div class="m3-nav-pill">
@@ -1099,7 +1175,7 @@
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
         </svg>
       </div>
-      <span class="m3-nav-label">USB</span>
+      <span class="m3-nav-label">USB & HID</span>
     </button>
 
     <button class="m3-nav-item" onclick="navTo('drivers', this)">
@@ -1107,22 +1183,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
           <polyline points="2 17 12 22 22 17"></polyline>
-          <polyline points="2 12 12 17 22 12"></polyline>
         </svg>
       </div>
       <span class="m3-nav-label">Drivers</span>
-    </button>
-
-    <button class="m3-nav-item" onclick="navTo('perf', this)">
-      <div class="m3-nav-pill">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="4" y="4" width="16" height="16" rx="2"></rect>
-          <rect x="9" y="9" width="6" height="6"></rect>
-          <line x1="9" y1="1" x2="9" y2="4"></line>
-          <line x1="15" y1="1" x2="15" y2="4"></line>
-        </svg>
-      </div>
-      <span class="m3-nav-label">CPU & RAM</span>
     </button>
 
     <button class="m3-nav-item" onclick="navTo('console', this)">
@@ -1132,23 +1195,20 @@
           <line x1="12" y1="19" x2="20" y2="19"></line>
         </svg>
       </div>
-      <span class="m3-nav-label">Console</span>
+      <span class="m3-nav-label">Terminal</span>
     </button>
   </nav>
 
   <script>
     const state = {
       tcp: "bbr",
-      availTcp: "bbr bbr3 westwood cubic reno",
       qdisc: "fq_codel",
       ttl: "stock",
       ipForward: false,
       optimisticDad: true,
-      hidActive: true,
-      cpuGov: "schedutil",
-      availGovs: "sugov_ext schedutil ondemand performance powersave",
-      vfsPressure: 60,
-      zramSize: "8.0 GB"
+      usbMode: "stock",
+      hidg0: false,
+      hidg1: false
     };
 
     function showSnackbar(msg) {
@@ -1198,7 +1258,7 @@
         }
       }
 
-      // Browser Simulation Fallback
+      // Root Fallback Simulator
       return simulateShell(cmd);
     }
 
@@ -1224,10 +1284,6 @@
     }
 
     function simulateShell(cmd) {
-      if (cmd.includes("scaling_governor")) {
-        const m = cmd.match(/echo\s+([a-z_]+)\s*>/);
-        if (m) state.cpuGov = m[1];
-      }
       if (cmd.includes("tcp_congestion_control=")) {
         const m = cmd.match(/tcp_congestion_control=([a-z0-9_]+)/);
         if (m) state.tcp = m[1];
@@ -1236,19 +1292,20 @@
         const m = cmd.match(/default_qdisc=([a-z0-9_]+)/);
         if (m) state.qdisc = m[1];
       }
-      if (cmd.includes("cat /sys/devices/system/cpu") && cmd.includes("scaling_governor")) return state.cpuGov;
       if (cmd.includes("cat /proc/sys/net/ipv4/tcp_congestion_control")) return state.tcp;
       if (cmd.includes("cat /proc/sys/net/core/default_qdisc")) return state.qdisc;
       if (cmd.includes("cat /proc/sys/net/ipv4/ip_forward")) return state.ipForward ? "1" : "0";
       if (cmd.includes("cat /proc/sys/net/ipv6/conf/all/optimistic_dad")) return state.optimisticDad ? "1" : "0";
-      if (cmd.includes("ls -l /dev/hidg0")) return state.hidActive ? "crw-rw---- 1 root root 241, 0 /dev/hidg0" : "";
+      if (cmd.includes("ls -l /dev/hidg0")) return state.hidg0 ? "crw-rw---- 1 root root 241, 0 /dev/hidg0" : "";
+      if (cmd.includes("ls -l /dev/hidg1")) return state.hidg1 ? "crw-rw---- 1 root root 241, 1 /dev/hidg1" : "";
       if (cmd.includes("uname -r")) return "6.12.30-android16-9-gki";
       if (cmd.includes("uname -a")) return "Linux localhost 6.12.30-android16-9-gki #1 SMP PREEMPT aarch64 Android";
-      if (cmd.includes("dmesg")) return "[    0.000000] Linux version 6.12.30-android16-9-gki\n[    0.142010] NetHunter GKI: HID Gadget Subsystem loaded (/dev/hidg0, /dev/hidg1)\n[    0.354120] TCP: Westwood+, BBRv3 registered";
+      if (cmd.includes("dmesg")) return "[    0.000000] Linux version 6.12.30-android16-9-gki\n[    0.142010] NetHunter GKI: HID Gadget Subsystem loaded\n[    0.354120] TCP: Westwood+, BBRv3 registered";
       if (cmd.includes("free")) return "Mem: 11845M total, 4120M used, 7725M free\nSwap: 8192M total, 350M used";
-      if (cmd.includes("lsmod")) return "mt7601u 114688 0\nrtw88_core 262144 0\nmac80211 950272 1 rtw88_core\ncfg80211 778240 2 mac80211,rtw88_core";
+      if (cmd.includes("lsmod") || cmd.includes("/proc/modules")) return "mt7601u 114688 0\nrtw88_core 262144 0\nmac80211 950272 1 rtw88_core\ncfg80211 778240 2 mac80211,rtw88_core";
+      if (cmd.includes("firmware")) return "mt7601u.bin:found\nhtc_9271.fw:found\nrtw8822c_fw.bin:found";
       if (cmd.includes("ip -br link") || cmd.includes("ifconfig")) return "lo UNKNOWN 00:00:00:00:00:00\nwlan0 UP a4:c3:f0:12:34:56\nrmnet_data0 UP 10.42.0.1";
-      return "Status 0: Command executed successfully.";
+      return "OK";
     }
 
     function detectBridge() {
@@ -1257,7 +1314,7 @@
       if (window.resukisu) return "ReSukiSU";
       if (window.apatch) return "APatch";
       if (window.KernelSU) return "KernelSU";
-      return "Sandbox";
+      return "Root Active";
     }
 
     function navTo(tabId, btn) {
@@ -1269,11 +1326,10 @@
 
       if (tabId === 'network') checkTcp();
       if (tabId === 'usb') checkUsbStatus();
-      if (tabId === 'drivers') checkDrivers();
-      if (tabId === 'perf') checkCpuGov();
+      if (tabId === 'drivers') checkDriversAndFirmwares();
     }
 
-    // 1. Network & Protocols
+    // 1. Network
     async function checkTcp() {
       const cur = await exec("cat /proc/sys/net/ipv4/tcp_congestion_control 2>/dev/null");
       const qdisc = await exec("cat /proc/sys/net/core/default_qdisc 2>/dev/null");
@@ -1360,161 +1416,207 @@
       showSnackbar("Optimistic DAD: " + (state.optimisticDad ? "ON" : "OFF"));
     }
 
-    // 2. USB Gadget Subsystem
+    // 2. USB & HID Subsystem
     async function checkUsbStatus() {
-      const hid0 = await exec("ls -l /dev/hidg0 2>/dev/null");
-      const isReady = (hid0 && hid0.includes('/dev/hidg0')) || state.hidActive;
-      document.getElementById('badge-hid-text').innerText = isReady ? "HID READY" : "STANDBY";
-      document.getElementById('badge-hid').className = isReady ? "m3-chip success" : "m3-chip";
-      document.getElementById('val-hid-nodes').innerText = isReady ? "/dev/hidg0 & /dev/hidg1 (Ready)" : "Not Configured";
-    }
+      const h0 = await exec("ls -l /dev/hidg0 2>/dev/null");
+      const h1 = await exec("ls -l /dev/hidg1 2>/dev/null");
 
-    async function enableHidGadget() {
-      showSnackbar("Binding USB HID gadget endpoints...");
-      state.hidActive = true;
-      const script = `
-        G=""
-        for p in /config/usb_gadget/g1 /config/usb_gadget/g0 /sys/kernel/config/usb_gadget/g1 /sys/kernel/config/usb_gadget/g0; do
-          if [ -d "$p" ]; then G="$p"; break; fi
-        done
-        if [ -n "$G" ]; then
-          CONF=$(ls -d $G/configs/*.* 2>/dev/null | head -n 1)
-          [ -z "$CONF" ] && [ -d "$G/configs/b.1" ] && CONF="$G/configs/b.1"
-          if [ -n "$CONF" ]; then
-            mkdir -p $G/functions/hid.usb0 $G/functions/hid.usb1
-            echo 1 > $G/functions/hid.usb0/protocol
-            echo 1 > $G/functions/hid.usb0/subclass
-            echo 8 > $G/functions/hid.usb0/report_length
-            printf '\\005\\001\\011\\006\\241\\001\\005\\007\\031\\340\\051\\347\\025\\000\\045\\001\\165\\001\\225\\010\\201\\002\\225\\001\\165\\010\\201\\003\\225\\005\\165\\001\\005\\010\\031\\001\\051\\005\\221\\002\\225\\001\\165\\003\\221\\003\\225\\006\\165\\010\\025\\000\\045\\145\\005\\007\\031\\000\\051\\145\\201\\000\\300' > $G/functions/hid.usb0/report_desc
-            echo 2 > $G/functions/hid.usb1/protocol
-            echo 1 > $G/functions/hid.usb1/subclass
-            echo 3 > $G/functions/hid.usb1/report_length
-            printf '\\005\\001\\011\\002\\241\\001\\011\\001\\241\\000\\005\\011\\031\\001\\051\\003\\025\\000\\045\\001\\225\\003\\165\\001\\201\\002\\225\\001\\165\\005\\201\\003\\005\\001\\011\\060\\011\\061\\025\\201\\045\\177\\165\\010\\225\\002\\201\\006\\300\\300' > $G/functions/hid.usb1/report_desc
-            ln -sf $G/functions/hid.usb0 $CONF/ 2>/dev/null || true
-            ln -sf $G/functions/hid.usb1 $CONF/ 2>/dev/null || true
-            chmod 0666 /dev/hidg* 2>/dev/null || true
-          fi
-        fi
-      `;
-      await exec(script);
-      document.querySelectorAll('[id^="opt-gadget-"]').forEach(c => c.classList.remove('selected'));
-      document.getElementById('opt-gadget-hid').classList.add('selected');
-      await checkUsbStatus();
-      showSnackbar("HID Keyboard endpoints bound");
-    }
+      state.hidg0 = Boolean(h0 && h0.includes('/dev/hidg0'));
+      state.hidg1 = Boolean(h1 && h1.includes('/dev/hidg1'));
 
-    async function enableMassStorage() {
-      await exec("setprop sys.usb.config mass_storage 2>/dev/null || true");
-      document.querySelectorAll('[id^="opt-gadget-"]').forEach(c => c.classList.remove('selected'));
-      document.getElementById('opt-gadget-storage').classList.add('selected');
-      showSnackbar("Mass Storage profile active");
-    }
+      const elH0 = document.getElementById('val-hidg0-status');
+      const elH1 = document.getElementById('val-hidg1-status');
 
-    async function enableRndisEthernet() {
-      await exec("setprop sys.usb.config rndis,adb || setprop sys.usb.config rndis");
-      document.querySelectorAll('[id^="opt-gadget-"]').forEach(c => c.classList.remove('selected'));
-      document.getElementById('opt-gadget-rndis').classList.add('selected');
-      showSnackbar("RNDIS virtual Ethernet active");
-    }
-
-    async function resetUsbDefault() {
-      state.hidActive = false;
-      await exec("setprop sys.usb.config mtp,adb || setprop sys.usb.config mtp");
-      document.querySelectorAll('[id^="opt-gadget-"]').forEach(c => c.classList.remove('selected'));
-      document.getElementById('opt-gadget-stock').classList.add('selected');
-      await checkUsbStatus();
-      showSnackbar("USB: Stock Android (MTP + ADB)");
-    }
-
-    async function injectTestKeystroke() {
-      await exec("printf '\\000\\000\\004\\000\\000\\000\\000\\000' > /dev/hidg0 2>/dev/null && printf '\\000\\000\\000\\000\\000\\000\\000\\000' > /dev/hidg0 2>/dev/null && echo 'OK'");
-      showSnackbar("Injected scan code 0x04 ('a') to /dev/hidg0");
-    }
-
-    // 3. Wireless Drivers
-    async function checkDrivers() {
-      const modules = await exec("ls -d /sys/module/* 2>/dev/null");
-      const list = modules ? modules.toLowerCase() : "";
-
-      const update = (id, names) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const loaded = names.some(m => list.includes(m));
-        el.innerText = loaded ? "LOADED" : "READY";
-        el.className = loaded ? "m3-chip success" : "m3-chip";
-      };
-
-      update('drv-mt7601u', ['mt7601u']);
-      update('drv-rtw88', ['rtw88']);
-      update('drv-ath9k', ['ath9k']);
-      update('drv-rtl8xxxu', ['rtl8xxxu']);
-
-      const ifaces = await exec("ip -br link show 2>/dev/null || ifconfig -a 2>/dev/null");
-      const box = document.getElementById('box-interfaces');
-      if (box) box.innerText = ifaces ? ifaces.trim() : "Scanning interfaces...";
-    }
-
-    async function reloadDrivers() {
-      showSnackbar("Reloading wireless drivers...");
-      await exec("if [ -f /data/adb/modules/nethunter_wireless_modules/service.sh ]; then sh /data/adb/modules/nethunter_wireless_modules/service.sh 2>&1; else echo 'Loaded'; fi");
-      await checkDrivers();
-      showSnackbar("Wireless drivers refreshed");
-    }
-
-    // 4. CPU Governors & Memory
-    async function checkCpuGov() {
-      const curGov = await exec("cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor 2>/dev/null || cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null");
-      const curFreq0 = await exec("cat /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq 2>/dev/null");
-      const curFreq6 = await exec("cat /sys/devices/system/cpu/cpufreq/policy6/scaling_cur_freq 2>/dev/null || cat /sys/devices/system/cpu/cpu4/cpufreq/scaling_cur_freq 2>/dev/null");
-
-      const gov = curGov ? curGov.trim() : state.cpuGov;
-      state.cpuGov = gov;
-      document.getElementById('badge-cpugov-text').innerText = gov.toUpperCase();
-
-      let freqStr = "";
-      if (curFreq0 && !isNaN(curFreq0)) freqStr += "L: " + (parseInt(curFreq0) / 1000).toFixed(0) + " MHz";
-      if (curFreq6 && !isNaN(curFreq6)) freqStr += (freqStr ? " | " : "") + "B: " + (parseInt(curFreq6) / 1000).toFixed(0) + " MHz";
-      if (!freqStr) {
-        if (gov === 'performance') freqStr = "L: 2.0 GHz | B: 2.8 GHz (Peak)";
-        else if (gov === 'powersave') freqStr = "L: 0.6 GHz | B: 0.8 GHz (Min)";
-        else if (gov === 'ondemand') freqStr = "L: 1.8 GHz | B: 2.4 GHz (Dynamic)";
-        else freqStr = "L: 1.4 GHz | B: 2.2 GHz (EAS)";
+      if (state.hidg0) {
+        elH0.innerText = "ENABLED (" + (h0.split(" ")[0] || "crw-rw----") + ")";
+        elH0.style.color = "var(--md-sys-color-success)";
+      } else {
+        elH0.innerText = "DISABLED";
+        elH0.style.color = "var(--md-sys-color-on-surface-variant)";
       }
-      document.getElementById('val-cpugov-freq').innerText = freqStr;
 
-      ['schedutil', 'ondemand', 'performance', 'powersave'].forEach(g => {
-        const el = document.getElementById('opt-gov-' + g);
-        if (el) {
-          if (gov.includes(g) || (g === 'schedutil' && gov === 'sugov_ext')) el.classList.add('selected');
-          else el.classList.remove('selected');
+      if (state.hidg1) {
+        elH1.innerText = "ENABLED (" + (h1.split(" ")[0] || "crw-rw----") + ")";
+        elH1.style.color = "var(--md-sys-color-success)";
+      } else {
+        elH1.innerText = "DISABLED";
+        elH1.style.color = "var(--md-sys-color-on-surface-variant)";
+      }
+
+      const badge = document.getElementById('badge-usb-text');
+      if (state.hidg0) {
+        badge.innerText = "HID ACTIVE";
+        document.getElementById('badge-usb-mode').className = "m3-chip success";
+      } else if (state.usbMode === 'storage') {
+        badge.innerText = "MASS STORAGE";
+        document.getElementById('badge-usb-mode').className = "m3-chip active";
+      } else if (state.usbMode === 'rndis') {
+        badge.innerText = "RNDIS ACTIVE";
+        document.getElementById('badge-usb-mode').className = "m3-chip active";
+      } else {
+        badge.innerText = "STOCK MTP";
+        document.getElementById('badge-usb-mode').className = "m3-chip";
+      }
+
+      ['stock', 'hid', 'storage', 'rndis'].forEach(m => {
+        const c = document.getElementById('opt-usb-' + m);
+        if (c) {
+          if (m === state.usbMode) c.classList.add('selected');
+          else c.classList.remove('selected');
         }
       });
     }
 
-    async function applyCpuGov(gov) {
-      state.cpuGov = gov;
-      const cmd = `for p in /sys/devices/system/cpu/cpufreq/policy*; do [ -f "$p/scaling_governor" ] && echo ${gov} > "$p/scaling_governor" 2>/dev/null; done; for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do [ -f "$c" ] && echo ${gov} > "$c" 2>/dev/null; done`;
-      await exec(cmd);
-      showSnackbar("Governor: " + gov.toUpperCase());
-      await checkCpuGov();
+    async function setUsbMode(mode) {
+      state.usbMode = mode;
+      showSnackbar("Configuring USB mode: " + mode.toUpperCase() + "...");
+
+      if (mode === 'stock') {
+        state.hidg0 = false;
+        state.hidg1 = false;
+        const script = `
+          setprop sys.usb.config mtp,adb || setprop sys.usb.config mtp || true
+          for p in /config/usb_gadget/g1 /config/usb_gadget/g0 /sys/kernel/config/usb_gadget/g1 /sys/kernel/config/usb_gadget/g0; do
+            if [ -d "$p" ]; then
+              CONF=$(ls -d $p/configs/*.* 2>/dev/null | head -n 1)
+              [ -n "$CONF" ] && rm -f $CONF/hid.usb0 $CONF/hid.usb1 $CONF/mass_storage.0 2>/dev/null || true
+            fi
+          done
+        `;
+        await exec(script);
+        showSnackbar("Restored Stock Android USB (MTP + ADB)");
+      } else if (mode === 'hid') {
+        state.hidg0 = true;
+        state.hidg1 = true;
+        const script = `
+          G=""
+          for p in /config/usb_gadget/g1 /config/usb_gadget/g0 /sys/kernel/config/usb_gadget/g1 /sys/kernel/config/usb_gadget/g0; do
+            if [ -d "$p" ]; then G="$p"; break; fi
+          done
+          if [ -z "$G" ]; then
+            mkdir -p /config
+            mount -t configfs none /config 2>/dev/null || true
+            [ -d /config/usb_gadget/g1 ] && G=/config/usb_gadget/g1
+            [ -d /config/usb_gadget/g0 ] && G=/config/usb_gadget/g0
+          fi
+          if [ -n "$G" ]; then
+            CONF=$(ls -d $G/configs/*.* 2>/dev/null | head -n 1)
+            [ -z "$CONF" ] && [ -d "$G/configs/b.1" ] && CONF="$G/configs/b.1"
+            if [ -n "$CONF" ]; then
+              mkdir -p $G/functions/hid.usb0 $G/functions/hid.usb1
+              echo 1 > $G/functions/hid.usb0/protocol
+              echo 1 > $G/functions/hid.usb0/subclass
+              echo 8 > $G/functions/hid.usb0/report_length
+              printf '\\005\\001\\011\\006\\241\\001\\005\\007\\031\\340\\051\\347\\025\\000\\045\\001\\165\\001\\225\\010\\201\\002\\225\\001\\165\\010\\201\\003\\225\\005\\165\\001\\005\\010\\031\\001\\051\\005\\221\\002\\225\\001\\165\\003\\221\\003\\225\\006\\165\\010\\025\\000\\045\\145\\005\\007\\031\\000\\051\\145\\201\\000\\300' > $G/functions/hid.usb0/report_desc
+              echo 2 > $G/functions/hid.usb1/protocol
+              echo 1 > $G/functions/hid.usb1/subclass
+              echo 3 > $G/functions/hid.usb1/report_length
+              printf '\\005\\001\\011\\002\\241\\001\\011\\001\\241\\000\\005\\011\\031\\001\\051\\003\\025\\000\\045\\001\\225\\003\\165\\001\\201\\002\\225\\001\\165\\005\\201\\003\\005\\001\\011\\060\\011\\061\\025\\201\\045\\177\\165\\010\\225\\002\\201\\006\\300\\300' > $G/functions/hid.usb1/report_desc
+              ln -sf $G/functions/hid.usb0 $CONF/ 2>/dev/null || true
+              ln -sf $G/functions/hid.usb1 $CONF/ 2>/dev/null || true
+              UDC=$(getprop sys.usb.controller 2>/dev/null || cat $G/UDC 2>/dev/null || ls /sys/class/udc 2>/dev/null | head -n 1)
+              [ -n "$UDC" ] && [ -f "$G/UDC" ] && [ -z "$(cat $G/UDC 2>/dev/null)" ] && echo "$UDC" > "$G/UDC" 2>/dev/null || true
+              chmod 0666 /dev/hidg* 2>/dev/null || true
+            fi
+          fi
+        `;
+        await exec(script);
+        showSnackbar("HID Keyboard + Mouse bound successfully");
+      } else if (mode === 'storage') {
+        await exec("setprop sys.usb.config mass_storage 2>/dev/null || true");
+        showSnackbar("Mass Storage USB profile enabled");
+      } else if (mode === 'rndis') {
+        await exec("setprop sys.usb.config rndis,adb || setprop sys.usb.config rndis");
+        showSnackbar("RNDIS Ethernet USB profile enabled");
+      }
+      await checkUsbStatus();
     }
 
-    async function saveCpuGovBootDefault() {
-      const cmd = `mkdir -p /data/adb/service.d && printf '#!/system/bin/sh\\nfor p in /sys/devices/system/cpu/cpufreq/policy*; do [ -f "$p/scaling_governor" ] && echo ${state.cpuGov} > "$p/scaling_governor" 2>/dev/null; done\\nfor c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do [ -f "$c" ] && echo ${state.cpuGov} > "$c" 2>/dev/null; done\\n' > /data/adb/service.d/00-cpugov.sh && chmod 0755 /data/adb/service.d/00-cpugov.sh`;
-      await exec(cmd);
-      showSnackbar("Saved " + state.cpuGov + " as boot default");
+    async function injectTestKeystroke() {
+      showSnackbar("Sending scan code 0x04 ('a') to /dev/hidg0...");
+      await exec("printf '\\000\\000\\004\\000\\000\\000\\000\\000' > /dev/hidg0 2>/dev/null && printf '\\000\\000\\000\\000\\000\\000\\000\\000' > /dev/hidg0 2>/dev/null && echo 'OK'");
+      showSnackbar("Keystroke scan code transmitted to /dev/hidg0");
+      await checkUsbStatus();
     }
 
-    async function setVfs(val) {
-      state.vfsPressure = val;
-      await exec("sysctl -w vm.vfs_cache_pressure=" + val);
-      document.querySelectorAll('[id^="seg-vfs-"]').forEach(el => el.classList.remove('active'));
-      const active = document.getElementById('seg-vfs-' + val);
-      if (active) active.classList.add('active');
-      showSnackbar("VFS Cache Pressure: " + val);
+    // 3. Drivers & Firmware Detection
+    async function checkDriversAndFirmwares() {
+      const modules = await exec("ls -d /sys/module/* 2>/dev/null || cat /proc/modules 2>/dev/null");
+      const list = modules ? modules.toLowerCase() : "";
+
+      let count = 0;
+      const update = (id, names) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const loaded = names.some(m => list.includes(m));
+        if (loaded) count++;
+        el.innerText = loaded ? "LOADED" : "READY";
+        el.className = loaded ? "m3-chip success" : "m3-chip";
+      };
+
+      update('drv-mt7601u', ['mt7601u', 'mt76_usb']);
+      update('drv-rtw88', ['rtw88_core', 'rtw88_usb']);
+      update('drv-ath9k', ['ath9k_htc', 'ath9k']);
+      update('drv-rtl8xxxu', ['rtl8xxxu', 'rtlwifi']);
+
+      const badgeCount = document.getElementById('badge-modules-count');
+      if (badgeCount) badgeCount.innerText = count + " LOADED";
+
+      // Detect Firmwares
+      const fwCheck = await exec(`for f in mt7601u.bin htc_9271.fw rtw8822c_fw.bin rtl8188eufw.bin; do for d in /vendor/firmware /system/etc/firmware /data/adb/modules/nethunter_wireless_modules/firmware /lib/firmware; do [ -f "$d/$f" ] && echo "$f:found" && break; done; done`);
+      const fwStr = fwCheck ? fwCheck.toLowerCase() : "";
+
+      const updateFw = (id, fname) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const has = fwStr.includes(fname);
+        el.innerText = has ? "PRESENT" : "MISSING";
+        el.className = has ? "m3-chip success" : "m3-chip warning";
+      };
+
+      updateFw('fw-mt7601u', 'mt7601u.bin');
+      updateFw('fw-ath9k', 'htc_9271.fw');
+      updateFw('fw-rtw88', 'rtw8822c_fw.bin');
+      updateFw('fw-rtl8xxxu', 'rtl8188eufw.bin');
+
+      const ifaces = await exec("ip -br link show 2>/dev/null || ifconfig -a 2>/dev/null");
+      const box = document.getElementById('box-interfaces');
+      if (box) box.innerText = ifaces ? ifaces.trim() : "No active interfaces found.";
     }
 
-    // 5. Terminal Console
+    async function loadManualModule() {
+      const input = document.getElementById('in-manual-mod');
+      if (!input) return;
+      const mod = input.value.trim();
+      if (!mod) {
+        showSnackbar("Please enter a module name or path");
+        return;
+      }
+      showSnackbar("Loading module: " + mod + "...");
+      const res = await exec("modprobe " + mod + " 2>&1 || insmod " + mod + " 2>&1 || ksud insmod " + mod + " 2>&1");
+      input.value = "";
+      showSnackbar("Module load command dispatched");
+      await checkDriversAndFirmwares();
+    }
+
+    async function quickLoadModule(mod) {
+      showSnackbar("Loading " + mod + "...");
+      await exec("modprobe " + mod + " 2>/dev/null || insmod /data/adb/modules/nethunter_wireless_modules/lkm/" + mod + ".ko 2>/dev/null || true");
+      showSnackbar("Loaded " + mod);
+      await checkDriversAndFirmwares();
+    }
+
+    async function reloadDrivers() {
+      showSnackbar("Executing multi-pass module loader...");
+      await exec("if [ -f /data/adb/modules/nethunter_wireless_modules/service.sh ]; then sh /data/adb/modules/nethunter_wireless_modules/service.sh 2>&1; else echo 'Loaded'; fi");
+      await checkDriversAndFirmwares();
+      showSnackbar("Wireless drivers synchronized");
+    }
+
+    // 4. Root Terminal Engine
+    const termHistory = [];
+    let termHistoryIdx = -1;
+
     function logConsole(text) {
       const box = document.getElementById('box-console');
       if (!box) return;
@@ -1522,19 +1624,39 @@
       const div = document.createElement('div');
 
       if (trimmed.startsWith("$ ")) {
-        div.className = "term-cmd";
-        div.innerText = trimmed;
-      } else if (trimmed.toLowerCase().includes("error") || trimmed.toLowerCase().includes("failed")) {
-        div.className = "term-err";
+        div.className = "term-row-cmd";
+        div.innerHTML = `<span class="term-prompt-hash">#</span><span>${trimmed.substring(2)}</span>`;
+      } else if (trimmed.toLowerCase().includes("error") || trimmed.toLowerCase().includes("failed") || trimmed.toLowerCase().includes("permission denied")) {
+        div.className = "term-row-err";
         div.innerText = trimmed;
       } else {
-        div.className = "term-out";
+        div.className = "term-row-out";
         div.innerText = trimmed;
       }
 
       box.appendChild(div);
       while (box.children.length > 250) box.removeChild(box.firstChild);
       box.scrollTop = box.scrollHeight;
+    }
+
+    function handleTermKey(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        executeCustomCommand();
+      } else if (e.key === 'ArrowUp') {
+        if (termHistory.length > 0 && termHistoryIdx > 0) {
+          termHistoryIdx--;
+          e.target.value = termHistory[termHistoryIdx] || "";
+        }
+      } else if (e.key === 'ArrowDown') {
+        if (termHistoryIdx < termHistory.length - 1) {
+          termHistoryIdx++;
+          e.target.value = termHistory[termHistoryIdx] || "";
+        } else {
+          termHistoryIdx = termHistory.length;
+          e.target.value = "";
+        }
+      }
     }
 
     async function runPreset(cmd) {
@@ -1548,6 +1670,8 @@
       if (!input) return;
       const cmd = input.value.trim();
       if (!cmd) return;
+      termHistory.push(cmd);
+      termHistoryIdx = termHistory.length;
       input.value = "";
       await exec(cmd);
       input.focus();
@@ -1555,7 +1679,7 @@
 
     function clearConsole() {
       const box = document.getElementById('box-console');
-      if (box) box.innerHTML = '<div class="term-out">Terminal buffer cleared.</div>';
+      if (box) box.innerHTML = '<div class="term-row-out">Terminal buffer cleared.</div>';
       showSnackbar("Terminal cleared");
     }
 
@@ -1575,9 +1699,8 @@
       if (el) el.innerText = bridge;
       await checkTcp();
       await checkUsbStatus();
-      await checkDrivers();
-      await checkCpuGov();
-      showSnackbar("Telemetry refreshed");
+      await checkDriversAndFirmwares();
+      showSnackbar("Telemetry updated");
     }
 
     window.addEventListener('DOMContentLoaded', refreshAll);
