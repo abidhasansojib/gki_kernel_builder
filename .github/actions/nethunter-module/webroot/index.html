@@ -581,6 +581,284 @@
       word-break: break-all;
     }
 
+    /* Redesigned Diagnostics Terminal Elements */
+    .m3-preset-chips-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 0 2px 0;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .m3-preset-chips-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .m3-preset-chip {
+      background: var(--md-sys-color-surface-container-high);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-shape-corner-full);
+      color: var(--md-sys-color-on-surface);
+      padding: 6px 12px;
+      font-size: 11.5px;
+      font-weight: 500;
+      font-family: var(--font-family-mono);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+    }
+    .m3-preset-chip:hover {
+      background: var(--md-sys-color-surface-container-highest);
+      border-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-primary);
+    }
+    .m3-preset-chip:active {
+      transform: scale(0.96);
+      background: var(--md-sys-color-secondary-container);
+    }
+
+    .m3-terminal-header {
+      background: #14161e;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .m3-terminal-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .m3-terminal-dots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .m3-terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .m3-dot-red { background: #ff5f56; }
+    .m3-dot-yellow { background: #ffbd2e; }
+    .m3-dot-green { background: #27c93f; }
+
+    .m3-terminal-title {
+      font-family: var(--font-family-mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .m3-term-user { color: #ff7b72; }
+    .m3-term-at { color: #8b949e; }
+    .m3-term-host { color: #79c0ff; }
+    .m3-term-colon { color: #8b949e; }
+    .m3-term-path { color: #7ee787; }
+
+    .m3-terminal-header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .m3-term-tool-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--md-shape-corner-xs);
+      color: var(--md-sys-color-on-surface-variant);
+      padding: 4px 9px;
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-family);
+      transition: all 0.15s ease;
+    }
+    .m3-term-tool-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--md-sys-color-on-surface);
+    }
+    .m3-term-tool-btn:active {
+      transform: scale(0.96);
+    }
+    .m3-term-tool-btn.active {
+      background: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+      border-color: var(--md-sys-color-primary);
+    }
+
+    .m3-terminal-screen {
+      background: #08090d;
+      color: #e6edf3;
+      padding: 14px;
+      font-family: var(--font-family-mono);
+      font-size: 11.5px;
+      line-height: 1.55;
+      min-height: 280px;
+      max-height: 440px;
+      overflow-y: auto;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+
+    .m3-terminal-screen::-webkit-scrollbar {
+      width: 6px;
+    }
+    .m3-terminal-screen::-webkit-scrollbar-track {
+      background: #08090d;
+    }
+    .m3-terminal-screen::-webkit-scrollbar-thumb {
+      background: #21262d;
+      border-radius: 3px;
+    }
+    .m3-terminal-screen::-webkit-scrollbar-thumb:hover {
+      background: #30363d;
+    }
+
+    .m3-term-line {
+      margin-bottom: 6px;
+      display: block;
+    }
+    .m3-term-time {
+      color: #6e7681;
+      font-size: 10.5px;
+      margin-right: 6px;
+      user-select: none;
+    }
+    .m3-term-cmd {
+      color: #7ee787;
+      font-weight: 600;
+      background: rgba(126, 231, 135, 0.08);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border-left: 3px solid #7ee787;
+      margin-top: 8px;
+      word-break: break-all;
+    }
+    .m3-term-prompt {
+      color: #79c0ff;
+      margin-right: 6px;
+      user-select: none;
+    }
+    .m3-term-cmd-text {
+      color: #7ee787;
+    }
+    .m3-term-out {
+      color: #c9d1d9;
+      padding: 2px 4px 2px 8px;
+    }
+    .m3-term-pre {
+      font-family: inherit;
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin: 0;
+    }
+    .m3-term-err {
+      color: #ff7b72;
+      background: rgba(255, 123, 114, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border-left: 3px solid #ff7b72;
+      margin-top: 4px;
+    }
+    .m3-term-sys {
+      color: #d2a8ff;
+      font-size: 11.5px;
+      padding: 2px 4px;
+    }
+    .m3-term-badge-sys, .m3-term-badge-info, .m3-term-badge-err {
+      display: inline-block;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-right: 6px;
+      user-select: none;
+      vertical-align: middle;
+    }
+    .m3-term-badge-sys {
+      background: rgba(210, 168, 255, 0.18);
+      color: #d2a8ff;
+    }
+    .m3-term-badge-info {
+      background: rgba(121, 192, 255, 0.18);
+      color: #79c0ff;
+    }
+    .m3-term-badge-err {
+      background: rgba(255, 123, 114, 0.2);
+      color: #ff7b72;
+    }
+
+    .m3-terminal-input-bar {
+      background: #11131a;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .m3-terminal-prompt-sym {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+
+    .m3-terminal-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--md-shape-corner-sm);
+      outline: none;
+      color: #f0f6fc;
+      font-family: var(--font-family-mono);
+      font-size: 12.5px;
+      padding: 8px 10px;
+      transition: border-color 0.2s ease;
+    }
+    .m3-terminal-input:focus {
+      border-color: var(--md-sys-color-primary);
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .m3-terminal-input::placeholder {
+      color: #6e7681;
+      font-family: var(--font-family);
+      font-size: 12px;
+    }
+
+    .m3-terminal-run-btn {
+      background: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      border: none;
+      border-radius: var(--md-shape-corner-sm);
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .m3-terminal-run-btn:hover {
+      background: #90b8f8;
+    }
+    .m3-terminal-run-btn:active {
+      transform: scale(0.92);
+    }
+
     /* M3 Snackbar */
     .m3-snackbar {
       position: fixed;
@@ -1210,31 +1488,127 @@
     <!-- TAB 5: CONSOLE & DIAGNOSTICS                         -->
     <!-- ==================================================== -->
     <div id="tab-console" class="tab-view">
-      <div class="m3-card">
-        <div class="m3-card-header">
-          <div class="m3-card-title-group">
-            <span class="m3-card-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="4 17 10 11 4 5"></polyline>
-                <line x1="12" y1="19" x2="20" y2="19"></line>
-              </svg>
-              Kernel Diagnostics Terminal
-            </span>
-            <span class="m3-card-subtitle">Live shell execution history and feedback</span>
-          </div>
+      
+      <!-- Quick Diagnostic Presets Bar -->
+      <div class="m3-card" style="padding: 12px 14px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--md-sys-color-primary); text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            Quick Diagnostic Presets
+          </span>
+          <span style="font-size: 11px; color: var(--md-sys-color-outline);">Tap to execute</span>
         </div>
         
-        <div class="m3-console-box">
-          <div class="m3-console-top">
-            <span>DIAGNOSTICS CONSOLE</span>
-            <div class="m3-console-actions">
-              <button class="m3-console-btn" onclick="copyConsole()">Copy</button>
-              <button class="m3-console-btn" onclick="clearConsole()">Clear</button>
-            </div>
-          </div>
-          <div id="box-console" class="m3-console-content">System Console initialized. Ready.</div>
+        <div class="m3-preset-chips-scroll">
+          <button class="m3-preset-chip" onclick="runPreset('dmesg 2>/dev/null | tail -n 40 || logcat -d -t 40')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            dmesg
+          </button>
+          <button class="m3-preset-chip" onclick="runPreset('uname -a')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M12 16h.01"></path></svg>
+            uname -a
+          </button>
+          <button class="m3-preset-chip" onclick="runPreset('lsmod 2>/dev/null || ls -d /sys/module/*')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect></svg>
+            lsmod
+          </button>
+          <button class="m3-preset-chip" onclick="runPreset('ip addr show')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"></path></svg>
+            ip addr
+          </button>
+          <button class="m3-preset-chip" onclick="runPreset('ip route show')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+            ip route
+          </button>
+          <button class="m3-preset-chip" onclick="runPreset('free -h 2>/dev/null || free -m')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg>
+            free mem
+          </button>
+          <button class="m3-preset-chip" onclick="runPreset('sysctl net.ipv4.tcp_congestion_control net.core.default_qdisc')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line></svg>
+            sysctl tcp
+          </button>
+          <button class="m3-preset-chip" onclick="runPreset('getenforce 2>/dev/null || cat /sys/fs/selinux/enforce')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            selinux
+          </button>
+          <button class="m3-preset-chip" onclick="runPreset('getprop ro.product.model && getprop ro.build.version.release')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+            device info
+          </button>
         </div>
       </div>
+
+      <!-- Main Terminal Window Card -->
+      <div class="m3-card" style="padding: 0; overflow: hidden; border: 1px solid var(--md-sys-color-outline-variant);">
+        
+        <!-- Terminal Titlebar -->
+        <div class="m3-terminal-header">
+          <div class="m3-terminal-header-left">
+            <div class="m3-terminal-dots">
+              <span class="m3-terminal-dot m3-dot-red"></span>
+              <span class="m3-terminal-dot m3-dot-yellow"></span>
+              <span class="m3-terminal-dot m3-dot-green"></span>
+            </div>
+            <div class="m3-terminal-title">
+              <span class="m3-term-user">root</span><span class="m3-term-at">@</span><span class="m3-term-host">android</span><span class="m3-term-colon">:</span><span class="m3-term-path">~#</span>
+            </div>
+          </div>
+
+          <div class="m3-terminal-header-right">
+            <span id="term-bridge-badge" class="m3-chip" style="height: 24px; padding: 0 8px; font-size: 10px;">
+              <span class="m3-chip-dot"></span>
+              <span id="term-bridge-name">CONNECTING</span>
+            </span>
+
+            <button id="btn-autoscroll" class="m3-term-tool-btn active" onclick="toggleAutoScroll()" title="Toggle Auto-scroll">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"></path></svg>
+              <span id="label-autoscroll">Scroll: ON</span>
+            </button>
+            <button class="m3-term-tool-btn" onclick="copyConsole()" title="Copy Output">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span>Copy</span>
+            </button>
+            <button class="m3-term-tool-btn" onclick="clearConsole()" title="Clear Output">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <span>Clear</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Terminal Output Buffer Screen -->
+        <div id="box-console" class="m3-terminal-screen">
+          <div class="m3-term-line m3-term-sys">
+            <span class="m3-term-time">[BOOT]</span>
+            <span class="m3-term-badge-sys">KERNEL</span>
+            <span>NetHunter GKI Diagnostics Terminal initialized.</span>
+          </div>
+          <div class="m3-term-line m3-term-sys">
+            <span class="m3-term-time">[INFO]</span>
+            <span class="m3-term-badge-info">READY</span>
+            <span>Root shell environment active. Enter command or tap presets above.</span>
+          </div>
+        </div>
+
+        <!-- Interactive Command Prompt Input Bar -->
+        <div class="m3-terminal-input-bar">
+          <div class="m3-terminal-prompt-sym">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7cdbb5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+          <input id="term-input" type="text" class="m3-terminal-input" placeholder="Enter root command (e.g. dmesg, uname -a, ip a)..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" onkeydown="handleTermKey(event)" />
+          <button id="term-run-btn" class="m3-terminal-run-btn" onclick="executeCustomCommand()" title="Execute command">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+
     </div>
 
   </div>
@@ -1391,8 +1765,27 @@
       if (cmd.includes("cat /proc/sys/vm/vfs_cache_pressure")) return String(state.vfsPressure);
       if (cmd.includes("cat /sys/block/zram0/comp_algorithm")) return state.zramAlgo;
       if (cmd.includes("cat /sys/block/zram0/disksize")) return "8589934592";
+      if (cmd.includes("uname -a")) return "Linux localhost 6.12.25-android16-9-gki #1 SMP PREEMPT aarch64 Android";
       if (cmd.includes("uname -r")) return "6.12.25-android16-9-gki";
-      return "";
+      if (cmd.includes("dmesg")) {
+        return `[    0.000000] Linux version 6.12.25-android16-9-gki (android-build@google) (Android clang version 18.0.1) #1 SMP PREEMPT
+[    0.000000] Kernel command line: bootopt=64S3,32N2,64N2 androidboot.gki=1
+[    0.142010] NetHunter GKI: HID Gadget Subsystem loaded (/dev/hidg0, /dev/hidg1)
+[    0.354120] TCP: Westwood+, BBRv3 congestion control drivers registered
+[    0.689400] Qdisc: CAKE and FQ_Codel schedulers initialized
+[    1.205410] cfg80211: Wireless driver mac80211 stack ready
+[    2.150220] zram0: 8GB LZ4 compressed RAM swap active`;
+      }
+      if (cmd.includes("lsmod")) return "mt7601u 114688 0\nrtw88_core 262144 0\nmac80211 950272 1 rtw88_core\ncfg80211 778240 2 mac80211,rtw88_core";
+      if (cmd.includes("ip addr") || cmd.includes("ip a")) {
+        return `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN\n    inet 127.0.0.1/8 scope host lo\n2: wlan0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP\n    inet 192.168.1.145/24 brd 192.168.1.255 scope global wlan0\n3: rmnet_data0: <UP,LOWER_UP> mtu 1500 qdisc fq state UP\n    inet 10.42.15.89/30 scope global rmnet_data0`;
+      }
+      if (cmd.includes("ip route")) return "default via 192.168.1.1 dev wlan0 proto dhcp metric 100\n192.168.1.0/24 dev wlan0 proto kernel scope link src 192.168.1.145";
+      if (cmd.includes("free")) return "               total        used        free      shared     buffers\nMem:         11845M       4820M       7025M        180M        210M\nSwap:         8192M        450M       7742M";
+      if (cmd.includes("getenforce") || cmd.includes("selinux")) return "Enforcing";
+      if (cmd.includes("getprop")) return "Device: Android Generic GKI\nModel: GKI Device\nRelease: 16 (Android Baklava)\nArchitecture: arm64-v8a";
+      if (cmd.includes("sysctl net.ipv4.tcp_congestion_control")) return "net.ipv4.tcp_congestion_control = " + state.tcp + "\nnet.core.default_qdisc = " + state.qdisc;
+      return "[Sandbox Execution: " + cmd + "]\nCommand completed with status 0.";
     }
 
     // M3 Snackbar System with Native Manager Toast Bridge
@@ -1410,26 +1803,174 @@
       setTimeout(() => { bar.classList.remove('show'); }, 2600);
     }
 
+    // ====================================================
+    // TERMINAL ENGINE & INTERACTIVE PROMPT
+    // ====================================================
+    let termAutoScroll = true;
+    const termHistory = [];
+    let termHistoryIndex = -1;
+
+    function getTimeString() {
+      const now = new Date();
+      return String(now.getHours()).padStart(2, '0') + ':' +
+             String(now.getMinutes()).padStart(2, '0') + ':' +
+             String(now.getSeconds()).padStart(2, '0');
+    }
+
+    function escapeHtml(str) {
+      if (typeof str !== 'string') str = String(str);
+      return str.replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+    }
+
+    function detectRootManager() {
+      if (window.ksu && typeof window.ksu.exec === 'function') return "KernelSU";
+      if (window.sukisu && typeof window.sukisu.exec === 'function') return "SukiSU";
+      if (window.resukisu && typeof window.resukisu.exec === 'function') return "ReSukiSU";
+      if (window.apatch && typeof window.apatch.exec === 'function') return "APatch";
+      if (window.KernelSU && typeof window.KernelSU.exec === 'function') return "KernelSU";
+      return "Sandbox Preview";
+    }
+
+    function updateBridgeBadge() {
+      const badge = document.getElementById('term-bridge-name');
+      if (badge) badge.innerText = detectRootManager();
+    }
+
     function logConsole(text) {
       const box = document.getElementById('box-console');
-      if (box) {
-        box.innerText += "\n" + text;
+      if (!box) return;
+
+      const time = getTimeString();
+      const div = document.createElement('div');
+      const trimmed = (text || "").trim();
+
+      if (trimmed.startsWith("$ ")) {
+        div.className = "m3-term-line m3-term-cmd";
+        const cmdOnly = trimmed.substring(2);
+        div.innerHTML = `<span class="m3-term-time">[${time}]</span><span class="m3-term-prompt">root#</span><span class="m3-term-cmd-text">${escapeHtml(cmdOnly)}</span>`;
+      } else if (trimmed.startsWith("Error:") || trimmed.toLowerCase().includes("permission denied") || trimmed.toLowerCase().includes("command not found")) {
+        div.className = "m3-term-line m3-term-err";
+        div.innerHTML = `<span class="m3-term-time">[${time}]</span><span class="m3-term-badge-err">ERR</span><span class="m3-term-out-text">${escapeHtml(trimmed)}</span>`;
+      } else if (trimmed.startsWith("[SYSTEM]") || trimmed.startsWith("[BOOT]") || trimmed.startsWith("[INFO]")) {
+        div.className = "m3-term-line m3-term-sys";
+        div.innerHTML = `<span class="m3-term-time">[${time}]</span><span class="m3-term-badge-info">SYS</span><span class="m3-term-out-text">${escapeHtml(trimmed)}</span>`;
+      } else {
+        div.className = "m3-term-line m3-term-out";
+        div.innerHTML = `<pre class="m3-term-pre">${escapeHtml(text)}</pre>`;
+      }
+
+      box.appendChild(div);
+
+      while (box.children.length > 500) {
+        box.removeChild(box.firstChild);
+      }
+
+      if (termAutoScroll) {
         box.scrollTop = box.scrollHeight;
       }
     }
 
     function clearConsole() {
       const box = document.getElementById('box-console');
-      if (box) box.innerText = "Console cleared.";
+      if (!box) return;
+      box.innerHTML = `
+        <div class="m3-term-line m3-term-sys">
+          <span class="m3-term-time">[${getTimeString()}]</span>
+          <span class="m3-term-badge-info">SYS</span>
+          <span>Terminal session cleared. Ready for input.</span>
+        </div>
+      `;
+      showSnackbar("Terminal cleared");
     }
 
     function copyConsole() {
       const box = document.getElementById('box-console');
-      if (box) {
-        navigator.clipboard.writeText(box.innerText).then(() => {
-          showSnackbar("Console output copied to clipboard");
-        });
+      if (!box) return;
+      const text = box.innerText;
+      if (!text || text.trim() === "") {
+        showSnackbar("Terminal is empty");
+        return;
       }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showSnackbar("Terminal output copied to clipboard");
+        }).catch(() => fallbackCopy(text));
+      } else {
+        fallbackCopy(text);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        const ok = document.execCommand('copy');
+        showSnackbar(ok ? "Terminal output copied to clipboard" : "Failed to copy output");
+      } catch (err) {
+        showSnackbar("Failed to copy terminal output");
+      }
+      document.body.removeChild(ta);
+    }
+
+    function toggleAutoScroll() {
+      termAutoScroll = !termAutoScroll;
+      const btn = document.getElementById('btn-autoscroll');
+      const label = document.getElementById('label-autoscroll');
+      if (btn) btn.classList.toggle('active', termAutoScroll);
+      if (label) label.innerText = termAutoScroll ? "Scroll: ON" : "Scroll: OFF";
+      if (termAutoScroll) {
+        const box = document.getElementById('box-console');
+        if (box) box.scrollTop = box.scrollHeight;
+      }
+    }
+
+    async function executeCustomCommand() {
+      const input = document.getElementById('term-input');
+      if (!input) return;
+      const cmd = input.value.trim();
+      if (!cmd) return;
+
+      termHistory.push(cmd);
+      termHistoryIndex = termHistory.length;
+      input.value = "";
+
+      await exec(cmd);
+      input.focus();
+    }
+
+    function handleTermKey(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        executeCustomCommand();
+      } else if (event.key === 'ArrowUp') {
+        if (termHistory.length > 0 && termHistoryIndex > 0) {
+          termHistoryIndex--;
+          event.target.value = termHistory[termHistoryIndex] || "";
+        }
+      } else if (event.key === 'ArrowDown') {
+        if (termHistoryIndex < termHistory.length - 1) {
+          termHistoryIndex++;
+          event.target.value = termHistory[termHistoryIndex] || "";
+        } else {
+          termHistoryIndex = termHistory.length;
+          event.target.value = "";
+        }
+      }
+    }
+
+    async function runPreset(cmd) {
+      const input = document.getElementById('term-input');
+      if (input) input.value = cmd;
+      await executeCustomCommand();
     }
 
     // M3 Navigation Tab Switching
@@ -1444,6 +1985,11 @@
       if (tabId === 'usb') checkUsbStatus();
       if (tabId === 'drivers') checkDrivers();
       if (tabId === 'perf') checkPerf();
+      if (tabId === 'console') {
+        updateBridgeBadge();
+        const box = document.getElementById('box-console');
+        if (box && termAutoScroll) box.scrollTop = box.scrollHeight;
+      }
     }
 
     // ====================================================
@@ -1853,6 +2399,7 @@
     async function refreshAll() {
       const uname = await exec("uname -r 2>/dev/null");
       if (uname) document.getElementById('top-kernel-ver').innerText = uname.trim();
+      updateBridgeBadge();
       await checkTcp();
       await checkUsbStatus();
       await checkDrivers();
