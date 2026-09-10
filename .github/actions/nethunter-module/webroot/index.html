@@ -576,6 +576,110 @@
       color: var(--md-sys-color-primary);
     }
 
+    /* Modern Quick Telemetry Strip */
+    .m3-quick-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 11px;
+    }
+
+    .m3-quick-cell {
+      background: var(--md-sys-color-surface-container-low);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-shape-corner-md);
+      padding: 9px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 52px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    }
+
+    .m3-quick-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface-variant);
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .m3-quick-val {
+      font-family: var(--font-family-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--md-sys-color-primary);
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .m3-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    .pulse-blue { background: #a8c7fa; box-shadow: 0 0 6px #a8c7fa; }
+    .pulse-green { background: #6ddb9c; box-shadow: 0 0 6px #6ddb9c; }
+    .pulse-purple { background: #d0bcff; box-shadow: 0 0 6px #d0bcff; }
+
+    /* Frequency Cluster Gauge Meters */
+    .m3-gauge-container {
+      background: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-shape-corner-md);
+      padding: 10px 12px;
+      margin-top: 8px;
+      margin-bottom: 11px;
+    }
+
+    .m3-gauge-row {
+      margin-bottom: 8px;
+    }
+
+    .m3-gauge-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .m3-gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11.5px;
+      margin-bottom: 5px;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .m3-gauge-track {
+      width: 100%;
+      height: 6px;
+      border-radius: var(--md-shape-corner-full);
+      background: var(--md-sys-color-surface-container-highest);
+      overflow: hidden;
+    }
+
+    .m3-gauge-bar {
+      height: 100%;
+      border-radius: var(--md-shape-corner-full);
+      background: var(--md-sys-color-primary);
+      transition: width 0.4s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .m3-gauge-bar-big {
+      background: #7cdbb5;
+    }
+
     @media (max-width: 480px) {
       .app-container {
         padding: 8px 8px;
@@ -584,6 +688,17 @@
         padding: 12px 12px;
         margin-bottom: 10px;
         border-radius: var(--md-shape-corner-md);
+      }
+      .m3-quick-strip {
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .m3-quick-cell {
+        padding: 7px 8px;
+        min-height: 48px;
+      }
+      .m3-quick-val {
+        font-size: 11px;
       }
       .m3-options-grid {
         grid-template-columns: 1fr;
@@ -1094,6 +1209,7 @@
       </div>
       <div class="top-app-bar-title-group">
         <span class="top-app-bar-title">Kernel Manager</span>
+        <span class="top-app-bar-subtitle">6.12.30-android16-9-gki • ARM64</span>
       </div>
     </div>
     <button class="btn-icon-m3" onclick="refreshAll()" title="Refresh System Telemetry">
@@ -1105,6 +1221,31 @@
   </header>
 
   <div class="app-container">
+
+    <!-- Global Quick Status Strip -->
+    <div class="m3-quick-strip">
+      <div class="m3-quick-cell">
+        <div class="m3-quick-header">
+          <span>CPU GOV</span>
+          <span class="m3-status-dot pulse-blue"></span>
+        </div>
+        <div id="quick-gov" class="m3-quick-val">schedutil</div>
+      </div>
+      <div class="m3-quick-cell">
+        <div class="m3-quick-header">
+          <span>TCP STACK</span>
+          <span class="m3-status-dot pulse-green"></span>
+        </div>
+        <div id="quick-tcp" class="m3-quick-val">bbr (v3)</div>
+      </div>
+      <div class="m3-quick-cell">
+        <div class="m3-quick-header">
+          <span>ROOT BRIDGE</span>
+          <span class="m3-status-dot pulse-purple"></span>
+        </div>
+        <div id="quick-bridge" class="m3-quick-val">KernelSU</div>
+      </div>
+    </div>
 
     <!-- ==================================================== -->
     <!-- TAB 1: NETWORK & PROTOCOLS                           -->
@@ -1160,20 +1301,36 @@
 
         <!-- Algorithm Options Grid -->
         <div class="m3-options-grid">
+          <div id="opt-bbr3" class="m3-option-card selected" onclick="applyTcp('bbr3')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">BBRv3</span>
+              <span class="m3-chip active">RECOMMENDED</span>
+            </div>
+            <span class="m3-option-desc">Model-based congestion for maximum bandwidth & low RTT</span>
+          </div>
+
           <div id="opt-westwood" class="m3-option-card" onclick="applyTcp('westwood')">
             <div class="m3-option-header">
               <span class="m3-option-title">Westwood+</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              <span class="m3-chip" style="color:#e0a020; border-color:#e0a020; background:rgba(224,160,32,0.12)">WIRELESS</span>
             </div>
-            <span class="m3-option-desc">Loss-tolerant engine for unstable Wi-Fi & cellular</span>
+            <span class="m3-option-desc">Loss-tolerant recovery engine for unstable Wi-Fi & cellular</span>
           </div>
 
-          <div id="opt-bbr3" class="m3-option-card" onclick="applyTcp('bbr3')">
+          <div id="opt-cubic" class="m3-option-card" onclick="applyTcp('cubic')">
             <div class="m3-option-header">
-              <span class="m3-option-title">BBRv3</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+              <span class="m3-option-title">CUBIC</span>
+              <span class="m3-chip">STOCK</span>
             </div>
-            <span class="m3-option-desc">Model-based congestion for maximum throughput</span>
+            <span class="m3-option-desc">Android default cubic window growth algorithm</span>
+          </div>
+
+          <div id="opt-reno" class="m3-option-card" onclick="applyTcp('reno')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">Reno</span>
+              <span class="m3-chip">LEGACY</span>
+            </div>
+            <span class="m3-option-desc">Classic AIMD congestion avoidance algorithm</span>
           </div>
         </div>
 
@@ -1307,33 +1464,33 @@
           <div id="opt-gadget-hid" class="m3-option-card" onclick="enableHidGadget()">
             <div class="m3-option-header">
               <span class="m3-option-title">HID Keyboard + Mouse</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"></path></svg>
+              <span class="m3-chip active">ACTIVE</span>
             </div>
-            <span class="m3-option-desc">Creates /dev/hidg0 & /dev/hidg1 nodes</span>
+            <span class="m3-option-desc">Registers /dev/hidg0 & /dev/hidg1 endpoints</span>
           </div>
 
           <div id="opt-gadget-storage" class="m3-option-card" onclick="enableMassStorage()">
             <div class="m3-option-header">
               <span class="m3-option-title">Mass Storage</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline></svg>
+              <span class="m3-chip">USB DISK</span>
             </div>
-            <span class="m3-option-desc">Mount phone storage as USB drive</span>
+            <span class="m3-option-desc">Mount phone storage as USB flash drive</span>
           </div>
 
           <div id="opt-gadget-rndis" class="m3-option-card" onclick="enableRndisEthernet()">
             <div class="m3-option-header">
               <span class="m3-option-title">RNDIS Ethernet</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+              <span class="m3-chip success">NETWORK</span>
             </div>
-            <span class="m3-option-desc">Virtual USB network interface</span>
+            <span class="m3-option-desc">Virtual USB network adapter for host routing</span>
           </div>
 
           <div id="opt-gadget-serial" class="m3-option-card" onclick="enableCdcAcmSerial()">
             <div class="m3-option-header">
               <span class="m3-option-title">CDC-ACM Serial</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+              <span class="m3-chip" style="color:#e0a020; border-color:#e0a020; background:rgba(224,160,32,0.12)">UART</span>
             </div>
-            <span class="m3-option-desc">Exposes /dev/ttyGS0 serial endpoint</span>
+            <span class="m3-option-desc">Exposes /dev/ttyGS0 serial COM port</span>
           </div>
         </div>
 
@@ -1574,36 +1731,58 @@
 
         <!-- 4 Profile Options Grid -->
         <div class="m3-options-grid">
-          <div id="opt-gov-schedutil" class="m3-option-card" onclick="applyCpuGov('schedutil')">
+          <div id="opt-gov-schedutil" class="m3-option-card selected" onclick="applyCpuGov('schedutil')">
             <div class="m3-option-header">
-              <span class="m3-option-title">Efficient (schedutil)</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              <span class="m3-option-title">schedutil</span>
+              <span class="m3-chip active">DEFAULT</span>
             </div>
             <span class="m3-option-desc">EAS dynamic scaling per task energy cost</span>
           </div>
 
           <div id="opt-gov-ondemand" class="m3-option-card" onclick="applyCpuGov('ondemand')">
             <div class="m3-option-header">
-              <span class="m3-option-title">Responsive (ondemand)</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              <span class="m3-option-title">ondemand</span>
+              <span class="m3-chip" style="color:#e0a020; border-color:#e0a020; background:rgba(224,160,32,0.12)">RESPONSIVE</span>
             </div>
             <span class="m3-option-desc">Fast clock ramp-up on load for snappy UI</span>
           </div>
 
           <div id="opt-gov-performance" class="m3-option-card" onclick="applyCpuGov('performance')">
             <div class="m3-option-header">
-              <span class="m3-option-title">Gaming (performance)</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+              <span class="m3-option-title">performance</span>
+              <span class="m3-chip" style="color:#ff6b6b; border-color:#ff6b6b; background:rgba(255,107,107,0.12)">GAMING</span>
             </div>
             <span class="m3-option-desc">Locks maximum clocks for zero frame drops</span>
           </div>
 
           <div id="opt-gov-powersave" class="m3-option-card" onclick="applyCpuGov('powersave')">
             <div class="m3-option-header">
-              <span class="m3-option-title">Battery (powersave)</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+              <span class="m3-option-title">powersave</span>
+              <span class="m3-chip success">BATTERY</span>
             </div>
             <span class="m3-option-desc">Caps frequencies to min for longest standby</span>
+          </div>
+        </div>
+
+        <!-- Live Cluster Frequency Gauges -->
+        <div class="m3-gauge-container">
+          <div class="m3-gauge-row">
+            <div class="m3-gauge-labels">
+              <span>Little Cluster (Cores 0-3)</span>
+              <span id="txt-cpu-little" style="font-family: var(--font-family-mono); font-weight: 600; color: var(--md-sys-color-primary);">1.4 GHz (54%)</span>
+            </div>
+            <div class="m3-gauge-track">
+              <div id="bar-cpu-little" class="m3-gauge-bar" style="width: 54%;"></div>
+            </div>
+          </div>
+          <div class="m3-gauge-row">
+            <div class="m3-gauge-labels">
+              <span>Big Cluster (Cores 4-7)</span>
+              <span id="txt-cpu-big" style="font-family: var(--font-family-mono); font-weight: 600; color: var(--md-sys-color-tertiary);">2.2 GHz (78%)</span>
+            </div>
+            <div class="m3-gauge-track">
+              <div id="bar-cpu-big" class="m3-gauge-bar m3-gauge-bar-big" style="width: 78%;"></div>
+            </div>
           </div>
         </div>
 
@@ -1930,6 +2109,12 @@
         const m = cmd.match(/default_qdisc=([a-z0-9_]+)/);
         if (m) state.qdisc = m[1];
       }
+      if (cmd.includes("scaling_governor")) {
+        const m = cmd.match(/echo\s+([a-z0-9_]+)\s*>/);
+        if (m) state.cpuGov = m[1];
+      }
+      if (cmd.includes("scaling_available_governors")) return state.availGovs;
+      if (cmd.includes("cat /sys/devices/system/cpu") && cmd.includes("scaling_governor")) return state.cpuGov;
       if (cmd.includes("cat /proc/sys/net/ipv4/tcp_congestion_control")) return state.tcp;
       if (cmd.includes("cat /proc/sys/net/ipv4/tcp_available_congestion_control")) return state.availTcp;
       if (cmd.includes("cat /proc/sys/net/core/default_qdisc")) return state.qdisc;
@@ -1943,10 +2128,10 @@
       if (cmd.includes("cat /proc/sys/vm/vfs_cache_pressure")) return String(state.vfsPressure);
       if (cmd.includes("cat /sys/block/zram0/comp_algorithm")) return state.zramAlgo;
       if (cmd.includes("cat /sys/block/zram0/disksize")) return "8589934592";
-      if (cmd.includes("uname -a")) return "Linux localhost 6.12.25-android16-9-gki #1 SMP PREEMPT aarch64 Android";
-      if (cmd.includes("uname -r")) return "6.12.25-android16-9-gki";
+      if (cmd.includes("uname -a")) return "Linux localhost 6.12.30-android16-9-gki #1 SMP PREEMPT aarch64 Android";
+      if (cmd.includes("uname -r")) return "6.12.30-android16-9-gki";
       if (cmd.includes("dmesg")) {
-        return `[    0.000000] Linux version 6.12.25-android16-9-gki (android-build@google) (Android clang version 18.0.1) #1 SMP PREEMPT
+        return `[    0.000000] Linux version 6.12.30-android16-9-gki (android-build@google) (Android clang version 18.0.1) #1 SMP PREEMPT
 [    0.000000] Kernel command line: bootopt=64S3,32N2,64N2 androidboot.gki=1
 [    0.142010] NetHunter GKI: HID Gadget Subsystem loaded (/dev/hidg0, /dev/hidg1)
 [    0.354120] TCP: Westwood+, BBRv3 congestion control drivers registered
@@ -2014,8 +2199,11 @@
     }
 
     function updateBridgeBadge() {
+      const bridge = detectRootManager();
       const badge = document.getElementById('term-bridge-name');
-      if (badge) badge.innerText = detectRootManager();
+      if (badge) badge.innerText = bridge;
+      const qBridge = document.getElementById('quick-bridge');
+      if (qBridge) qBridge.innerText = bridge;
     }
 
     function setExitCode(code) {
@@ -2246,17 +2434,20 @@
       const badgeText = document.getElementById('badge-tcp-text');
       if (badgeText) badgeText.innerText = trimmed.toUpperCase();
 
+      const qTcp = document.getElementById('quick-tcp');
+      if (qTcp) qTcp.innerText = trimmed + (trimmed.includes('bbr') ? ' (v3)' : '');
+
       // Highlight active algorithm option card
-      document.querySelectorAll('.m3-option-card').forEach(c => {
-        if (c.id === 'opt-westwood' || c.id === 'opt-bbr3') {
-          c.classList.remove('selected');
+      ['bbr3', 'westwood', 'cubic', 'reno'].forEach(a => {
+        const el = document.getElementById('opt-' + a);
+        if (el) {
+          if (trimmed === a || ((trimmed === 'bbr' || trimmed === 'bbr3') && a === 'bbr3')) {
+            el.classList.add('selected');
+          } else {
+            el.classList.remove('selected');
+          }
         }
       });
-      let activeCard = document.getElementById('opt-' + trimmed);
-      if (!activeCard && (trimmed === 'bbr' || trimmed === 'bbr3')) {
-        activeCard = document.getElementById('opt-bbr3');
-      }
-      if (activeCard) activeCard.classList.add('selected');
 
       // Highlight active Qdisc segment
       const q = qdisc ? qdisc.trim() : "fq_codel";
@@ -2615,6 +2806,49 @@
       }
       const valFreq = document.getElementById('val-cpugov-freq');
       if (valFreq) valFreq.innerText = freqStr || 'Dynamic Scaling';
+
+      const qGov = document.getElementById('quick-gov');
+      if (qGov) qGov.innerText = gov;
+
+      // Update cluster frequency gauge bars
+      const barL = document.getElementById('bar-cpu-little');
+      const txtL = document.getElementById('txt-cpu-little');
+      const barB = document.getElementById('bar-cpu-big');
+      const txtB = document.getElementById('txt-cpu-big');
+
+      let pctL = 54;
+      let pctB = 78;
+      let labelL = "1.4 GHz (54%)";
+      let labelB = "2.2 GHz (78%)";
+
+      if (curFreq0 && !isNaN(curFreq0)) {
+        const mhz = Math.round(parseInt(curFreq0) / 1000);
+        pctL = Math.min(100, Math.max(10, Math.round(mhz / 20)));
+        labelL = mhz + " MHz (" + pctL + "%)";
+      } else if (gov === 'performance') {
+        pctL = 100; labelL = "2.0 GHz (100%)";
+      } else if (gov === 'powersave') {
+        pctL = 20; labelL = "0.6 GHz (20%)";
+      } else if (gov === 'ondemand') {
+        pctL = 75; labelL = "1.8 GHz (75%)";
+      }
+
+      if (curFreq6 && !isNaN(curFreq6)) {
+        const mhz = Math.round(parseInt(curFreq6) / 1000);
+        pctB = Math.min(100, Math.max(10, Math.round(mhz / 28)));
+        labelB = mhz + " MHz (" + pctB + "%)";
+      } else if (gov === 'performance') {
+        pctB = 100; labelB = "2.8 GHz (100%)";
+      } else if (gov === 'powersave') {
+        pctB = 25; labelB = "0.8 GHz (25%)";
+      } else if (gov === 'ondemand') {
+        pctB = 85; labelB = "2.4 GHz (85%)";
+      }
+
+      if (barL) barL.style.width = pctL + "%";
+      if (txtL) txtL.innerText = labelL;
+      if (barB) barB.style.width = pctB + "%";
+      if (txtB) txtB.innerText = labelB;
 
       ['schedutil', 'ondemand', 'performance', 'powersave'].forEach(g => {
         const el = document.getElementById('opt-gov-' + g);
