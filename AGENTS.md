@@ -78,9 +78,9 @@ The project supports 3 independent root implementations with automated patch res
   * **Safe Action Launcher (`action.sh`):** Launches the WebUI avoiding Android cross-app `ERR_ACCESS_DENIED` errors from `/data/adb`.
 * **Single-Storage Packaging (`Nethunter-Wireless-Modules.zip`):**
   * Module ID: `nethunter_wireless_modules` | Name: `Nethunter Wireless,HID Driver & Modules` | Author: `abidhasansojib`.
-  * Packaged in a lightweight single `lkm/` storage directory and firmware in `system/etc/firmware/` (reduced ZIP from 52 MB to 14 MB).
-  * `post-fs-data.sh`: Dynamically auto-populates firmware paths (`/vendor/firmware`, `/vendor/etc/firmware`, `/system/etc/firmware`) and loads core networking modules early.
-  * `service.sh`: Loads all remaining drivers on boot in a 3-pass loop with underscore-hyphen normalization matching `lsmod`, applies native ueventd permissions, enforces `schedutil`, and syncs WebUI.
+  * Packaged in a lightweight single `lkm/` storage directory and firmware in `system/etc/firmware/` (canonical path for Android `ueventd` without vendor partition collisions).
+  * `post-fs-data.sh`: Fast, non-blocking early node and device permission setup (`/dev/net/tun`, `/dev/uhid`, etc.).
+  * `service.sh`: Orderly driver loader in late boot (core dependencies first, then peripheral drivers), enforces BBR3, MGLRU, `schedutil`, and syncs WebUI.
 
 ### 5. Performance, Networking & Security Enhancements
 * **Performance Patch Suite (`performance/action.yml`):**

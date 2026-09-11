@@ -22,15 +22,27 @@ runs:
 
         echo "=== Collecting compiled .ko modules into single lkm/ storage ==="
         KO_COUNT=0
-        for search_path in "${{ github.workspace }}/kernel" "/home/runner/.cache/bazel" "/home/runner/out"; do
+        for search_path in "${{ github.workspace }}/kernel/bazel-bin" "${{ github.workspace }}/kernel/out" "/home/runner/out"; do
           if [ -d "$search_path" ]; then
             echo "Scanning $search_path for compiled .ko modules..."
             while IFS= read -r ko; do
               if [ -f "$ko" ]; then
                 modname=$(basename "$ko")
-                echo "Found module: $modname ($ko)"
-                cp -vf "$ko" "$STAGING_DIR/lkm/" 2>/dev/null || true
-                KO_COUNT=$((KO_COUNT+1))
+                case "$modname" in
+                  *test*|*kunit*|dummy_*|gki_module*|*.mod.ko)
+                    continue
+                    ;;
+                esac
+                case "$ko" in
+                  */cache/*|*/_objs/*|*/sandbox/*)
+                    continue
+                    ;;
+                esac
+                if [ ! -f "$STAGING_DIR/lkm/$modname" ]; then
+                  echo "Found module: $modname ($ko)"
+                  cp -vf "$ko" "$STAGING_DIR/lkm/" 2>/dev/null || true
+                  KO_COUNT=$((KO_COUNT+1))
+                fi
               fi
             done < <(find -L "$search_path" -type f -name "*.ko" 2>/dev/null || true)
           fi
@@ -87,12 +99,7 @@ runs:
           curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/zd1211/$fw" "$OE_URL/zd1211/$fw" 2>/dev/null || true
         done
 
-        # Mirror firmware to vendor directories for universal OEM ueventd detection
-        echo "=== Mirroring Firmware to Vendor Trees for Universal ueventd Detection ==="
-        mkdir -p "$STAGING_DIR/vendor/firmware"
-        mkdir -p "$STAGING_DIR/vendor/etc/firmware"
-        cp -rf "$FIRMWARE_DIR/"* "$STAGING_DIR/vendor/firmware/" 2>/dev/null || true
-        cp -rf "$FIRMWARE_DIR/"* "$STAGING_DIR/vendor/etc/firmware/" 2>/dev/null || true
+        echo "=== Firmware successfully placed in system/etc/firmware ==="
 
         echo "=== Installing NetHunter Module WebUI Dashboard & Action Handler ==="
         mkdir -p "$STAGING_DIR/webroot"
@@ -170,40 +177,11 @@ runs:
           mknod /dev/net/tun c 10 200 2>/dev/null || true
         fi
         chmod 666 /dev/net/tun /dev/rfkill /dev/uhid /dev/hidg* 2>/dev/null || true
-
-        # Dynamically detect and populate runtime firmware paths
-        for fw_target in /vendor/firmware /vendor/etc/firmware /system/etc/firmware; do
-          if [ -d "$fw_target" ] && [ -w "$fw_target" ] && [ -d "$MODDIR/system/etc/firmware" ]; then
-            cp -rf "$MODDIR/system/etc/firmware/"* "$fw_target/" 2>/dev/null || true
-          fi
-        done
-
-        # Early load core wireless & CAN dependencies from lkm/
-        for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
-          if [ -f "$MODDIR/lkm/$core_ko" ]; then
-            modbase=$(echo "${core_ko%.ko}" | tr '-' '_')
-            if [ ! -d "/sys/module/$modbase" ] && ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
-              insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/$core_ko" 2>/dev/null || true
-            fi
-          fi
-        done
+        chmod 666 /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2>/dev/null || true
+        chmod -R 666 /dev/bus/usb/ 2>/dev/null || true
         EOF
         sed -i 's/^[[:space:]]*//' "$STAGING_DIR/post-fs-data.sh"
         chmod +x "$STAGING_DIR/post-fs-data.sh"
-
-        # --- Native ueventd Hotplug Rules (0% CPU / 0 Battery Drain) ---
-        cat << 'EOF' > "$STAGING_DIR/system/etc/ueventd.rc"
-        /dev/hidg*                0666   root   root
-        /dev/uhid                 0666   root   root
-        /dev/rfkill               0666   root   root
-        /dev/net/tun              0666   root   root
-        /dev/ttyUSB*              0666   root   root
-        /dev/ttyACM*              0666   root   root
-        /dev/rfcomm*              0666   root   root
-        /dev/bus/usb/*/*          0666   root   root
-        EOF
-        sed -i 's/^[[:space:]]*//' "$STAGING_DIR/system/etc/ueventd.rc"
-        cp -vf "$STAGING_DIR/system/etc/ueventd.rc" "$STAGING_DIR/ueventd.rc" 2>/dev/null || true
 
         # --- Late Boot Service & Driver Loader (service.sh) ---
         cat << 'EOF' > "$STAGING_DIR/service.sh"
@@ -232,28 +210,38 @@ runs:
           done
         fi
 
-        # Multi-Pass Module Loader from single lkm/ directory
+        # Safe driver loader from lkm/ directory (late boot)
         MODULE_SRC="$MODDIR/lkm"
         if [ -d "$MODULE_SRC" ]; then
-          # Priority 1: Core dependencies
-          for core_ko in cfg80211.ko mac80211.ko rtw88_core.ko rtw88_usb.ko rtw88_8822b.ko rtw88_8822c.ko rtw88_8821c.ko rtw8723d.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko; do
-            if [ -f "$MODULE_SRC/$core_ko" ]; then
-              modbase=$(echo "${core_ko%.ko}" | tr '-' '_')
-              if [ ! -d "/sys/module/$modbase" ] && ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
-                insmod "$MODULE_SRC/$core_ko" 2>/dev/null || ksud insmod "$MODULE_SRC/$core_ko" 2>/dev/null || true
-              fi
+          load_mod() {
+            local mod="$1"
+            [ -f "$MODULE_SRC/$mod" ] || return 0
+            local base
+            base=$(echo "${mod%.ko}" | tr '-' '_')
+            if [ ! -d "/sys/module/$base" ] && ! grep -q "^${base}[[:space:]]" /proc/modules 2>/dev/null; then
+              insmod "$MODULE_SRC/$mod" 2>/dev/null || ksud insmod "$MODULE_SRC/$mod" 2>/dev/null || true
             fi
+          }
+
+          # Priority 1: Core networking and wireless dependencies
+          for m in cfg80211.ko mac80211.ko can.ko can-dev.ko can-raw.ko can-bcm.ko can-gw.ko usbnet.ko bluetooth.ko; do
+            load_mod "$m"
           done
 
-          # Priority 2: Multi-Pass Loader for all remaining drivers
-          for pass in 1 2 3; do
+          # Priority 2: Sub-driver common libraries
+          for m in rtw88_core.ko rtw88_usb.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko rt2x00lib.ko rt2x00usb.ko rt2800lib.ko ath9k_hw.ko ath9k_common.ko dvb-core.ko dvb_usb_v2.ko; do
+            load_mod "$m"
+          done
+
+          # Priority 3: Hardware device drivers (skip test / kunit / mock modules)
+          for pass in 1 2; do
             for ko in "$MODULE_SRC"/*.ko; do
               [ -f "$ko" ] || continue
-              modname=$(basename "$ko")
-              modbase=$(echo "${modname%.ko}" | tr '-' '_')
-              if [ ! -d "/sys/module/$modbase" ] && ! lsmod 2>/dev/null | grep -q "^${modbase}[[:space:]]"; then
-                insmod "$ko" 2>/dev/null || ksud insmod "$ko" 2>/dev/null || true
-              fi
+              m=$(basename "$ko")
+              case "$m" in
+                *test*|*kunit*|dummy_*|gki_module*) continue ;;
+              esac
+              load_mod "$m"
             done
           done
         fi

@@ -1070,7 +1070,7 @@
         <div class="m3-card-header">
           <div class="m3-card-title-group">
             <span class="m3-card-title">Available Firmwares</span>
-            <span class="m3-card-subtitle">Searched in /vendor/firmware & module paths</span>
+            <span class="m3-card-subtitle">Searched in /system/etc/firmware & module paths</span>
           </div>
         </div>
 
@@ -1900,7 +1900,7 @@
 
       const [modules, fwCheck] = await Promise.all([
         exec("cat /proc/modules 2>/dev/null || ls -1 /sys/module 2>/dev/null"),
-        exec(`for f in mt7601u.bin htc_9271.fw rtw8822c_fw.bin rtl8188eufw.bin; do for d in /vendor/firmware /system/etc/firmware /data/adb/modules/nethunter_wireless_modules/firmware /lib/firmware; do [ -f "$d/$f" ] && echo "$f:found" && break; done; done`)
+        exec(`for f in mt7601u.bin htc_9271.fw rtw8822c_fw.bin rtl8188eufw.bin; do for d in /system/etc/firmware /data/adb/modules/nethunter_wireless_modules/system/etc/firmware /vendor/firmware /lib/firmware; do [ -f "$d/$f" ] && echo "$f:found" && break; done; done`)
       ]);
 
       const list = modules ? ("\n" + modules.toLowerCase() + "\n") : "";
