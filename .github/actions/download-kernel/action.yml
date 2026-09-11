@@ -66,32 +66,12 @@ runs:
 
               if [ -n "$SUPER_COMMIT" ] && [ "$SUPER_COMMIT" != "null" ]; then
                 echo "Resolved common commit from superproject: $SUPER_COMMIT"
-                python3 -c '
-                  import re, sys
-                  manifest, commit = sys.argv[1], sys.argv[2]
-                  with open(manifest, "r") as f:
-                      c = f.read()
-                  pattern = r"(<project\s+path=[\"\x27]common[\"\x27]\s+name=[\"\x27]kernel/common[\"\x27])[^>]*>"
-                  replacement = f"\\g<1> revision=\"{commit}\">"
-                  c = re.sub(pattern, replacement, c)
-                  with open(manifest, "w") as f:
-                      f.write(c)
-                ' "$DEFAULT_MANIFEST_PATH" "$SUPER_COMMIT"
+                python3 "${{ github.workspace }}/.github/scripts/patch_manifest.py" "$DEFAULT_MANIFEST_PATH" "$SUPER_COMMIT"
               else
                 TAG_REF=$(git ls-remote --tags https://android.googlesource.com/kernel/common "*${FORMATTED_BRANCH}*" 2>/dev/null | tail -n 1 | awk '{print $2}' || true)
                 if [ -n "$TAG_REF" ]; then
                   echo "Resolved fallback tag for common: $TAG_REF"
-                  python3 -c '
-                    import re, sys
-                    manifest, tag = sys.argv[1], sys.argv[2]
-                    with open(manifest, "r") as f:
-                        c = f.read()
-                    pattern = r"(<project\s+path=[\"\x27]common[\"\x27]\s+name=[\"\x27]kernel/common[\"\x27])[^>]*>"
-                    replacement = f"\\g<1> revision=\"{tag}\">"
-                    c = re.sub(pattern, replacement, c)
-                    with open(manifest, "w") as f:
-                        f.write(c)
-                  ' "$DEFAULT_MANIFEST_PATH" "$TAG_REF"
+                  python3 "${{ github.workspace }}/.github/scripts/patch_manifest.py" "$DEFAULT_MANIFEST_PATH" "$TAG_REF"
                 fi
               fi
             fi
