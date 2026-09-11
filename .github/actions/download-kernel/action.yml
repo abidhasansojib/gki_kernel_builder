@@ -41,14 +41,62 @@ runs:
 
         init_repo() {
           repo init -u https://android.googlesource.com/kernel/manifest -b common-${FORMATTED_BRANCH} --depth=1 || { echo "ERROR: repo init failed" >&2; return 1; }
-          REMOTE_BRANCH=$(git ls-remote https://android.googlesource.com/kernel/common ${FORMATTED_BRANCH}) || { echo "ERROR: git ls-remote failed" >&2; return 1; }
           DEFAULT_MANIFEST_PATH=.repo/manifests/default.xml
           DEPRECATED=false
-          if grep -q deprecated <<< "$REMOTE_BRANCH"; then
-            sed -i "s/\"${FORMATTED_BRANCH}\"/\"deprecated\/${FORMATTED_BRANCH}\"/g" "$DEFAULT_MANIFEST_PATH"
-            echo "⚠ Note: Branch ${FORMATTED_BRANCH} is considered deprecated."
-            DEPRECATED=true
+
+          REMOTE_BRANCH=$(git ls-remote --heads https://android.googlesource.com/kernel/common "${FORMATTED_BRANCH}" 2>/dev/null || true)
+
+          if [ -n "$REMOTE_BRANCH" ]; then
+            if grep -q deprecated <<< "$REMOTE_BRANCH"; then
+              sed -i "s/\"${FORMATTED_BRANCH}\"/\"deprecated\/${FORMATTED_BRANCH}\"/g" "$DEFAULT_MANIFEST_PATH"
+              echo "⚠ Note: Branch ${FORMATTED_BRANCH} is considered deprecated."
+              DEPRECATED=true
+            else
+              echo "Branch ${FORMATTED_BRANCH} exists on remote."
+            fi
+          else
+            DEP_BRANCH=$(git ls-remote --heads https://android.googlesource.com/kernel/common "deprecated/${FORMATTED_BRANCH}" 2>/dev/null || true)
+            if [ -n "$DEP_BRANCH" ]; then
+              sed -i "s/\"${FORMATTED_BRANCH}\"/\"deprecated\/${FORMATTED_BRANCH}\"/g" "$DEFAULT_MANIFEST_PATH"
+              echo "⚠ Note: Found branch under deprecated/${FORMATTED_BRANCH}."
+              DEPRECATED=true
+            else
+              echo "⚠ Branch ${FORMATTED_BRANCH} not found as head on remote. Resolving commit from superproject..."
+              SUPER_COMMIT=$(curl -s "https://android.googlesource.com/kernel/superproject/+/refs/heads/common-${FORMATTED_BRANCH}/?format=JSON" 2>/dev/null | sed 1d | jq -r '.entries[]? | select(.name=="common") | .id' 2>/dev/null || true)
+
+              if [ -n "$SUPER_COMMIT" ] && [ "$SUPER_COMMIT" != "null" ]; then
+                echo "Resolved common commit from superproject: $SUPER_COMMIT"
+                python3 -c '
+                  import re, sys
+                  manifest, commit = sys.argv[1], sys.argv[2]
+                  with open(manifest, "r") as f:
+                      c = f.read()
+                  pattern = r"(<project\s+path=[\"\x27]common[\"\x27]\s+name=[\"\x27]kernel/common[\"\x27])[^>]*>"
+                  replacement = f"\\g<1> revision=\"{commit}\">"
+                  c = re.sub(pattern, replacement, c)
+                  with open(manifest, "w") as f:
+                      f.write(c)
+                ' "$DEFAULT_MANIFEST_PATH" "$SUPER_COMMIT"
+              else
+                TAG_REF=$(git ls-remote --tags https://android.googlesource.com/kernel/common "*${FORMATTED_BRANCH}*" 2>/dev/null | tail -n 1 | awk '{print $2}' || true)
+                if [ -n "$TAG_REF" ]; then
+                  echo "Resolved fallback tag for common: $TAG_REF"
+                  python3 -c '
+                    import re, sys
+                    manifest, tag = sys.argv[1], sys.argv[2]
+                    with open(manifest, "r") as f:
+                        c = f.read()
+                    pattern = r"(<project\s+path=[\"\x27]common[\"\x27]\s+name=[\"\x27]kernel/common[\"\x27])[^>]*>"
+                    replacement = f"\\g<1> revision=\"{tag}\">"
+                    c = re.sub(pattern, replacement, c)
+                    with open(manifest, "w") as f:
+                        f.write(c)
+                  ' "$DEFAULT_MANIFEST_PATH" "$TAG_REF"
+                fi
+              fi
+            fi
           fi
+
           echo "deprecated=$DEPRECATED" >> $GITHUB_OUTPUT
         }
 
