@@ -133,6 +133,10 @@ The project supports 3 independent root implementations with automated patch res
 * **RTW88 Silicon Base Module Dependency Resolution:** Added missing base silicon modules (`rtw88_8822c`, `rtw88_8821c`) to the dependency tree for `rtw88_8822cu` and `rtw88_8821cu` in WebUI module loader, preventing symbol resolution errors during insmod.
 * **Reverse Iterative Module Unloading:** Enhanced `resetDriversDefaults()` to unload modules in reverse dependency order in an iterative shell loop, eliminating toybox `rmmod` resource busy failures.
 * **Workflow Dead Code Elimination:** Cleaned out redundant `touch gki.fragment` step in `build.yml`.
+* **Dual-Path Firmware Placement & Subdirectory Lookup:** Added dual-staging for all firmware binaries (`rtw88/`, `rtlwifi/`, `mediatek/`, `ath9k_htc/`) to exist at both root and driver subfolders, and updated WebUI firmware checker to resolve subpaths across all candidate module folders.
+* **Dynamic Kernel Firmware Search Path Integration:** Configured `/sys/module/firmware_class/parameters/path` in `post-fs-data.sh`, `service.sh`, and WebUI loader, ensuring kernel `request_firmware()` directly resolves module firmware without vendor partition modification.
+* **Core GKI System Module Packaging Exclusions:** Excluded conflicting core system modules (`zram`, `zsmalloc`, `binder`, `gzvm`, `virtio`, `open-dice`, `pwrseq`, `vsock`, `kheaders`) from being bundled into `lkm/`.
+* **Bootloop Elimination in NetHunter Service Loader:** Replaced the unconditional boot-time blind insmod loop of 200+ hardware drivers with on-demand loading, initializing only foundation stacks (`cfg80211`, `mac80211`, `usbnet`) on boot to prevent watchdog timeouts and driver collisions with NoMount.
 
 ---
 
