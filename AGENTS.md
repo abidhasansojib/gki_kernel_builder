@@ -138,6 +138,7 @@ The project supports 3 independent root implementations with automated patch res
 * **Core GKI System Module Packaging Exclusions:** Excluded conflicting core system modules (`zram`, `zsmalloc`, `binder`, `gzvm`, `virtio`, `open-dice`, `pwrseq`, `vsock`, `kheaders`) from being bundled into `lkm/`.
 * **Bootloop Elimination in NetHunter Service Loader:** Replaced the unconditional boot-time blind insmod loop of 200+ hardware drivers with on-demand loading, initializing only foundation stacks (`cfg80211`, `mac80211`, `usbnet`) on boot to prevent watchdog timeouts and driver collisions with NoMount.
 * **Release Title Simplification:** Updated release naming format in `build.yml` to `Release #${{ github.run_number }} (All Flavors)` (or `(${FLAVOR})`), omitting the redundant kernel version prefix from the title.
+* **Upstream SUSFS Open Redirect Symbol Self-Healing:** Added an idempotent definition fallback for `susfs_open_redirect_spoof_vfs_statfs` in `susfs-patches/action.yml`, preventing linker failures (`ld.lld: error: undefined symbol: susfs_open_redirect_spoof_vfs_statfs`) when building with upstream SUSFS commits where the symbol was omitted from `fs/susfs.c` while still invoked in `50_add_susfs_in_gki-android16-6.12.patch`.
 
 ---
 
