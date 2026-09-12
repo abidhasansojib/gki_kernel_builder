@@ -66,7 +66,7 @@ runs:
         # MediaTek (mt7601u, mt7610u, mt7662u)
         mkdir -p "$FIRMWARE_DIR/mediatek"
         for fw in mt7601u.bin mt7610u.bin mt7662u.bin mt7662u_rom_patch.bin; do
-          curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/mediatek/$fw" "$KF_URL/mediatek/$fw" 2>/dev/null || true
+          curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/mediatek/$fw" "$KF_URL/mediatek/$fw" 2>/dev/null || curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/mediatek/$fw" "$OE_URL/$fw" 2>/dev/null || true
         done
         # Ensure mt7601u.bin is also in root firmware dir for drivers querying legacy path
         cp -vf "$FIRMWARE_DIR/mediatek/mt7601u.bin" "$FIRMWARE_DIR/mt7601u.bin" 2>/dev/null || true
@@ -76,21 +76,26 @@ runs:
         for fw in rtw8822c_fw.bin rtw8822c_wow_fw.bin rtw8822b_fw.bin rtw8821c_fw.bin rtw8723d_fw.bin; do
           curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/rtw88/$fw" "$KF_URL/rtw88/$fw" 2>/dev/null || true
         done
+        # Ensure rtw8822c_fw.bin is also in root firmware dir for flat path queries
+        cp -vf "$FIRMWARE_DIR/rtw88/rtw8822c_fw.bin" "$FIRMWARE_DIR/rtw8822c_fw.bin" 2>/dev/null || true
 
         # Realtek RTLWIFI & RTL8XXXU series
         mkdir -p "$FIRMWARE_DIR/rtlwifi"
         for fw in rtl8188eufw.bin rtl8188fufw.bin rtl8192cufw.bin rtl8192cufw_A.bin rtl8192cufw_B.bin rtl8192cufw_TMSC.bin rtl8192eu_nic.bin rtl8192fufw.bin rtl8710bufw_SMIC.bin rtl8710bufw_UMC.bin rtl8723aufw_A.bin rtl8723aufw_B.bin rtl8723aufw_B_NoBT.bin rtl8723bu_nic.bin; do
-          curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/rtlwifi/$fw" "$KF_URL/rtlwifi/$fw" 2>/dev/null || true
+          curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/rtlwifi/$fw" "$KF_URL/rtlwifi/$fw" 2>/dev/null || curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/rtlwifi/$fw" "$OE_URL/$fw" 2>/dev/null || true
         done
+        # Ensure rtl8188eufw.bin is also in root firmware dir for flat path queries
+        cp -vf "$FIRMWARE_DIR/rtlwifi/rtl8188eufw.bin" "$FIRMWARE_DIR/rtl8188eufw.bin" 2>/dev/null || true
 
         # Atheros ATH9K-HTC series (TP-Link TL-WN722N v1, Alfa AWUS036NHA)
         mkdir -p "$FIRMWARE_DIR/ath9k_htc"
         for fw in htc_9271.fw htc_7010.fw; do
-          curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/$fw" "$KF_URL/$fw" 2>/dev/null || true
+          curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/$fw" "$KF_URL/$fw" 2>/dev/null || curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/$fw" "$OE_URL/$fw" 2>/dev/null || true
           cp -vf "$FIRMWARE_DIR/$fw" "$FIRMWARE_DIR/ath9k_htc/$fw" 2>/dev/null || true
         done
         for fw in htc_9271-1.4.0.fw htc_7010-1.4.0.fw; do
           curl -fLSs --retry 5 --retry-delay 3 -o "$FIRMWARE_DIR/ath9k_htc/$fw" "$KF_URL/ath9k_htc/$fw" 2>/dev/null || true
+          cp -vf "$FIRMWARE_DIR/ath9k_htc/$fw" "$FIRMWARE_DIR/$fw" 2>/dev/null || true
         done
 
         # ZyDAS ZD1211 / ZD1211B
@@ -179,6 +184,11 @@ runs:
         chmod 666 /dev/net/tun /dev/rfkill /dev/uhid /dev/hidg* 2>/dev/null || true
         chmod 666 /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2>/dev/null || true
         chmod -R 666 /dev/bus/usb/ 2>/dev/null || true
+
+        # Ensure kernel firmware search path includes module firmware directory
+        if [ -w /sys/module/firmware_class/parameters/path ] && [ -d "$MODDIR/system/etc/firmware" ]; then
+          echo "$MODDIR/system/etc/firmware" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
+        fi
         EOF
         sed -i 's/^[[:space:]]*//' "$STAGING_DIR/post-fs-data.sh"
         chmod +x "$STAGING_DIR/post-fs-data.sh"
@@ -187,6 +197,15 @@ runs:
         cat << 'EOF' > "$STAGING_DIR/service.sh"
         #!/system/bin/sh
         MODDIR=${0%/*}
+
+        # Ensure kernel firmware search path includes module firmware directory
+        if [ -w /sys/module/firmware_class/parameters/path ]; then
+          if [ -d "$MODDIR/system/etc/firmware" ]; then
+            echo "$MODDIR/system/etc/firmware" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
+          elif [ -d /system/etc/firmware ]; then
+            echo "/system/etc/firmware" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
+          fi
+        fi
 
         # Set permissions for NetHunter BadUSB, Wi-Fi, SDR, Serial & VPN devices once on boot
         chmod 666 /dev/hidg* /dev/uhid /dev/rfkill /dev/net/tun 2>/dev/null || true

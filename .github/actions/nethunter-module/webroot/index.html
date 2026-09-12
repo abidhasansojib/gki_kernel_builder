@@ -1900,7 +1900,7 @@
 
       const [modules, fwCheck] = await Promise.all([
         exec("cat /proc/modules 2>/dev/null || ls -1 /sys/module 2>/dev/null"),
-        exec(`for f in mt7601u.bin htc_9271.fw rtw8822c_fw.bin rtl8188eufw.bin; do for d in /system/etc/firmware /data/adb/modules/nethunter_wireless_modules/system/etc/firmware /vendor/firmware /lib/firmware; do [ -f "$d/$f" ] && echo "$f:found" && break; done; done`)
+        exec(`MOD_DIRS="/system/etc/firmware /vendor/firmware /lib/firmware"; for m in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/modules/*wireless*; do [ -d "$m/system/etc/firmware" ] && MOD_DIRS="$MOD_DIRS $m/system/etc/firmware"; done; for f in mt7601u.bin htc_9271.fw rtw8822c_fw.bin rtl8188eufw.bin; do for d in $MOD_DIRS; do if [ -f "$d/$f" ] || [ -f "$d/mediatek/$f" ] || [ -f "$d/rtw88/$f" ] || [ -f "$d/rtlwifi/$f" ] || [ -f "$d/ath9k_htc/$f" ]; then echo "$f:found"; break; fi; done; done`)
       ]);
 
       const list = modules ? ("\n" + modules.toLowerCase() + "\n") : "";
@@ -1954,6 +1954,11 @@
         for d in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/modules/*; do
           [ -d "$d/lkm" ] && MDIR="$d/lkm" && break
         done
+        if [ -w /sys/module/firmware_class/parameters/path ]; then
+          for fdir in /data/adb/modules/nethunter_wireless_modules/system/etc/firmware /data/adb/modules/*nethunter*/system/etc/firmware /system/etc/firmware; do
+            [ -d "$fdir" ] && echo "$fdir" > /sys/module/firmware_class/parameters/path 2>/dev/null && break
+          done
+        fi
         ${deps.map(dep => `
           if [ -n "$MDIR" ] && [ -f "$MDIR/${dep}.ko" ]; then
             insmod "$MDIR/${dep}.ko" 2>/dev/null || ksud insmod "$MDIR/${dep}.ko" 2>/dev/null || true
