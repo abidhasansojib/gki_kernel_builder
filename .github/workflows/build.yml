@@ -731,9 +731,9 @@ jobs:
 
           FLAVOR="${{ inputs.root_flavor }}"
           if [ "$FLAVOR" = "All" ]; then
-            RELEASE_NAME="Kernel 6.12.30-android16 — Release #${{ github.run_number }} (All Flavors)"
+            RELEASE_NAME="Release #${{ github.run_number }} (All Flavors)"
           else
-            RELEASE_NAME="Kernel 6.12.30-android16 — Release #${{ github.run_number }} (${FLAVOR})"
+            RELEASE_NAME="Release #${{ github.run_number }} (${FLAVOR})"
           fi
           echo "RELEASE_NAME=${RELEASE_NAME}" >> "$GITHUB_ENV"
 

@@ -137,6 +137,7 @@ The project supports 3 independent root implementations with automated patch res
 * **Dynamic Kernel Firmware Search Path Integration:** Configured `/sys/module/firmware_class/parameters/path` in `post-fs-data.sh`, `service.sh`, and WebUI loader, ensuring kernel `request_firmware()` directly resolves module firmware without vendor partition modification.
 * **Core GKI System Module Packaging Exclusions:** Excluded conflicting core system modules (`zram`, `zsmalloc`, `binder`, `gzvm`, `virtio`, `open-dice`, `pwrseq`, `vsock`, `kheaders`) from being bundled into `lkm/`.
 * **Bootloop Elimination in NetHunter Service Loader:** Replaced the unconditional boot-time blind insmod loop of 200+ hardware drivers with on-demand loading, initializing only foundation stacks (`cfg80211`, `mac80211`, `usbnet`) on boot to prevent watchdog timeouts and driver collisions with NoMount.
+* **Release Title Simplification:** Updated release naming format in `build.yml` to `Release #${{ github.run_number }} (All Flavors)` (or `(${FLAVOR})`), omitting the redundant kernel version prefix from the title.
 
 ---
 
