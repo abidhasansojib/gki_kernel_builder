@@ -1,0 +1,20 @@
+{
+  "updated_at": "2026-09-12T13:37:32.970033+00:00",
+  "previous_verified": {
+    "kernelsu_next": {
+      "dev-susfs": "7d14b013c178d08c518e596638c565a7ed566ee4"
+    },
+    "sukisu_ultra": {
+      "main": "9fbe8fe8ca90c62c259c5894bf96d02ac31209b9"
+    },
+    "resukisu": {
+      "main": "6930e97b59f8f5a7a2e75583f7be1cf982856157"
+    },
+    "susfs": {
+      "gki-android16-6.12": "fb58aef70a9c2aca8f0f85fba14017af94c4e789"
+    },
+    "nomount": {
+      "dev": "6d8871dc7a89ed705b5bd9880a941ac09d193252"
+    }
+  }
+}

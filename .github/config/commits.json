@@ -1,15 +1,15 @@
 {
   "kernelsu_next": {
-    "dev-susfs": "7d14b013c178d08c518e596638c565a7ed566ee4"
+    "dev-susfs": "add45f047ebebf3e8785c796f4e95f00b44c2cdb"
   },
   "sukisu_ultra": {
     "main": "9fbe8fe8ca90c62c259c5894bf96d02ac31209b9"
   },
   "resukisu": {
-    "main": "6930e97b59f8f5a7a2e75583f7be1cf982856157"
+    "main": "3380d41f2043644d0ef6c0e0e91be6b229024d00"
   },
   "susfs": {
-    "gki-android16-6.12": "fb58aef70a9c2aca8f0f85fba14017af94c4e789"
+    "gki-android16-6.12": "82e00eadb4c0390a71a6a2db8f7cb0e5074cc539"
   },
   "nomount": {
     "dev": "6d8871dc7a89ed705b5bd9880a941ac09d193252"
