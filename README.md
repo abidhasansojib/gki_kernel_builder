@@ -21,7 +21,7 @@ Please do thorough research and understand the features included before flashing
 
 - 🔐 **Multi-Root Support**: Choose between **KernelSU-Next**, **SukiSU-Ultra**, and **ReSukiSU** with automated SUSFS patch integration and automatic Root Manager APK fetching.
 - 🛡️ **SUSFS**: Advanced root-hiding kernel patches and userspace integration.
-- 🪝 **NoMount VFS Hooks**: Advanced VFS mounting hiding and stealth capabilities with automated hook collision avoidance.
+- 🪝 **NoMount VFS Hooks**: Advanced VFS mounting hiding and stealth capabilities with automated hook collision avoidance and full multi-module compatibility.
 - 🐉 **Kali NetHunter Support**:
   - **Packet Injection & Monitor Mode**: In-tree `mac80211` and `cfg80211` frame injection support.
   - **BadUSB / HID Gadgets**: USB HID Keyboard and Mouse emulation (`/dev/hidg0`, `/dev/hidg1`) for Rubber Ducky payloads and OTG attacks.
@@ -29,7 +29,10 @@ Please do thorough research and understand the features included before flashing
   - **USB Ethernet Adapters**: CDC-ECM, CDC-NCM, Realtek RTL8152, and ASIX AX88179.
   - **Bluetooth RFCOMM & SDR**: Native RFCOMM TTY and RTL-SDR (`rtl28xxu`) support.
 - 📱 **Kernel Manager WebUI**: Built into the NetHunter module to easily manage TCP (BBR3), BadUSB, driver modules, RAM/MGLRU, and run terminal commands with one-tap reset buttons.
-- 📦 **Flashable NetHunter Wireless Module**: Automatically packages compiled `.ko` driver modules, official Linux firmware, zero-drain native ueventd rules, WebUI, and Action launcher into a single flashable module (`Nethunter-Wireless-Modules.zip`).
+- 📦 **Flashable NetHunter Wireless Module**: Automatically packages compiled `.ko` driver modules, official Linux firmware, zero-drain native ueventd rules, WebUI, and Action launcher into a single flashable module (`Nethunter-Wireless-Modules.zip`):
+  - **NoMount Coexistence (`skip_mount`)**: Decoupled from VFS mounting to guarantee 100% seamless coexistence with NoMount metamodules without bootloops.
+  - **Vendor Firmware Path Preservation**: Safely prepends external module firmware search paths without overwriting `/vendor/firmware`, keeping internal device Wi-Fi, cellular modem, and Bluetooth 100% active.
+  - **Dual-Staged Firmwares**: Dual-staged in `$MODDIR/firmware/` and `$MODDIR/system/etc/firmware/` for immediate kernel `request_firmware()` loading.
 - 🛡️ **Baseband Guard (BBG)**: LSM security module for critical partition write protection.
 - 📦 **DroidSpaces-OSS**: Lightweight container runtime support with SYSVIPC kABI fixes.
 - 🚀 **Networking & Performance**: BBRv3, CAKE Qdisc, WireGuard, IP Set, TTL targets, CIFS, and in-tree memory/caching/IO performance optimization patches (`schedutil` CPU governor default).
@@ -82,7 +85,7 @@ Included in `Nethunter-Wireless-Modules.zip`. Open it directly inside your root 
 
 * **TCP Control**: Switch between available congestion algorithms (BBR3, CUBIC, etc.) with one tap.
 * **USB / BadUSB**: Toggle USB mode between Stock Android, HID Keyboard/Mouse (`/dev/hidg*`), Mass Storage, and RNDIS.
-* **Drivers & Modules**: View available external WiFi, serial, and SDR drivers and load them automatically.
+* **Drivers & Modules**: View available external WiFi, serial, and SDR drivers, verify dual-path firmware status, and load drivers on-demand.
 * **Memory & MGLRU**: Check real-time RAM usage, enable MGLRU, and clear RAM cache.
 * **Root Terminal**: Run quick shell commands (`dmesg`, `lsmod`, `uname -a`) with root access.
 * **Reset to Defaults**: Each section includes a reset button to easily restore default settings.
@@ -94,6 +97,7 @@ Included in `Nethunter-Wireless-Modules.zip`. Open it directly inside your root 
 * **Tested Device**: **Redmi Note 14 4G (`tanzanite`)** &mdash; everything is fully working!
 * **Target Kernel**: **Android 16 (`6.12.30-android16`)** GKI only.
 * **Compatibility**: Optimized for Xiaomi HyperOS 3 (Android 16). The kernel automatically integrates the vendor module version-check bypass hack, ensuring OEM hardware drivers (touchscreen, display, modem, sensors) load seamlessly without bootloops.
+* **Multi-Module Stability**: Fully verified stable with **SUSFS + NoMount + NetHunter Wireless Modules** active simultaneously &mdash; zero bootloops, no VFS mount conflicts, and device internal Wi-Fi, Bluetooth, and cellular radio remain 100% operational.
 
 ---
 
@@ -112,10 +116,10 @@ Included in `Nethunter-Wireless-Modules.zip`. Open it directly inside your root 
    - Reboot device.
    - Flash **[susfs4ksu-module (by sidex15)](https://github.com/sidex15/susfs4ksu-module/releases)** in your Root Manager to activate kernel-level root hiding.
 
-3. **External USB WiFi & NetHunter WebUI Manager (Optional)**:
-   - Download the `Nethunter-Wireless-Modules.zip` module from the release.
-   - Flash it in your KernelSU-Next, SukiSU-Ultra, or ReSukiSU manager.
-   - Tap **WebUI** (or **Action**) under the module in your root manager to launch the interactive Kernel Manager dashboard with live root execution!
+3. **External USB WiFi, NetHunter WebUI & NoMount Setup (Optional)**:
+   - **NetHunter Wireless Modules**: Flash `Nethunter-Wireless-Modules.zip` in your root manager (KernelSU-Next, SukiSU-Ultra, or ReSukiSU). Tap **WebUI** (or **Action**) under the module in your root manager to launch the interactive Kernel Manager dashboard with live root execution!
+   - **NoMount Metamodule**: Flash `NoMount-6.12.30-android16-*.zip` in your root manager for stealth VFS root hiding.
+   - **Dual Coexistence**: Both modules can be flashed and enabled together simultaneously! With `skip_mount` decoupling and non-destructive vendor firmware path retention, NoMount and NetHunter run alongside each other with zero bootloops and without breaking internal Wi-Fi.
 
 ---
 
