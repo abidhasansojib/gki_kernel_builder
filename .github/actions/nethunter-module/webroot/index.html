@@ -1900,7 +1900,7 @@
 
       const [modules, fwCheck] = await Promise.all([
         exec("cat /proc/modules 2>/dev/null || ls -1 /sys/module 2>/dev/null"),
-        exec(`MOD_DIRS="/system/etc/firmware /vendor/firmware /lib/firmware"; for m in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/modules/*wireless*; do [ -d "$m/system/etc/firmware" ] && MOD_DIRS="$MOD_DIRS $m/system/etc/firmware"; done; for f in mt7601u.bin htc_9271.fw rtw8822c_fw.bin rtl8188eufw.bin; do for d in $MOD_DIRS; do if [ -f "$d/$f" ] || [ -f "$d/mediatek/$f" ] || [ -f "$d/rtw88/$f" ] || [ -f "$d/rtlwifi/$f" ] || [ -f "$d/ath9k_htc/$f" ]; then echo "$f:found"; break; fi; done; done`)
+        exec(`MOD_DIRS="/system/etc/firmware /vendor/firmware /lib/firmware"; for m in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/modules/*wireless*; do [ -d "$m/firmware" ] && MOD_DIRS="$MOD_DIRS $m/firmware"; [ -d "$m/system/etc/firmware" ] && MOD_DIRS="$MOD_DIRS $m/system/etc/firmware"; done; for f in mt7601u.bin htc_9271.fw rtw8822c_fw.bin rtl8188eufw.bin; do for d in $MOD_DIRS; do if [ -f "$d/$f" ] || [ -f "$d/mediatek/$f" ] || [ -f "$d/rtw88/$f" ] || [ -f "$d/rtlwifi/$f" ] || [ -f "$d/ath9k_htc/$f" ]; then echo "$f:found"; break; fi; done; done`)
       ]);
 
       const list = modules ? ("\n" + modules.toLowerCase() + "\n") : "";
@@ -1955,9 +1955,18 @@
           [ -d "$d/lkm" ] && MDIR="$d/lkm" && break
         done
         if [ -w /sys/module/firmware_class/parameters/path ]; then
-          for fdir in /data/adb/modules/nethunter_wireless_modules/system/etc/firmware /data/adb/modules/*nethunter*/system/etc/firmware /system/etc/firmware; do
-            [ -d "$fdir" ] && echo "$fdir" > /sys/module/firmware_class/parameters/path 2>/dev/null && break
-          done
+          CURR_FW=$(cat /sys/module/firmware_class/parameters/path 2>/dev/null || echo "")
+          case "$CURR_FW" in
+            *"/data/adb/modules"*) ;;
+            *)
+              for fdir in /data/adb/modules/nethunter_wireless_modules/firmware /data/adb/modules/nethunter_wireless_modules/system/etc/firmware; do
+                if [ -d "$fdir" ]; then
+                  echo "$fdir,$CURR_FW" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
+                  break
+                fi
+              done
+              ;;
+          esac
         fi
         ${deps.map(dep => `
           if [ -n "$MDIR" ] && [ -f "$MDIR/${dep}.ko" ]; then

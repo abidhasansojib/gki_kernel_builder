@@ -105,6 +105,9 @@ runs:
         done
 
         echo "=== Firmware successfully placed in system/etc/firmware ==="
+        mkdir -p "$STAGING_DIR/firmware"
+        cp -rf "$STAGING_DIR/system/etc/firmware/"* "$STAGING_DIR/firmware/" 2>/dev/null || true
+        touch "$STAGING_DIR/skip_mount"
 
         echo "=== Installing NetHunter Module WebUI Dashboard & Action Handler ==="
         mkdir -p "$STAGING_DIR/webroot"
@@ -140,6 +143,9 @@ runs:
         ui_print "- Installing unified driver stack into lkm/..."
         ui_print "- Configuring dynamic firmware detection..."
         ui_print "- Installing WebUI Manager dashboard..."
+
+        # Enforce skip_mount to prevent OverlayFS/NoMount /system VFS collision
+        touch "$MODPATH/skip_mount"
 
         set_perm_recursive "$MODPATH" 0 0 0755 0644
         set_perm_recursive "$MODPATH/webroot" 0 0 0755 0644
@@ -186,9 +192,29 @@ runs:
         chmod 666 /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2>/dev/null || true
         chmod -R 666 /dev/bus/usb/ 2>/dev/null || true
 
-        # Ensure kernel firmware search path includes module firmware directory
-        if [ -w /sys/module/firmware_class/parameters/path ] && [ -d "$MODDIR/system/etc/firmware" ]; then
-          echo "$MODDIR/system/etc/firmware" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
+        # Ensure cfg80211 is available as early as possible if not loaded by stock vendor init
+        if [ ! -d /sys/module/cfg80211 ] && [ -f "$MODDIR/lkm/cfg80211.ko" ]; then
+          insmod "$MODDIR/lkm/cfg80211.ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/cfg80211.ko" 2>/dev/null || true
+        fi
+
+        # Safely prepend module firmware directories while strictly preserving stock vendor firmware search paths
+        if [ -w /sys/module/firmware_class/parameters/path ]; then
+          CURR_FW=$(cat /sys/module/firmware_class/parameters/path 2>/dev/null || echo "")
+          case "$CURR_FW" in
+            *"$MODDIR"*) ;;
+            *)
+              FW_DIRS=""
+              [ -d "$MODDIR/firmware" ] && FW_DIRS="$MODDIR/firmware"
+              [ -d "$MODDIR/system/etc/firmware" ] && FW_DIRS="${FW_DIRS:+$FW_DIRS,}$MODDIR/system/etc/firmware"
+              if [ -n "$FW_DIRS" ]; then
+                if [ -n "$CURR_FW" ]; then
+                  echo "$FW_DIRS,$CURR_FW" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
+                else
+                  echo "$FW_DIRS,/vendor/firmware_mnt/image,/vendor/firmware,/system/etc/firmware" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
+                fi
+              fi
+              ;;
+          esac
         fi
         EOF
         sed -i 's/^[[:space:]]*//' "$STAGING_DIR/post-fs-data.sh"
@@ -199,13 +225,24 @@ runs:
         #!/system/bin/sh
         MODDIR=${0%/*}
 
-        # Ensure kernel firmware search path includes module firmware directory
+        # Safely prepend module firmware directories while strictly preserving stock vendor firmware search paths
         if [ -w /sys/module/firmware_class/parameters/path ]; then
-          if [ -d "$MODDIR/system/etc/firmware" ]; then
-            echo "$MODDIR/system/etc/firmware" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
-          elif [ -d /system/etc/firmware ]; then
-            echo "/system/etc/firmware" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
-          fi
+          CURR_FW=$(cat /sys/module/firmware_class/parameters/path 2>/dev/null || echo "")
+          case "$CURR_FW" in
+            *"$MODDIR"*) ;;
+            *)
+              FW_DIRS=""
+              [ -d "$MODDIR/firmware" ] && FW_DIRS="$MODDIR/firmware"
+              [ -d "$MODDIR/system/etc/firmware" ] && FW_DIRS="${FW_DIRS:+$FW_DIRS,}$MODDIR/system/etc/firmware"
+              if [ -n "$FW_DIRS" ]; then
+                if [ -n "$CURR_FW" ]; then
+                  echo "$FW_DIRS,$CURR_FW" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
+                else
+                  echo "$FW_DIRS,/vendor/firmware_mnt/image,/vendor/firmware,/system/etc/firmware" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
+                fi
+              fi
+              ;;
+          esac
         fi
 
         # Set permissions for NetHunter BadUSB, Wi-Fi, SDR, Serial & VPN devices once on boot
