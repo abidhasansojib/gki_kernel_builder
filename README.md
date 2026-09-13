@@ -112,13 +112,13 @@ Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button i
 
 ## 🏆 Credits
 
-- [WildKernels](https://github.com/WildKernels/GKI_KernelSU_SUSFS) — GKI KernelSU SUSFS base
-- [KernelSU-Next](https://github.com/KernelSU-Next/KernelSU-Next) — rifsxd & pershoot
-- [SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra) — SukiSU team
-- [ReSukiSU](https://github.com/ReSukiSU/ReSukiSU) — ReSukiSU team
-- [SUSFS](https://gitlab.com/simonpunk/susfs4ksu.git) — simonpunk
-- [Kali NetHunter](https://www.kali.org/docs/nethunter/) — Offensive Security
-- [NoMount](https://github.com/maxsteeel/nomount) — maxsteeel
-- [Baseband-guard](https://github.com/vc-teahouse/Baseband-guard) — vc-teahouse
-- [DroidSpaces-OSS](https://github.com/ravindu644/Droidspaces-OSS) — ravindu644
-- [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher) — fatalcoder524
+- 🏗️ **GKI KernelSU SUSFS**: Based on work by [WildKernels](https://github.com/WildKernels/GKI_KernelSU_SUSFS)
+- 🚀 **KernelSU-Next**: Developed by [rifsxd](https://github.com/KernelSU-Next/KernelSU-Next) and [pershoot](https://github.com/pershoot/KernelSU-Next)
+- 🔐 **SukiSU-Ultra**: Developed by [SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra)
+- 💫 **ReSukiSU**: Developed by [ReSukiSU](https://github.com/ReSukiSU/ReSukiSU)
+- 🛡️ **SUSFS**: Developed by [simonpunk](https://gitlab.com/simonpunk/susfs4ksu.git)
+- 🐉 **Kali NetHunter**: Developed by the [Offensive Security / Kali NetHunter Team](https://www.kali.org/docs/nethunter/)
+- 🪝 **NoMount**: Developed by [maxsteeel](https://github.com/maxsteeel/nomount)
+- 🛡️ **Baseband-guard**: Developed by [vc-teahouse](https://github.com/vc-teahouse/Baseband-guard)
+- 📦 **DroidSpaces-OSS**: Developed by [ravindu644](https://github.com/ravindu644/Droidspaces-OSS)
+- ⚡ **Kernel Flasher**: Developed by [fatalcoder524](https://github.com/fatalcoder524/KernelFlasher)
