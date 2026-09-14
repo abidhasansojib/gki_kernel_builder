@@ -1328,6 +1328,7 @@
     function detectBridge() {
       if (typeof window.ksu !== 'undefined' && typeof window.ksu.exec === 'function') return "KernelSU";
       if (typeof window.sukisu !== 'undefined' && typeof window.sukisu.exec === 'function') return "SukiSU";
+      if (typeof window.suki !== 'undefined' && typeof window.suki.exec === 'function') return "SukiSU";
       if (typeof window.resukisu !== 'undefined' && typeof window.resukisu.exec === 'function') return "ReSukiSU";
       if (typeof window.KernelSU !== 'undefined' && typeof window.KernelSU.exec === 'function') return "KernelSU";
       return null;
@@ -1342,6 +1343,8 @@
         try { window.ksu.toast(msg); } catch(e) {}
       } else if (window.sukisu && typeof window.sukisu.toast === 'function') {
         try { window.sukisu.toast(msg); } catch(e) {}
+      } else if (window.suki && typeof window.suki.toast === 'function') {
+        try { window.suki.toast(msg); } catch(e) {}
       }
       const bar = document.getElementById('m3-snackbar');
       if (bar) {
@@ -1362,6 +1365,7 @@
       logConsole("$ " + cmd);
       const runner = (window.ksu && typeof window.ksu.exec === 'function') ? window.ksu.exec.bind(window.ksu) :
                      (window.sukisu && typeof window.sukisu.exec === 'function') ? window.sukisu.exec.bind(window.sukisu) :
+                     (window.suki && typeof window.suki.exec === 'function') ? window.suki.exec.bind(window.suki) :
                      (window.resukisu && typeof window.resukisu.exec === 'function') ? window.resukisu.exec.bind(window.resukisu) :
                      (window.KernelSU && typeof window.KernelSU.exec === 'function') ? window.KernelSU.exec.bind(window.KernelSU) : null;
       
@@ -2018,19 +2022,44 @@
         return;
       }
 
-      const [modules, fwCheck] = await Promise.all([
-        exec("cat /proc/modules 2>/dev/null || ls -1 /sys/module 2>/dev/null"),
-        exec(`MOD_DIRS="/system/etc/firmware /vendor/firmware /lib/firmware"; for m in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/modules/*wireless*; do [ -d "$m/firmware" ] && MOD_DIRS="$MOD_DIRS $m/firmware"; [ -d "$m/system/etc/firmware" ] && MOD_DIRS="$MOD_DIRS $m/system/etc/firmware"; done; for f in mt7601u.bin htc_9271.fw rtw8822c_fw.bin rtl8188eufw.bin; do for d in $MOD_DIRS; do if [ -f "$d/$f" ] || [ -f "$d/mediatek/$f" ] || [ -f "$d/rtw88/$f" ] || [ -f "$d/rtlwifi/$f" ] || [ -f "$d/ath9k_htc/$f" ]; then echo "$f:found"; break; fi; done; done`)
-      ]);
+      const script = `
+        echo "===MODULES==="
+        cat /proc/modules 2>/dev/null || ls -1 /sys/module 2>/dev/null
+        echo "===FIRMWARE==="
+        KFW=$(cat /sys/module/firmware_class/parameters/path 2>/dev/null | tr ',' ' ')
+        DIRS="$KFW /data/adb/modules/nethunter_wireless_modules/firmware /data/adb/modules/nethunter_wireless_modules/system/etc/firmware /system/etc/firmware /vendor/firmware /lib/firmware"
+        for m in /data/adb/modules/* /data/adb/ksu/modules/* /data/adb/sukisu/modules/*; do
+          [ -d "$m/firmware" ] && DIRS="$DIRS $m/firmware"
+          [ -d "$m/system/etc/firmware" ] && DIRS="$DIRS $m/system/etc/firmware"
+        done
+        for f in mt7601u.bin htc_9271.fw rtw8822c_fw.bin rtl8188eufw.bin; do
+          FOUND=0
+          for d in $DIRS; do
+            if [ -e "$d/$f" ] || [ -e "$d/mediatek/$f" ] || [ -e "$d/rtw88/$f" ] || [ -e "$d/rtlwifi/$f" ] || [ -e "$d/ath9k_htc/$f" ]; then
+              echo "$f:found"
+              FOUND=1
+              break
+            fi
+          done
+          if [ $FOUND -eq 0 ]; then
+            find /data/adb/modules /data/adb/ksu/modules /system/etc/firmware /vendor/firmware -maxdepth 4 -name "$f" 2>/dev/null | grep -q "$f" && echo "$f:found" || true
+          fi
+        done
+      `;
 
-      const list = modules ? ("\n" + modules.toLowerCase() + "\n") : "";
+      const output = await exec(script);
+      const outStr = output ? output.toLowerCase() : "";
+
+      const parts = outStr.split("===firmware===");
+      const modSection = parts[0] || "";
+      const fwSection = parts[1] || "";
 
       state.loadedModules.clear();
       NETHUNTER_MODULES.forEach(m => {
         const norm = m.name.toLowerCase();
         const alt = norm.replace(/_/g, '-');
-        if (list.includes("\n" + norm + " ") || list.includes("\n" + norm + "\n") ||
-            list.includes("\n" + alt + " ") || list.includes("\n" + alt + "\n")) {
+        if (modSection.includes("\n" + norm + " ") || modSection.includes("\n" + norm + "\n") ||
+            modSection.includes("\n" + alt + " ") || modSection.includes("\n" + alt + "\n")) {
           state.loadedModules.add(m.name);
         }
       });
@@ -2045,11 +2074,10 @@
       renderModuleList(true);
 
       // Real-time firmware detection
-      const fwStr = fwCheck ? fwCheck.toLowerCase() : "";
       const updateFw = (id, fname) => {
         const el = document.getElementById(id);
         if (!el) return;
-        const has = fwStr.includes(fname);
+        const has = fwSection.includes(fname);
         el.innerText = has ? "PRESENT" : "MISSING";
         el.className = has ? "m3-chip success" : "m3-chip warning";
       };
@@ -2071,32 +2099,32 @@
 
       const script = `
         MDIR=""
-        for d in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/modules/*; do
-          [ -d "$d/lkm" ] && MDIR="$d/lkm" && break
+        for d in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/ksu/modules/nethunter_wireless_modules /data/adb/modules/*; do
+          [ -d "$d/lkm" ] && MDIR="$d" && break
         done
         if [ -w /sys/module/firmware_class/parameters/path ]; then
           CURR_FW=$(cat /sys/module/firmware_class/parameters/path 2>/dev/null || echo "")
           case "$CURR_FW" in
             *"/data/adb/modules"*) ;;
             *)
-              for fdir in /data/adb/modules/nethunter_wireless_modules/firmware /data/adb/modules/nethunter_wireless_modules/system/etc/firmware; do
-                if [ -d "$fdir" ]; then
-                  echo "$fdir,$CURR_FW" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
-                  break
-                fi
-              done
+              if [ -n "$MDIR" ]; then
+                FW_DIRS=""
+                [ -d "$MDIR/firmware" ] && FW_DIRS="$MDIR/firmware"
+                [ -d "$MDIR/system/etc/firmware" ] && FW_DIRS="\${FW_DIRS:+\$FW_DIRS,}$MDIR/system/etc/firmware"
+                [ -n "$FW_DIRS" ] && echo "\$FW_DIRS,\$CURR_FW" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
+              fi
               ;;
           esac
         fi
         ${deps.map(dep => `
-          if [ -n "$MDIR" ] && [ -f "$MDIR/${dep}.ko" ]; then
-            insmod "$MDIR/${dep}.ko" 2>/dev/null || ksud insmod "$MDIR/${dep}.ko" 2>/dev/null || true
+          if [ -n "$MDIR" ] && [ -f "$MDIR/lkm/${dep}.ko" ]; then
+            insmod "$MDIR/lkm/${dep}.ko" 2>/dev/null || ksud insmod "$MDIR/lkm/${dep}.ko" 2>/dev/null || true
           else
             modprobe ${dep} 2>/dev/null || true
           fi
         `).join('\n')}
-        if [ -n "$MDIR" ] && [ -f "$MDIR/${modName}.ko" ]; then
-          insmod "$MDIR/${modName}.ko" 2>/dev/null || ksud insmod "$MDIR/${modName}.ko" 2>/dev/null || true
+        if [ -n "$MDIR" ] && [ -f "$MDIR/lkm/${modName}.ko" ]; then
+          insmod "$MDIR/lkm/${modName}.ko" 2>/dev/null || ksud insmod "$MDIR/lkm/${modName}.ko" 2>/dev/null || true
         else
           modprobe ${modName} 2>/dev/null || true
         fi
@@ -2128,22 +2156,35 @@
       showSnackbar("Auto-loading all available NetHunter modules...");
       const script = `
         MDIR=""
-        for d in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/modules/*; do
+        for d in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/ksu/modules/nethunter_wireless_modules /data/adb/modules/*; do
           [ -d "$d/lkm" ] && MDIR="$d" && break
         done
-        if [ -n "$MDIR" ] && [ -f "$MDIR/service.sh" ]; then
-          sh "$MDIR/service.sh" 2>&1
-        elif [ -n "$MDIR" ] && [ -d "$MDIR/lkm" ]; then
-          for pass in 1 2 3; do
-            for ko in "$MDIR/lkm"/*.ko; do
-              [ -f "$ko" ] && (insmod "$ko" 2>/dev/null || ksud insmod "$ko" 2>/dev/null || true)
-            done
+        if [ -n "$MDIR" ] && [ -d "$MDIR/lkm" ]; then
+          # Ensure kernel firmware search path includes module firmware
+          if [ -w /sys/module/firmware_class/parameters/path ]; then
+            CURR_FW=$(cat /sys/module/firmware_class/parameters/path 2>/dev/null || echo "")
+            case "$CURR_FW" in
+              *"$MDIR"*) ;;
+              *)
+                FW_DIRS=""
+                [ -d "$MDIR/firmware" ] && FW_DIRS="$MDIR/firmware"
+                [ -d "$MDIR/system/etc/firmware" ] && FW_DIRS="\${FW_DIRS:+\$FW_DIRS,}$MDIR/system/etc/firmware"
+                [ -n "$FW_DIRS" ] && echo "\$FW_DIRS,\$CURR_FW" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
+                ;;
+            esac
+          fi
+          # Priority 1: Core infrastructure
+          for b in cfg80211.ko mac80211.ko usbnet.ko can.ko can-dev.ko rtw88_core.ko rtw88_usb.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko rt2x00lib.ko rt2x00usb.ko rt2800lib.ko ath9k_hw.ko ath9k_common.ko; do
+            [ -f "$MDIR/lkm/$b" ] && (insmod "$MDIR/lkm/$b" 2>/dev/null || ksud insmod "$MDIR/lkm/$b" 2>/dev/null || true)
+          done
+          # Priority 2: All remaining peripheral drivers
+          for ko in "$MDIR/lkm"/*.ko; do
+            [ -f "$ko" ] && (insmod "$ko" 2>/dev/null || ksud insmod "$ko" 2>/dev/null || true)
           done
         else
-          modprobe mt7601u 2>/dev/null || true
-          modprobe rtw88_usb 2>/dev/null || true
-          modprobe ath9k_htc 2>/dev/null || true
-          modprobe rtl8xxxu 2>/dev/null || true
+          for mod in mt7601u rtw88_usb rtw88_8822cu rtw88_8821cu ath9k_htc rtl8xxxu carl9170 rt2800usb zd1211rw rtl8187 ch341 cp210x ftdi_sio pl2303 cdc_acm r8152 asix ax88179_178a cdc_ether hackrf airspy msi2500 can can_raw vcan; do
+            modprobe "$mod" 2>/dev/null || true
+          done
         fi
       `;
       await exec(script);

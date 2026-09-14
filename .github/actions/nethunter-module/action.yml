@@ -147,11 +147,18 @@ runs:
         # Enforce skip_mount to prevent OverlayFS/NoMount /system VFS collision
         touch "$MODPATH/skip_mount"
 
-        set_perm_recursive "$MODPATH" 0 0 0755 0644
-        set_perm_recursive "$MODPATH/webroot" 0 0 0755 0644
-        set_perm "$MODPATH/service.sh" 0 0 0755
-        set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
-        [ -f "$MODPATH/action.sh" ] && set_perm "$MODPATH/action.sh" 0 0 0755
+        # Universal permission assignment for KernelSU, SukiSU, and Magisk
+        if type set_perm_recursive >/dev/null 2>&1; then
+          set_perm_recursive "$MODPATH" 0 0 0755 0644
+          set_perm_recursive "$MODPATH/webroot" 0 0 0755 0644
+          set_perm "$MODPATH/service.sh" 0 0 0755
+          set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
+          [ -f "$MODPATH/action.sh" ] && set_perm "$MODPATH/action.sh" 0 0 0755
+        fi
+        chmod -R 755 "$MODPATH" 2>/dev/null || true
+        find "$MODPATH" -type f -exec chmod 644 {} + 2>/dev/null || true
+        chmod 755 "$MODPATH"/*.sh 2>/dev/null || true
+        [ -d "$MODPATH/lkm" ] && chmod 644 "$MODPATH/lkm"/*.ko 2>/dev/null || true
 
         # Sync WebUI directly to storage for immediate browser & manager access
         mkdir -p /storage/emulated/0 /storage/emulated/0/Download 2>/dev/null || true
@@ -293,6 +300,11 @@ runs:
         EOF
         sed -i 's/^[[:space:]]*//' "$STAGING_DIR/service.sh"
         chmod +x "$STAGING_DIR/service.sh"
+
+        echo "Ensuring clean permissions across staging directory..."
+        chmod -R 755 "$STAGING_DIR"
+        find "$STAGING_DIR" -type f -exec chmod 644 {} +
+        chmod 755 "$STAGING_DIR"/*.sh 2>/dev/null || true
 
         OUT_ZIP="${{ github.workspace }}/Nethunter-Wireless-Modules.zip"
         echo "Creating flashable module zip at: $OUT_ZIP"
