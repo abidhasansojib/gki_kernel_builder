@@ -94,17 +94,18 @@ flowchart TD
 
     subgraph Core["Interactive Subsystems"]
         KSU & SUKI --> NET[TCP Congestion Switcher: BBR3/BBR/Cubic]
-        KSU & SUKI --> USB[BadUSB HID Gadget: /dev/hidg* & Storage]
-        KSU & SUKI --> DRV[Modular Driver Loader: Multi-Tier Dependencies]
+        KSU & SUKI --> USB[BadUSB HID Gadget: /dev/hidg0 & /dev/hidg1]
+        KSU & SUKI --> DRV[Modular Driver Loader: Sequential Queue & Dependencies]
         KSU & SUKI --> MEM[Dynamic MGLRU & Real-Time RAM Telemetry]
-        KSU & SUKI --> TRM[Rooted Web Terminal Console]
+        KSU & SUKI --> LOG[Real-Time Process & Activity Log Console]
     end
 
     subgraph OS["Kernel & Android OS Integration"]
         NET --> SYS1[/proc/sys/net/ipv4/tcp_congestion_control]
-        USB --> SYS2[/config/usb_gadget/g1 & /dev/hidg*]
+        USB --> SYS2[/config/usb_gadget/g_hid & /dev/hidg0,1]
         DRV --> SYS3[insmod /data/adb/modules/.../lkm/*.ko]
         MEM --> SYS4[/sys/kernel/mm/lru_gen/enabled]
+        LOG --> SYS5[Live Shell & Root Telemetry Execution]
     end
 ```
 
@@ -117,13 +118,18 @@ flowchart TD
    * **True RAM Usage**: Parses `/proc/meminfo` and calculates true memory consumption: $\text{Used} = \text{MemTotal} - \text{MemAvailable}$.
    * **MGLRU Locking**: Reads `/sys/kernel/mm/lru_gen/enabled` and allows one-tap locking to `0x0007` (full multi-generational generation & evictions).
    * **ZRAM Telemetry**: Extracts active compression algorithm (e.g., `lz4`, `zstd`) and allocated disk size directly from `/sys/block/zram0/`.
-3. **BadUSB HID Hotplug & Controls**:
+3. **BadUSB HID Hotplug & Dynamic Auto-Healing**:
    * Automatically provisions keyboard and mouse endpoints via ConfigFS (`/dev/hidg0` and `/dev/hidg1`).
+   * **Dynamic Major Auto-Healing**: Resolves the Android `ueventd` limitation for dynamically allocated character device majors ($> 255$) by creating `/dev/hidg0` and `/dev/hidg1` via `mknod` directly from `functions/hid.usb0/dev` and `functions/hid.usb1/dev`.
    * Includes one-tap switching back to Stock Android (MTP + ADB) or USB Mass Storage, alongside an on-screen DuckyScript test keystroke injector.
 4. **Resilient Driver Loading & Unloading**:
+   * **Sequential Execution Queue**: Replaces asynchronous shell flooding with an orderly sequential insmod queue when loading all modules, completely eliminating WebUI browser lockups and freezes.
    * **Multi-Tier Dependency Resolution**: Loads base silicon modules (`rtw88_8822c`, `rtw88_8821c`, `rtw88_core`, `mac80211`, `cfg80211`) before binding USB interface frontends.
    * **Reverse-Order Driver Unloading**: Resets external drivers in reverse dependency order to prevent kernel `"device or resource busy"` unbind errors.
-5. **Action Launcher & Manager Integration**:
+5. **Streamlined 4-Tab Layout & Process Activity Log**:
+   * Four core tabs: **Network, USB, Drivers, Memory**.
+   * Replaced separate terminal tab with an integrated, high-visibility **Process & Activity Log** console featuring live event badges, timestamped command tracking, and one-tap copy/clear buttons.
+6. **Action Launcher & Manager Integration**:
    * Adheres to standard KernelSU-Next, SukiSU-Ultra, and ReSukiSU WebUI specifications (`webroot/` and `action.sh`).
    * Operates directly inside the Root Manager app with interactive root bridge execution.
 

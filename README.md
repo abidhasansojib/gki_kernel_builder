@@ -21,8 +21,8 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 
 - 🔐 **Multi-Root Support**: **KernelSU-Next**, **SukiSU-Ultra**, and **ReSukiSU** with automated manager APK bundling.
 - 🛡️ **SUSFS & NoMount**: Built-in SUSFS root hiding and NoMount stealth VFS support.
-- 🐉 **Kali NetHunter**: Monitor mode, frame injection, BadUSB HID keyboard/mouse (`/dev/hidg*`), USB Wi-Fi dongles, SDR, CAN bus, and Bluetooth RFCOMM.
-- 📱 **Kernel Manager WebUI**: Built-in dashboard to control TCP congestion (BBR3), BadUSB, driver modules, RAM/MGLRU, and root terminal.
+- 🐉 **Kali NetHunter**: Monitor mode, frame injection, BadUSB HID keyboard/mouse (`/dev/hidg0`, `/dev/hidg1`), USB Wi-Fi dongles, SDR, CAN bus, and Bluetooth RFCOMM.
+- 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (BBR3), BadUSB, driver modules, RAM/MGLRU, and real-time activity log.
 - 📦 **NetHunter Wireless Module**: Flashable `Nethunter-Wireless-Modules.zip` with Wi-Fi/SDR drivers, firmware, and WebUI (fully compatible alongside NoMount).
 - 🛡️ **Baseband Guard (BBG)**: Partition protection against unauthorized writes.
 - 📦 **DroidSpaces-OSS**: Lightweight container runtime support.
@@ -55,7 +55,7 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 <summary><b>🛠️ Hardware Gadgets, Network Dongles & SDR (Click to Expand)</b></summary>
 <br>
 
-- 🦆 **BadUSB / Rubber Ducky**: Native USB HID keyboard and mouse emulation (`/dev/hidg0`) for NetHunter DuckHunter payloads.
+- 🦆 **BadUSB / Rubber Ducky**: Native USB HID keyboard and mouse emulation (`/dev/hidg0`, `/dev/hidg1`) with dynamic node auto-healing for NetHunter DuckHunter payloads.
 - 📻 **Software Defined Radio (SDR)**: RTL-SDR (`dvb_usb_rtl28xxu`), HackRF One, AirSpy, and Mirics.
 - 🚗 **Automotive Hacking (CARsenal)**: SocketCAN framework (`can`, `vcan`, `slcan`, PEAK PCAN-USB, Kvaser, EMS USB).
 - 🔌 **USB Serial**: CDC-ACM, FTDI, CH341, CP210X, and PL2303 for router consoles and hardware debugging.
@@ -72,10 +72,10 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button in your root manager (KernelSU / SukiSU):
 
 - **TCP Control**: Switch congestion algorithms (BBR3, CUBIC, etc.) with one tap.
-- **USB / BadUSB**: Switch modes (Stock Android, HID Keyboard/Mouse, Mass Storage, RNDIS).
-- **Drivers & Modules**: View and load external Wi-Fi, SDR, and serial drivers on demand.
-- **Memory & MGLRU**: View real-time RAM usage, toggle MGLRU, and drop caches.
-- **Root Terminal**: Run quick diagnostics (`dmesg`, `lsmod`, `uname -a`).
+- **USB / BadUSB**: Switch modes (Stock Android, HID Keyboard/Mouse with auto-healed `/dev/hidg0` and `/dev/hidg1`, Mass Storage, RNDIS).
+- **Drivers & Modules**: View, load, and manage Wi-Fi, SDR, and serial drivers with sequential loading queue and automated dependency resolution.
+- **Memory & MGLRU**: View real-time RAM usage, lock full MGLRU capabilities (`0x0007`), drop caches, and adjust VFS pressure.
+- **Process & Activity Log**: Real-time diagnostic stream with execution tracking, one-tap copy, and subsystem telemetry.
 - **Reset**: Restore default settings anytime with one tap.
 
 ---
