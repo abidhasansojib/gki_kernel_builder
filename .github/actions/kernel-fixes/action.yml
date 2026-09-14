@@ -49,6 +49,14 @@ runs:
           fi
         fi
 
+    - name: 'Apply USB Gadget ConfigFS Multi-Gadget Fix'
+      working-directory: ${{ github.workspace }}/kernel/common
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "=== Applying USB Gadget ConfigFS Multi-Gadget Fix ==="
+        python3 "${{ github.workspace }}/.github/scripts/patch_usb_gadget.py"
+
     - name: 'Final Kernel Fixes Summary'
       shell: bash
       run: |
@@ -59,3 +67,4 @@ runs:
         echo "" >> "$SUMMARY_FILE"
         echo "### Fix Status" >> "$SUMMARY_FILE"
         echo "- Android 16 (6.12.30) compatibility validated" >> "$SUMMARY_FILE"
+        echo "- USB Gadget ConfigFS multi-gadget support patched" >> "$SUMMARY_FILE"
