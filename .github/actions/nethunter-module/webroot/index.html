@@ -1014,10 +1014,15 @@
           </div>
         </div>
 
-        <!-- Keystroke Injection Test -->
-        <button class="m3-btn m3-btn-filled" onclick="injectTestKeystroke()">
-          Transmit Test Keycode ('a') to /dev/hidg0
-        </button>
+        <!-- Keystroke & Mouse Injection Test -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+          <button class="m3-btn m3-btn-filled" style="flex: 1; min-width: 180px;" onclick="injectTestKeystroke()">
+            Transmit Test Key ('a') &rarr; /dev/hidg0
+          </button>
+          <button class="m3-btn m3-btn-filled" style="flex: 1; min-width: 180px;" onclick="injectTestMouseClick()">
+            Transmit Test Click &rarr; /dev/hidg1
+          </button>
+        </div>
 
         <!-- Reset USB Defaults -->
         <button class="m3-btn m3-btn-reset" onclick="resetUsbDefaults()">
@@ -1706,13 +1711,29 @@
         state.hidg0 = false;
         state.hidg1 = false;
         const script = `
-          setprop sys.usb.config mtp,adb || setprop sys.usb.config mtp || true
-          for p in /config/usb_gadget/g1 /config/usb_gadget/g0 /sys/kernel/config/usb_gadget/g1 /sys/kernel/config/usb_gadget/g0; do
+          CFGBASE="/config/usb_gadget"
+          if [ ! -d "$CFGBASE" ]; then
+            CFGBASE="/sys/kernel/config/usb_gadget"
+          fi
+
+          # Unbind and clean custom HID gadget if present
+          if [ -d "$CFGBASE/g_hid" ]; then
+            (echo "" > "$CFGBASE/g_hid/UDC") 2>/dev/null || true
+            rm -f "$CFGBASE/g_hid/configs/"*/* 2>/dev/null || true
+          fi
+
+          # Clean any stale HID links from g1 / g0
+          for p in "$CFGBASE/g1" "$CFGBASE/g0"; do
             if [ -d "$p" ]; then
-              CONF=$(ls -d $p/configs/*.* 2>/dev/null | head -n 1)
-              [ -n "$CONF" ] && rm -f $CONF/hid.usb0 $CONF/hid.usb1 $CONF/mass_storage.0 2>/dev/null || true
+              CONF=$(ls -d "$p/configs/"*.* 2>/dev/null | head -n 1)
+              [ -n "$CONF" ] && rm -f "$CONF/hid.usb0" "$CONF/hid.usb1" "$CONF/mass_storage.0" 2>/dev/null || true
             fi
           done
+
+          # Restore stock Android USB configuration
+          setprop sys.usb.config none 2>/dev/null || true
+          sleep 0.5
+          setprop sys.usb.config mtp,adb 2>/dev/null || setprop sys.usb.config mtp 2>/dev/null || true
         `;
         await exec(script);
         showSnackbar("Restored Stock Android USB (MTP + ADB)");
@@ -1720,39 +1741,117 @@
         state.hidg0 = true;
         state.hidg1 = true;
         const script = `
-          G=""
-          for p in /config/usb_gadget/g1 /config/usb_gadget/g0 /sys/kernel/config/usb_gadget/g1 /sys/kernel/config/usb_gadget/g0; do
-            if [ -d "$p" ]; then G="$p"; break; fi
+          set -e
+          CFGBASE="/config/usb_gadget"
+          if [ ! -d "$CFGBASE" ]; then
+            CFGBASE="/sys/kernel/config/usb_gadget"
+          fi
+          if [ ! -d "$CFGBASE" ]; then
+            mkdir -p /config/usb_gadget 2>/dev/null || true
+            mount -t configfs none /config 2>/dev/null || mount -t configfs none /sys/kernel/config 2>/dev/null || true
+            [ -d "/config/usb_gadget" ] && CFGBASE="/config/usb_gadget"
+            [ -d "/sys/kernel/config/usb_gadget" ] && CFGBASE="/sys/kernel/config/usb_gadget"
+          fi
+
+          if [ ! -d "$CFGBASE" ]; then
+            echo "configfs usb_gadget not found" >&2
+            exit 2
+          fi
+
+          UDC_CANDIDATES=""
+          append_udc_candidate() {
+            c="$1"
+            [ -n "$c" ] || return 0
+            for e in $UDC_CANDIDATES; do
+              [ "$e" = "$c" ] && return 0
+            done
+            UDC_CANDIDATES="$UDC_CANDIDATES $c"
+          }
+
+          SYS_UDC=$(getprop sys.usb.controller 2>/dev/null | tr -d '\\r')
+          append_udc_candidate "$SYS_UDC"
+
+          for c in $(ls /sys/class/udc 2>/dev/null || true); do
+            c=$(echo "$c" | tr -d '\\r')
+            append_udc_candidate "$c"
           done
-          if [ -z "$G" ]; then
-            mkdir -p /config
-            mount -t configfs none /config 2>/dev/null || true
-            [ -d /config/usb_gadget/g1 ] && G=/config/usb_gadget/g1
-            [ -d /config/usb_gadget/g0 ] && G=/config/usb_gadget/g0
+
+          G="$CFGBASE/g_hid"
+          mkdir -p "$G" 2>/dev/null || true
+          if [ ! -d "$G" ]; then
+            [ -d "$CFGBASE/g1" ] && G="$CFGBASE/g1" || G="$CFGBASE/g0"
           fi
-          if [ -n "$G" ]; then
-            CONF=$(ls -d $G/configs/*.* 2>/dev/null | head -n 1)
-            [ -z "$CONF" ] && [ -d "$G/configs/b.1" ] && CONF="$G/configs/b.1"
-            if [ -n "$CONF" ]; then
-              mkdir -p $G/functions/hid.usb0 $G/functions/hid.usb1
-              echo 1 > $G/functions/hid.usb0/protocol
-              echo 1 > $G/functions/hid.usb0/subclass
-              echo 8 > $G/functions/hid.usb0/report_length
-              printf '\\005\\001\\011\\006\\241\\001\\005\\007\\031\\340\\051\\347\\025\\000\\045\\001\\165\\001\\225\\010\\201\\002\\225\\001\\165\\010\\201\\003\\225\\005\\165\\001\\005\\010\\031\\001\\051\\005\\221\\002\\225\\001\\165\\003\\221\\003\\225\\006\\165\\010\\025\\000\\045\\145\\005\\007\\031\\000\\051\\145\\201\\000\\300' > $G/functions/hid.usb0/report_desc
-              echo 2 > $G/functions/hid.usb1/protocol
-              echo 1 > $G/functions/hid.usb1/subclass
-              echo 3 > $G/functions/hid.usb1/report_length
-              printf '\\005\\001\\011\\002\\241\\001\\011\\001\\241\\000\\005\\011\\031\\001\\051\\003\\025\\000\\045\\001\\225\\003\\165\\001\\201\\002\\225\\001\\165\\005\\201\\003\\005\\001\\011\\060\\011\\061\\025\\201\\045\\177\\165\\010\\225\\002\\201\\006\\300\\300' > $G/functions/hid.usb1/report_desc
-              ln -sf $G/functions/hid.usb0 $CONF/ 2>/dev/null || true
-              ln -sf $G/functions/hid.usb1 $CONF/ 2>/dev/null || true
-              UDC=$(getprop sys.usb.controller 2>/dev/null || cat $G/UDC 2>/dev/null || ls /sys/class/udc 2>/dev/null | head -n 1)
-              [ -n "$UDC" ] && [ -f "$G/UDC" ] && [ -z "$(cat $G/UDC 2>/dev/null)" ] && echo "$UDC" > "$G/UDC" 2>/dev/null || true
-              chmod 0666 /dev/hidg* 2>/dev/null || true
+          cd "$G"
+
+          CONF="configs/c.1"
+          [ -d "configs/b.1" ] && [ ! -d "configs/c.1" ] && CONF="configs/b.1"
+          mkdir -p "$CONF" 2>/dev/null || true
+          rm -f "$CONF"/* 2>/dev/null || true
+          rm -rf functions/hid.usb0 functions/hid.usb1 2>/dev/null || true
+
+          (echo 0x1d6b > idVendor) 2>/dev/null || true
+          (echo 0x0104 > idProduct) 2>/dev/null || true
+          (echo 0x0200 > bcdUSB) 2>/dev/null || true
+          (echo 0x0100 > bcdDevice) 2>/dev/null || true
+
+          mkdir -p strings/0x409 2>/dev/null || true
+          (echo 'NetHunter' > strings/0x409/manufacturer) 2>/dev/null || true
+          (echo 'NetHunter Composite HID' > strings/0x409/product) 2>/dev/null || true
+          (echo 'NH-HID-001' > strings/0x409/serialnumber) 2>/dev/null || true
+
+          mkdir -p "$CONF/strings/0x409" 2>/dev/null || true
+          (echo "Config 1" > "$CONF/strings/0x409/configuration") 2>/dev/null || true
+          (echo 250 > "$CONF/MaxPower") 2>/dev/null || true
+
+          # --- 1. Keyboard Endpoint (hid.usb0) ---
+          mkdir -p functions/hid.usb0 2>/dev/null || true
+          echo 1 > functions/hid.usb0/protocol
+          echo 1 > functions/hid.usb0/subclass
+          echo 8 > functions/hid.usb0/report_length
+          printf '%b' '\\x05\\x01\\x09\\x06\\xa1\\x01\\x05\\x07\\x19\\xe0\\x29\\xe7\\x15\\x00\\x25\\x01\\x75\\x01\\x95\\x08\\x81\\x02\\x95\\x01\\x75\\x08\\x81\\x03\\x95\\x05\\x75\\x01\\x05\\x08\\x19\\x01\\x29\\x05\\x91\\x02\\x95\\x01\\x75\\x03\\x91\\x03\\x95\\x06\\x75\\x08\\x15\\x00\\x25\\x65\\x05\\x07\\x19\\x00\\x29\\x65\\x81\\x00\\xc0' > functions/hid.usb0/report_desc 2>/dev/null || \
+          printf '\\005\\001\\011\\006\\241\\001\\005\\007\\031\\340\\051\\347\\025\\000\\045\\001\\165\\001\\225\\010\\201\\002\\225\\001\\165\\010\\201\\003\\225\\005\\165\\001\\005\\010\\031\\001\\051\\005\\221\\002\\225\\001\\165\\003\\221\\003\\225\\006\\165\\010\\025\\000\\045\\145\\005\\007\\031\\000\\051\\145\\201\\000\\300' > functions/hid.usb0/report_desc 2>/dev/null || true
+
+          # --- 2. Mouse Endpoint (hid.usb1) ---
+          mkdir -p functions/hid.usb1 2>/dev/null || true
+          echo 2 > functions/hid.usb1/protocol
+          echo 1 > functions/hid.usb1/subclass
+          echo 4 > functions/hid.usb1/report_length
+          printf '%b' '\\x05\\x01\\x09\\x02\\xa1\\x01\\x09\\x01\\xa1\\x00\\x05\\x09\\x19\\x01\\x29\\x03\\x15\\x00\\x25\\x01\\x95\\x03\\x75\\x01\\x81\\x02\\x95\\x01\\x75\\x05\\x81\\x03\\x05\\x01\\x09\\x30\\x09\\x31\\x09\\x38\\x15\\x81\\x25\\x7f\\x75\\x08\\x95\\x03\\x81\\x06\\xc0\\xc0' > functions/hid.usb1/report_desc 2>/dev/null || \
+          printf '\\005\\001\\011\\002\\241\\001\\011\\001\\241\\000\\005\\011\\031\\001\\051\\003\\025\\000\\045\\001\\225\\003\\165\\001\\201\\002\\225\\001\\165\\005\\201\\003\\005\\001\\011\\060\\011\\061\\011\\070\\025\\201\\045\\177\\165\\010\\225\\003\\201\\006\\300\\300' > functions/hid.usb1/report_desc 2>/dev/null || true
+
+          # Link functions into config
+          for f in $(ls -1 functions 2>/dev/null); do
+            [ ! -e "$CONF/$f" ] && ln -s "functions/$f" "$CONF/$f" 2>/dev/null || ln -sf "$G/functions/$f" "$CONF/$f" 2>/dev/null || true
+          done
+
+          # Unbind conflicting gadgets and bind this gadget to the UDC
+          BOUND_UDC=""
+          for UDC_NAME in $UDC_CANDIDATES; do
+            [ -d "/sys/class/udc/$UDC_NAME" ] || continue
+
+            for U in "$CFGBASE"/*/UDC; do
+              [ -f "$U" ] || continue
+              [ "$U" = "$G/UDC" ] && continue
+              CUR=$(cat "$U" 2>/dev/null | tr -d '\\r')
+              if [ "$CUR" = "$UDC_NAME" ]; then
+                (echo "" > "$U") 2>/dev/null || true
+              fi
+            done
+
+            (echo "" > UDC) 2>/dev/null || true
+            (echo "$UDC_NAME" > UDC) 2>/dev/null || true
+            CUR_UDC=$(cat UDC 2>/dev/null | tr -d '\\r')
+            if [ "$CUR_UDC" = "$UDC_NAME" ]; then
+              BOUND_UDC="$UDC_NAME"
+              break
             fi
-          fi
+          done
+
+          chmod 0666 /dev/hidg* 2>/dev/null || true
+          echo "BOUND_UDC: $BOUND_UDC"
         `;
-        await exec(script);
-        showSnackbar("HID Keyboard + Mouse bound successfully");
+        const out = await exec(script);
+        showSnackbar("HID Keyboard + Mouse enabled (" + ((out || "").trim() || "OK") + ")");
       } else if (mode === 'storage') {
         await exec("setprop sys.usb.config mass_storage 2>/dev/null || true");
         showSnackbar("Mass Storage USB profile enabled");
@@ -1769,8 +1868,29 @@
         return;
       }
       showSnackbar("Sending scan code 0x04 ('a') to /dev/hidg0...");
-      await exec("printf '\\000\\000\\004\\000\\000\\000\\000\\000' > /dev/hidg0 2>/dev/null && printf '\\000\\000\\000\\000\\000\\000\\000\\000' > /dev/hidg0 2>/dev/null && echo 'OK'");
-      showSnackbar("Keystroke scan code transmitted to /dev/hidg0");
+      const cmd = "printf '%b' '\\x00\\x00\\x04\\x00\\x00\\x00\\x00\\x00' > /dev/hidg0 2>/dev/null && printf '%b' '\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00' > /dev/hidg0 2>/dev/null && echo 'OK'";
+      const res = await exec(cmd);
+      if (res && res.includes("OK")) {
+        showSnackbar("Keystroke scan code transmitted to /dev/hidg0");
+      } else {
+        showSnackbar("Keystroke transmission failed (verify USB is connected to PC)");
+      }
+      await checkUsbStatus();
+    }
+
+    async function injectTestMouseClick() {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
+        return;
+      }
+      showSnackbar("Sending mouse left-click to /dev/hidg1...");
+      const cmd = "printf '%b' '\\x01\\x00\\x00\\x00' > /dev/hidg1 2>/dev/null && printf '%b' '\\x00\\x00\\x00\\x00' > /dev/hidg1 2>/dev/null && echo 'OK'";
+      const res = await exec(cmd);
+      if (res && res.includes("OK")) {
+        showSnackbar("Mouse left-click transmitted to /dev/hidg1");
+      } else {
+        showSnackbar("Mouse click transmission failed (verify USB is connected to PC)");
+      }
       await checkUsbStatus();
     }
 
