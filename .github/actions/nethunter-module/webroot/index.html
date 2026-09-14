@@ -3101,16 +3101,16 @@
           local m="$1"
           local base=$(echo "$m" | sed 's/\\.ko$//' | tr '-' '_')
           [ -d "/sys/module/$base" ] && return 0
-          grep -q "^${base}[[:space:]]" /proc/modules 2>/dev/null && return 0
+          grep -q "^$base " /proc/modules 2>/dev/null && return 0
           if [ -n "$MDIR" ]; then
-            for f in "$MDIR/lkm/\${m}.ko" "$MDIR/lkm/$(echo "$m" | tr '_' '-').ko" "$MDIR/lkm/$(echo "$m" | tr '-' '_').ko" "$MDIR/lkm/\$m"; do
+            for f in "$MDIR/lkm/$m.ko" "$MDIR/lkm/$(echo "$m" | tr '_' '-').ko" "$MDIR/lkm/$(echo "$m" | tr '-' '_').ko" "$MDIR/lkm/$m"; do
               if [ -f "$f" ]; then
                 insmod "$f" 2>/dev/null || true
                 break
               fi
             done
           fi
-          if [ ! -d "/sys/module/$base" ] && ! grep -q "^${base}[[:space:]]" /proc/modules 2>/dev/null; then
+          if [ ! -d "/sys/module/$base" ] && ! grep -q "^$base " /proc/modules 2>/dev/null; then
             modprobe "$base" 2>/dev/null || true
           fi
         }
@@ -3157,7 +3157,7 @@
       try {
         const script = `
           MDIR=""
-          for d in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/ksu/modules/nethunter_wireless_modules /data/adb/modules/*; do
+          for d in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/ksu/modules/nethunter_wireless_modules /data/adb/ksu/modules/* /data/adb/sukisu/modules/* /data/adb/modules/*; do
             [ -d "$d/lkm" ] && MDIR="$d" && break
           done
           if [ -w /sys/module/firmware_class/parameters/path ]; then
@@ -3179,16 +3179,16 @@
             local m="$1"
             local base=$(echo "$m" | sed 's/\\.ko$//' | tr '-' '_')
             [ -d "/sys/module/$base" ] && return 0
-            grep -q "^${base}[[:space:]]" /proc/modules 2>/dev/null && return 0
+            grep -q "^$base " /proc/modules 2>/dev/null && return 0
             if [ -n "$MDIR" ]; then
-              for f in "$MDIR/lkm/\${m}.ko" "$MDIR/lkm/$(echo "$m" | tr '_' '-').ko" "$MDIR/lkm/$(echo "$m" | tr '-' '_').ko" "$MDIR/lkm/\$m"; do
+              for f in "$MDIR/lkm/$m.ko" "$MDIR/lkm/$(echo "$m" | tr '_' '-').ko" "$MDIR/lkm/$(echo "$m" | tr '-' '_').ko" "$MDIR/lkm/$m"; do
                 if [ -f "$f" ]; then
                   insmod "$f" 2>/dev/null || true
                   break
                 fi
               done
             fi
-            if [ ! -d "/sys/module/$base" ] && ! grep -q "^${base}[[:space:]]" /proc/modules 2>/dev/null; then
+            if [ ! -d "/sys/module/$base" ] && ! grep -q "^$base " /proc/modules 2>/dev/null; then
               modprobe "$base" 2>/dev/null || true
             fi
           }
