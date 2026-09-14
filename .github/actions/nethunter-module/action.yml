@@ -228,6 +228,8 @@ runs:
         cat << 'EOF' > "$STAGING_DIR/service.sh"
         #!/system/bin/sh
         MODDIR=${0%/*}
+        exec 1>>"$MODDIR/service.log" 2>&1
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting NetHunter Module service initialization..."
 
         # Safely prepend module firmware directories while strictly preserving stock vendor firmware search paths
         if [ -w /sys/module/firmware_class/parameters/path ]; then

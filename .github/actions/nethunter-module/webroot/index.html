@@ -1523,12 +1523,12 @@
             <span>Delete / Clear</span>
           </button>
         </div>
-        <button class="m3-btn-inline" style="background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); border: 1px solid var(--md-sys-color-outline-variant);" onclick="fetchSystemDmesg()" title="Fetch live kernel dmesg buffer">
+        <button class="m3-btn-inline" style="background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); border: 1px solid var(--md-sys-color-outline-variant);" onclick="fetchAllSystemLogs()" title="Take and import every single system log (dmesg, boot, kernel, drivers)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
             <polyline points="4 17 10 11 4 5"></polyline>
             <line x1="12" y1="19" x2="20" y2="19"></line>
           </svg>
-          <span>Fetch Dmesg</span>
+          <span>Take All Logs</span>
         </button>
       </div>
 
@@ -1574,7 +1574,7 @@
       
       const entry = { time: timeStr, level: level.toLowerCase(), msg: text };
       processLogs.push(entry);
-      if (processLogs.length > 1500) processLogs.shift();
+      if (processLogs.length > 4000) processLogs.shift();
 
       // Forward to Terminal tab console as well
       if (level === 'cmd') {
@@ -1588,6 +1588,40 @@
       renderSingleLogEntry(entry);
       updateLogCountBadge();
     }
+
+    // Global Console & Window Error Interceptor - captures every log, warning, error
+    (function initGlobalLogInterceptors() {
+      const _origLog = console.log;
+      const _origWarn = console.warn;
+      const _origErr = console.error;
+      const _origInfo = console.info;
+
+      console.log = function(...args) {
+        _origLog.apply(console, args);
+        try { logProcess("out", args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(" ")); } catch(_) {}
+      };
+      console.warn = function(...args) {
+        _origWarn.apply(console, args);
+        try { logProcess("system", "[WARN] " + args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(" ")); } catch(_) {}
+      };
+      console.error = function(...args) {
+        _origErr.apply(console, args);
+        try { logProcess("error", args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(" ")); } catch(_) {}
+      };
+      console.info = function(...args) {
+        _origInfo.apply(console, args);
+        try { logProcess("system", args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(" ")); } catch(_) {}
+      };
+
+      window.onerror = function(msg, url, lineNo, colNo, err) {
+        logProcess("error", `[Window Exception] ${msg} (${url || 'index.html'}:${lineNo}:${colNo})`);
+        return false;
+      };
+
+      window.addEventListener('unhandledrejection', function(event) {
+        logProcess("error", `[Unhandled Promise Rejection] ${event.reason ? (event.reason.message || event.reason) : 'Unknown'}`);
+      });
+    })();
 
     function updateLogCountBadge() {
       const badge = document.getElementById('log-count-badge');
@@ -1713,22 +1747,68 @@
       showSnackbar("All logs deleted and cleared");
     }
 
-    async function fetchSystemDmesg() {
+    async function fetchAllSystemLogs() {
       if (!hasBridge()) {
-        showSnackbar("Root bridge required to read dmesg");
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
-      showSnackbar("Fetching kernel dmesg logs...");
-      logProcess("action", "Fetching kernel dmesg buffer...");
-      const out = await exec("dmesg -T 2>/dev/null | tail -n 80 || dmesg 2>/dev/null | tail -n 80");
-      if (out && out.trim()) {
-        const lines = out.trim().split("\n");
-        lines.forEach(l => logProcess("system", l));
-        showSnackbar("Appended " + lines.length + " kernel dmesg entries");
-      } else {
-        logProcess("error", "Failed to retrieve dmesg (empty or restricted)");
+      showSnackbar("Collecting every single system, kernel & module log...");
+      logProcess("action", "Initiating collection of all system logs (dmesg, modules, memory, configfs, boot)...");
+
+      const script = `
+        echo "===KERNEL_OS==="
+        uname -a 2>/dev/null
+        echo "===SELINUX==="
+        getenforce 2>/dev/null || true
+        echo "===KERNEL_CMDLINE==="
+        cat /proc/cmdline 2>/dev/null
+        echo "===MEMINFO==="
+        cat /proc/meminfo | head -n 12 2>/dev/null
+        echo "===MGLRU_CAPS==="
+        cat /sys/kernel/mm/lru_gen/enabled 2>/dev/null
+        echo "===LOADED_MODULES==="
+        cat /proc/modules 2>/dev/null
+        echo "===FIRMWARE_SEARCH_PATH==="
+        cat /sys/module/firmware_class/parameters/path 2>/dev/null
+        echo "===USB_UDC_CONTROLLER==="
+        ls -1 /sys/class/udc 2>/dev/null
+        getprop sys.usb.controller 2>/dev/null
+        getprop sys.usb.config 2>/dev/null
+        getprop sys.usb.state 2>/dev/null
+        echo "===HID_DEVICE_NODES==="
+        ls -la /dev/hidg* /dev/uhid 2>/dev/null || echo "No hidg nodes"
+        echo "===MODULE_SERVICE_LOG==="
+        cat /data/adb/modules/nethunter_wireless_modules/service.log 2>/dev/null || echo "No service.log recorded yet"
+        echo "===KERNEL_DMESG==="
+        dmesg -T 2>/dev/null | tail -n 150 || dmesg 2>/dev/null | tail -n 150
+      `;
+
+      const out = await exec(script);
+      if (!out || !out.trim()) {
+        logProcess("error", "Failed to retrieve system logs (empty output or restricted)");
+        return;
       }
+
+      const sections = out.split("===");
+      let count = 0;
+      for (let i = 1; i < sections.length; i += 2) {
+        const title = (sections[i] || "").trim();
+        const content = (sections[i+1] || "").trim();
+        if (!content) continue;
+        const lines = content.split("\n");
+        lines.forEach(l => {
+          const trimmed = l.trim();
+          if (trimmed) {
+            const lvl = (title.includes("DMESG") || title.includes("LOG") || title.includes("MEM") || title.includes("KERNEL")) ? "system" : "out";
+            logProcess(lvl, `[${title}] ${trimmed}`);
+            count++;
+          }
+        });
+      }
+      showSnackbar(`Collected ${count} system log entries successfully`);
     }
+
+    const fetchSystemDmesg = fetchAllSystemLogs;
 
     function toggleLogModal(show) {
       const modal = document.getElementById('log-modal');
@@ -1739,6 +1819,10 @@
         logProcess("action", "Opened Process & Activity Log modal");
         modal.classList.add('open');
         renderAllLogs();
+        // Auto-fetch complete system logs if buffer only has minimal init logs
+        if (processLogs.length <= 4 && hasBridge()) {
+          fetchAllSystemLogs();
+        }
       } else {
         modal.classList.remove('open');
       }
@@ -2007,6 +2091,8 @@
       state.optimisticDad = optDad && optDad.trim() === "1";
       const swDad = document.getElementById('switch-opt-dad');
       if (swDad) swDad.classList.toggle('checked', state.optimisticDad);
+
+      logProcess("system", `[Telemetry Network] TCP=${state.tcp || 'N/A'} | Qdisc=${state.qdisc || 'N/A'} | TTL=${state.ttl} | IP_Forward=${state.ipForward ? '1' : '0'} | Opt_DAD=${state.optimisticDad ? '1' : '0'}`);
     }
 
     async function applyTcp(algo) {
@@ -2191,6 +2277,8 @@
           c.classList.toggle('selected', m === state.usbMode);
         }
       });
+
+      logProcess("system", `[Telemetry USB] Mode=${state.usbMode.toUpperCase()} | hidg0=${state.hidg0 ? 'ACTIVE' : 'OFF'} | hidg1=${state.hidg1 ? 'ACTIVE' : 'OFF'}`);
     }
 
     async function setUsbMode(mode) {
@@ -2581,6 +2669,8 @@
       updateFw('fw-ath9k', 'htc_9271.fw');
       updateFw('fw-rtw88', 'rtw8822c_fw.bin');
       updateFw('fw-rtl8xxxu', 'rtl8188eufw.bin');
+
+      logProcess("system", `[Telemetry Drivers] Loaded=${state.loadedModules.size}/${NETHUNTER_MODULES.length} (${Array.from(state.loadedModules).join(', ') || 'none'})`);
     }
 
     async function autoLoadModule(modName) {
@@ -2872,6 +2962,8 @@
         const activeSwap = document.getElementById('seg-swap-' + state.swappiness);
         if (activeSwap) activeSwap.classList.add('active');
       }
+
+      logProcess("system", `[Telemetry Memory] RAM=${state.ramSummary || 'N/A'} | MGLRU=${state.mglruCaps || 'N/A'} | ZRAM=${state.zramSize || 'N/A'} (${state.zramAlgo || 'N/A'}) | VFS=${state.vfsPressure} | Swap=${state.swappiness}`);
     }
 
     async function forceMglru() {
