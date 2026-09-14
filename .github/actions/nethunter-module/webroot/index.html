@@ -656,7 +656,7 @@
       border-bottom: 1px solid var(--md-sys-color-outline-variant);
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 8px;
       overflow-x: auto;
       scrollbar-width: none;
       flex-shrink: 0;
@@ -664,11 +664,56 @@
     }
     .log-filter-bar::-webkit-scrollbar { display: none; }
 
-    /* Search & Auto-scroll Row */
+    .log-filter-chip {
+      background: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      color: var(--md-sys-color-on-surface-variant);
+      font-family: var(--font-family-sans);
+      font-size: 12px;
+      font-weight: 500;
+      height: 32px;
+      padding: 0 13px;
+      border-radius: var(--md-shape-corner-full);
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      user-select: none;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .log-filter-chip:hover {
+      background: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+    .log-filter-chip:active {
+      transform: scale(0.94);
+    }
+    .log-filter-chip.active {
+      background: var(--md-sys-color-primary);
+      color: #041e49;
+      border-color: var(--md-sys-color-primary);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(168, 199, 250, 0.3);
+    }
+    .log-filter-chip.active .log-chip-dot {
+      background: #041e49 !important;
+    }
+    .log-chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: background 0.18s ease;
+    }
+
+    /* Search Filter Row */
     .log-search-row {
       display: flex;
       align-items: center;
-      gap: 8px;
       padding: 8px 14px;
       background: var(--md-sys-color-surface-container);
       border-bottom: 1px solid var(--md-sys-color-outline-variant);
@@ -682,15 +727,15 @@
       background: var(--md-sys-color-surface-container-high);
       border: 1px solid var(--md-sys-color-outline-variant);
       border-radius: var(--md-shape-corner-full);
-      padding: 0 12px;
-      height: 38px;
-      gap: 8px;
+      padding: 0 14px;
+      height: 40px;
+      gap: 10px;
       transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
     }
 
     .log-search-box:focus-within {
       border-color: var(--md-sys-color-primary);
-      box-shadow: 0 0 0 1px var(--md-sys-color-primary);
+      box-shadow: 0 0 0 2px rgba(168, 199, 250, 0.25);
       background: var(--md-sys-color-surface-container-highest);
     }
 
@@ -700,27 +745,34 @@
       border: none;
       outline: none;
       color: var(--md-sys-color-on-surface);
-      font-size: 12.5px;
+      font-size: 13px;
       font-family: var(--font-family-mono);
     }
 
     .log-search-input::placeholder {
       color: var(--md-sys-color-outline);
+      font-family: var(--font-family-sans);
     }
 
     .log-search-clear {
-      background: transparent;
+      background: rgba(255, 255, 255, 0.08);
       border: none;
       color: var(--md-sys-color-outline);
-      font-size: 13px;
+      font-size: 11px;
       cursor: pointer;
-      padding: 2px 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 50%;
+      transition: all 0.15s ease;
     }
-    .log-search-clear:active { color: var(--md-sys-color-on-surface); }
+    .log-search-clear:active {
+      color: var(--md-sys-color-on-surface);
+      background: rgba(255, 255, 255, 0.18);
+      transform: scale(0.9);
+    }
 
     .m3-modal-body {
       flex: 1;
@@ -788,26 +840,27 @@
     .log-fab-bottom {
       position: absolute;
       bottom: 74px;
-      right: 18px;
+      right: 16px;
       z-index: 100;
       background: var(--md-sys-color-primary);
-      color: var(--md-sys-color-on-primary);
+      color: #041e49;
       border: none;
       border-radius: var(--md-shape-corner-full);
-      padding: 9px 16px;
+      height: 38px;
+      padding: 0 16px;
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 12px;
       font-weight: 700;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(168, 199, 250, 0.35);
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
       animation: m3PopIn 0.2s cubic-bezier(0.2, 0, 0, 1);
     }
 
     .log-fab-bottom:active {
-      transform: scale(0.94);
+      transform: scale(0.93);
     }
 
     @keyframes m3PopIn {
@@ -815,17 +868,79 @@
       to { transform: scale(1); opacity: 1; }
     }
 
+    /* Bottom Action Controls Toolbar */
     .m3-modal-controls {
       padding: 10px 14px max(12px, env(safe-area-inset-bottom, 14px)) 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
       background: rgba(14, 16, 21, 0.96);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-top: 1px solid var(--md-sys-color-outline-variant);
-      gap: 10px;
       flex-shrink: 0;
+    }
+
+    .log-action-btn {
+      height: 44px;
+      border-radius: var(--md-shape-corner-full);
+      font-family: var(--font-family-sans);
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+      user-select: none;
+      white-space: nowrap;
+      padding: 0 10px;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .log-action-btn:active {
+      transform: scale(0.95);
+    }
+
+    .log-action-btn.btn-copy {
+      background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, #76a5f7 100%);
+      color: #041e49;
+      box-shadow: 0 2px 10px rgba(168, 199, 250, 0.3);
+    }
+    .log-action-btn.btn-copy:hover {
+      box-shadow: 0 4px 14px rgba(168, 199, 250, 0.45);
+    }
+    .log-action-btn.btn-copy:active {
+      box-shadow: 0 1px 4px rgba(168, 199, 250, 0.2);
+    }
+
+    .log-action-btn.btn-clear {
+      background: rgba(248, 113, 113, 0.12);
+      color: #fca5a5;
+      border-color: rgba(248, 113, 113, 0.3);
+    }
+    .log-action-btn.btn-clear:hover {
+      background: rgba(248, 113, 113, 0.18);
+      border-color: rgba(248, 113, 113, 0.45);
+    }
+    .log-action-btn.btn-clear:active {
+      background: rgba(248, 113, 113, 0.25);
+    }
+
+    .log-action-btn.btn-fetch {
+      background: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface);
+      border-color: var(--md-sys-color-outline-variant);
+    }
+    .log-action-btn.btn-fetch:hover {
+      background: var(--md-sys-color-surface-container-highest);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .log-action-btn.btn-fetch:active {
+      background: var(--md-sys-color-surface-container);
     }
 
     /* ==================================================== */
@@ -981,7 +1096,7 @@
         <span class="m3-chip-dot"></span>
         <span id="bridge-name">Detecting...</span>
       </span>
-      <button class="btn-icon-m3" onclick="toggleLogModal()" title="View Activity & Process Logs">
+      <button id="btn-open-log" class="btn-icon-m3" onclick="toggleLogModal()" title="View Activity & Process Logs" style="position: relative;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
           <polyline points="14 2 14 8 20 8"></polyline>
@@ -989,6 +1104,7 @@
           <line x1="16" y1="17" x2="8" y2="17"></line>
           <polyline points="10 9 9 9 8 9"></polyline>
         </svg>
+        <span id="log-unread-indicator" style="display: none; position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--md-sys-color-primary); box-shadow: 0 0 6px var(--md-sys-color-primary);"></span>
       </button>
       <button class="btn-icon-m3" onclick="refreshAll()" title="Refresh Telemetry">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1444,7 +1560,7 @@
       <header class="m3-modal-header">
         <div class="m3-modal-title">
           <button class="btn-icon-m3" onclick="toggleLogModal(false)" title="Back to Dashboard">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="19" y1="12" x2="5" y2="12"></line>
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
@@ -1455,9 +1571,9 @@
           </div>
         </div>
         <div class="m3-modal-actions">
-          <span id="log-count-badge" class="m3-chip success" style="font-size: 10.5px; padding: 2px 10px;">0 ENTRIES</span>
+          <span id="log-count-badge" class="m3-chip success" style="font-size: 10px; font-weight: 700; padding: 3px 10px; font-family: var(--font-family-mono); letter-spacing: 0.3px;">0 ENTRIES</span>
           <button class="btn-icon-m3" onclick="toggleLogModal(false)" title="Close Log View">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -1467,12 +1583,30 @@
 
       <!-- Filter Chips Row -->
       <div class="log-filter-bar">
-        <button id="filter-log-all" class="root-term-chip active" onclick="setLogFilter('all')">All</button>
-        <button id="filter-log-action" class="root-term-chip" onclick="setLogFilter('action')">User Actions</button>
-        <button id="filter-log-cmd" class="root-term-chip" onclick="setLogFilter('cmd')">Commands ($)</button>
-        <button id="filter-log-out" class="root-term-chip" onclick="setLogFilter('out')">Output</button>
-        <button id="filter-log-error" class="root-term-chip" onclick="setLogFilter('error')">Errors</button>
-        <button id="filter-log-system" class="root-term-chip" onclick="setLogFilter('system')">Kernel / Dmesg</button>
+        <button id="filter-log-all" class="log-filter-chip active" onclick="setLogFilter('all')">
+          <span class="log-chip-dot" style="background: var(--md-sys-color-primary);"></span>
+          <span>All</span>
+        </button>
+        <button id="filter-log-action" class="log-filter-chip" onclick="setLogFilter('action')">
+          <span class="log-chip-dot" style="background: #c084fc;"></span>
+          <span>Actions</span>
+        </button>
+        <button id="filter-log-cmd" class="log-filter-chip" onclick="setLogFilter('cmd')">
+          <span class="log-chip-dot" style="background: #38bdf8;"></span>
+          <span>Commands</span>
+        </button>
+        <button id="filter-log-out" class="log-filter-chip" onclick="setLogFilter('out')">
+          <span class="log-chip-dot" style="background: #94a3b8;"></span>
+          <span>Output</span>
+        </button>
+        <button id="filter-log-error" class="log-filter-chip" onclick="setLogFilter('error')">
+          <span class="log-chip-dot" style="background: #f87171;"></span>
+          <span>Errors</span>
+        </button>
+        <button id="filter-log-system" class="log-filter-chip" onclick="setLogFilter('system')">
+          <span class="log-chip-dot" style="background: #fbbf24;"></span>
+          <span>Kernel / Dmesg</span>
+        </button>
       </div>
 
       <!-- Search Filter Row -->
@@ -1498,7 +1632,7 @@
 
       <!-- Floating Jump to Latest Button -->
       <button id="log-scroll-bottom-fab" class="log-fab-bottom" onclick="scrollToLogBottom()" title="Jump to latest logs" style="display: none;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <polyline points="19 12 12 19 5 12"></polyline>
         </svg>
@@ -1507,22 +1641,22 @@
 
       <!-- Action Controls Toolbar -->
       <div class="m3-modal-controls">
-        <button class="m3-btn" style="flex: 1; min-height: 44px; height: 44px; margin-top: 0; background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); font-weight: 700; border-radius: var(--md-shape-corner-full); font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.35);" onclick="copyProcessLogs()" title="Copy entire log to clipboard">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button class="log-action-btn btn-copy" onclick="copyProcessLogs()" title="Copy entire log to clipboard">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
-          <span>Copy Logs</span>
+          <span>Copy</span>
         </button>
-        <button class="m3-btn" style="flex: 1; min-height: 44px; height: 44px; margin-top: 0; background: rgba(255, 180, 171, 0.15); color: var(--md-sys-color-error); border: 1px solid rgba(255, 180, 171, 0.35); font-weight: 700; border-radius: var(--md-shape-corner-full); font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="clearProcessLogs()" title="Delete and clear all logs">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button class="log-action-btn btn-clear" onclick="clearProcessLogs()" title="Delete and clear all logs">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"></polyline>
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           </svg>
-          <span>Clear Logs</span>
+          <span>Clear</span>
         </button>
-        <button class="m3-btn" style="flex: 1; min-height: 44px; height: 44px; margin-top: 0; background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); border: 1px solid var(--md-sys-color-outline-variant); font-weight: 700; border-radius: var(--md-shape-corner-full); font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="fetchAllSystemLogs()" title="Take and import every single system log (dmesg, boot, kernel, drivers)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button class="log-action-btn btn-fetch" onclick="fetchAllSystemLogs()" title="Take and import every single system log (dmesg, boot, kernel, drivers)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="4 17 10 11 4 5"></polyline>
             <line x1="12" y1="19" x2="20" y2="19"></line>
           </svg>
@@ -1619,6 +1753,13 @@
 
       renderSingleLogEntry(entry);
       updateLogCountBadge();
+
+      // Show unread indicator dot on top bar button if log modal is currently closed
+      const modal = document.getElementById('log-modal');
+      if (modal && !modal.classList.contains('open')) {
+        const dot = document.getElementById('log-unread-indicator');
+        if (dot) dot.style.display = 'block';
+      }
     }
 
     // Global Console & Window Error Interceptor - captures every log, warning, error
@@ -1671,6 +1812,10 @@
       if (currentLogFilter !== 'all' && entry.level !== currentLogFilter) return;
       if (logSearchQuery && !entry.msg.toLowerCase().includes(logSearchQuery) && !entry.level.includes(logSearchQuery)) return;
 
+      // Remove placeholder empty state if present
+      const emptyState = screen.querySelector('.log-empty-state');
+      if (emptyState) emptyState.remove();
+
       const div = document.createElement('div');
       div.className = 'log-entry';
       div.innerHTML = `
@@ -1694,12 +1839,18 @@
         filtered = filtered.filter(e => e.msg.toLowerCase().includes(logSearchQuery) || e.level.includes(logSearchQuery));
       }
       if (filtered.length === 0) {
-        const msg = logSearchQuery ? `No logs matching search "${escapeHtml(logSearchQuery)}"` : `No logs recorded under "${currentLogFilter}" filter.`;
+        const title = logSearchQuery ? "No Matches Found" : "No Logs Recorded";
+        const msg = logSearchQuery ? `No activity logs matching "${escapeHtml(logSearchQuery)}"` : `No logs recorded under the "${currentLogFilter}" filter.`;
         screen.innerHTML = `
-          <div class="log-entry">
-            <span class="log-time">--:--:--</span>
-            <span class="log-badge system">System</span>
-            <span class="log-msg">${msg}</span>
+          <div class="log-empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 16px; text-align: center; color: var(--md-sys-color-outline); user-select: none;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px; opacity: 0.5;">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span style="font-size: 13.5px; font-weight: 600; color: var(--md-sys-color-on-surface-variant); margin-bottom: 4px; font-family: var(--font-family-sans);">${title}</span>
+            <span style="font-size: 11.5px; max-width: 280px; line-height: 1.4; color: var(--md-sys-color-outline); font-family: var(--font-family-sans);">${msg}</span>
           </div>
         `;
         updateLogCountBadge(0);
@@ -1780,23 +1931,20 @@
       const clearBtn = document.getElementById('log-search-clear');
       if (clearBtn) clearBtn.style.display = 'none';
 
-      const now = new Date();
-      const timeStr = String(now.getHours()).padStart(2, '0') + ':' +
-                      String(now.getMinutes()).padStart(2, '0') + ':' +
-                      String(now.getSeconds()).padStart(2, '0');
-      const resetEntry = { time: timeStr, level: "system", msg: "Log buffer deleted & cleared by user." };
-      processLogs.push(resetEntry);
       const screen = document.getElementById('process-log-screen');
       if (screen) {
         screen.innerHTML = `
-          <div class="log-entry">
-            <span class="log-time">${timeStr}</span>
-            <span class="log-badge system">System</span>
-            <span class="log-msg">Log buffer deleted & cleared by user.</span>
+          <div class="log-empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 16px; text-align: center; color: var(--md-sys-color-outline); user-select: none;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px; opacity: 0.5; color: var(--md-sys-color-primary);">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span style="font-size: 13.5px; font-weight: 600; color: var(--md-sys-color-on-surface-variant); margin-bottom: 4px; font-family: var(--font-family-sans);">Log Buffer Cleared</span>
+            <span style="font-size: 11.5px; max-width: 280px; line-height: 1.4; color: var(--md-sys-color-outline); font-family: var(--font-family-sans);">New kernel activity and user actions will be recorded here in real time.</span>
           </div>
         `;
       }
-      updateLogCountBadge();
+      updateLogCountBadge(0);
       showSnackbar("All logs deleted and cleared");
     }
 
@@ -1871,6 +2019,8 @@
       const screen = document.getElementById('process-log-screen');
 
       if (shouldOpen) {
+        const dot = document.getElementById('log-unread-indicator');
+        if (dot) dot.style.display = 'none';
         logProcess("action", "Opened Fullpage Process & Activity Log");
         modal.classList.add('open');
         document.body.style.overflow = 'hidden';
