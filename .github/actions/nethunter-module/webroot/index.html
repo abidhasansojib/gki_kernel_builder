@@ -491,6 +491,12 @@
       color: var(--md-sys-color-on-primary);
     }
 
+    .m3-btn-filled.success {
+      background: rgba(129, 201, 149, 0.22);
+      color: var(--md-sys-color-success);
+      border: 1px solid var(--md-sys-color-success);
+    }
+
     .m3-btn-tonal {
       background: var(--md-sys-color-secondary-container);
       color: var(--md-sys-color-on-secondary-container);
@@ -1153,8 +1159,8 @@
           <span class="m3-telemetry-val" id="val-zram-summary">--</span>
         </div>
 
-        <button class="m3-btn m3-btn-filled" onclick="forceMglru()">
-          Enforce Full MGLRU Capabilities (Caps 0x0007)
+        <button id="btn-force-mglru" class="m3-btn m3-btn-filled" onclick="forceMglru()">
+          Enforce Full MGLRU Capabilities (Caps 0x0007 / 0x0003)
         </button>
 
         <button class="m3-btn m3-btn-tonal" onclick="dropCaches()">
@@ -1464,13 +1470,35 @@
         return;
       }
 
-      const [cur, avail, qdisc, ipFwd, optDad] = await Promise.all([
-        exec("cat /proc/sys/net/ipv4/tcp_congestion_control 2>/dev/null"),
-        exec("cat /proc/sys/net/ipv4/tcp_available_congestion_control 2>/dev/null"),
-        exec("cat /proc/sys/net/core/default_qdisc 2>/dev/null"),
-        exec("cat /proc/sys/net/ipv4/ip_forward 2>/dev/null"),
-        exec("cat /proc/sys/net/ipv6/conf/all/optimistic_dad 2>/dev/null")
-      ]);
+      const script = `
+        echo "===TCP_CUR==="
+        cat /proc/sys/net/ipv4/tcp_congestion_control 2>/dev/null
+        echo "===TCP_AVAIL==="
+        cat /proc/sys/net/ipv4/tcp_available_congestion_control 2>/dev/null
+        echo "===QDISC==="
+        cat /proc/sys/net/core/default_qdisc 2>/dev/null
+        echo "===IP_FWD==="
+        cat /proc/sys/net/ipv4/ip_forward 2>/dev/null
+        echo "===OPT_DAD==="
+        cat /proc/sys/net/ipv6/conf/all/optimistic_dad 2>/dev/null
+      `;
+      const out = await exec(script);
+      const str = out || "";
+
+      const getSection = (name) => {
+        const marker = "===" + name + "===";
+        const idx = str.indexOf(marker);
+        if (idx === -1) return "";
+        const start = idx + marker.length;
+        const nextIdx = str.indexOf("===", start);
+        return (nextIdx === -1 ? str.slice(start) : str.slice(start, nextIdx)).trim();
+      };
+
+      const cur = getSection("TCP_CUR");
+      const avail = getSection("TCP_AVAIL");
+      const qdisc = getSection("QDISC");
+      const ipFwd = getSection("IP_FWD");
+      const optDad = getSection("OPT_DAD");
 
       const trimmedCur = cur ? cur.trim() : "";
       const trimmedAvail = avail ? avail.trim() : "";
@@ -1650,11 +1678,29 @@
         return;
       }
 
-      const [h0, h1, usbCfg] = await Promise.all([
-        exec("[ -c /dev/hidg0 ] && echo '1' || echo '0'"),
-        exec("[ -c /dev/hidg1 ] && echo '1' || echo '0'"),
-        exec("getprop sys.usb.config 2>/dev/null")
-      ]);
+      const script = `
+        echo "===H0==="
+        [ -c /dev/hidg0 ] && echo '1' || echo '0'
+        echo "===H1==="
+        [ -c /dev/hidg1 ] && echo '1' || echo '0'
+        echo "===USB_CFG==="
+        getprop sys.usb.config 2>/dev/null
+      `;
+      const out = await exec(script);
+      const str = out || "";
+
+      const getSection = (name) => {
+        const marker = "===" + name + "===";
+        const idx = str.indexOf(marker);
+        if (idx === -1) return "";
+        const start = idx + marker.length;
+        const nextIdx = str.indexOf("===", start);
+        return (nextIdx === -1 ? str.slice(start) : str.slice(start, nextIdx)).trim();
+      };
+
+      const h0 = getSection("H0");
+      const h1 = getSection("H1");
+      const usbCfg = getSection("USB_CFG");
 
       state.hidg0 = (h0 && h0.trim() === '1');
       state.hidg1 = (h1 && h1.trim() === '1');
@@ -2233,23 +2279,74 @@
         return;
       }
 
-      const [mglru, vfs, swap, zramAlgo, zramSize, meminfo] = await Promise.all([
-        exec("cat /sys/kernel/mm/lru_gen/enabled 2>/dev/null"),
-        exec("cat /proc/sys/vm/vfs_cache_pressure 2>/dev/null"),
-        exec("cat /proc/sys/vm/swappiness 2>/dev/null"),
-        exec("cat /sys/block/zram0/comp_algorithm 2>/dev/null"),
-        exec("cat /sys/block/zram0/disksize 2>/dev/null"),
-        exec("cat /proc/meminfo 2>/dev/null")
-      ]);
+      const script = `
+        echo "===MGLRU==="
+        cat /sys/kernel/mm/lru_gen/enabled 2>/dev/null
+        echo "===VFS==="
+        cat /proc/sys/vm/vfs_cache_pressure 2>/dev/null
+        echo "===SWAP==="
+        cat /proc/sys/vm/swappiness 2>/dev/null
+        echo "===ZRAM_ALGO==="
+        cat /sys/block/zram0/comp_algorithm 2>/dev/null
+        echo "===ZRAM_SIZE==="
+        cat /sys/block/zram0/disksize 2>/dev/null
+        echo "===MEMINFO==="
+        cat /proc/meminfo 2>/dev/null
+      `;
+      const out = await exec(script);
+      const str = out || "";
+
+      const getSection = (name) => {
+        const marker = "===" + name + "===";
+        const idx = str.indexOf(marker);
+        if (idx === -1) return "";
+        const start = idx + marker.length;
+        const nextIdx = str.indexOf("===", start);
+        return (nextIdx === -1 ? str.slice(start) : str.slice(start, nextIdx)).trim();
+      };
+
+      const mglru = getSection("MGLRU");
+      const vfs = getSection("VFS");
+      const swap = getSection("SWAP");
+      const zramAlgo = getSection("ZRAM_ALGO");
+      const zramSize = getSection("ZRAM_SIZE");
+      const meminfo = getSection("MEMINFO");
 
       // MGLRU Check
       const mglruVal = mglru ? mglru.trim() : "";
       state.mglruCaps = mglruVal;
-      if (elMglru) elMglru.innerText = mglruVal || "Not Supported";
+      
+      const isFull = mglruVal === '0x0007' || mglruVal === '7';
+      const isMaxHw = mglruVal === '0x0003' || mglruVal === '3';
+      const isActive = isFull || isMaxHw || (mglruVal && (mglruVal.includes('0x') ? parseInt(mglruVal, 16) > 0 : parseInt(mglruVal, 10) > 0));
+
+      if (elMglru) {
+        if (isMaxHw) {
+          elMglru.innerText = "0x0003 (Hardware Max: Core + Page Table Walk)";
+        } else if (isFull) {
+          elMglru.innerText = "0x0007 (Full: Core + Page Table Walk + Non-Leaf)";
+        } else if (isActive) {
+          elMglru.innerText = mglruVal + " (Active)";
+        } else {
+          elMglru.innerText = mglruVal || "Not Supported";
+        }
+      }
+
       if (badgeMglru) {
-        const isActive = mglruVal && (mglruVal.includes('0x') ? parseInt(mglruVal, 16) > 0 : parseInt(mglruVal, 10) > 0);
         badgeMglru.className = isActive ? "m3-chip success" : "m3-chip";
-        badgeMglru.innerHTML = `<span class="m3-chip-dot"></span><span>${isActive ? 'ACTIVE (' + mglruVal + ')' : (mglruVal ? 'DISABLED' : 'NOT SUPPORTED')}</span>`;
+        const badgeLabel = isMaxHw ? "ACTIVE (0x0003 • MAX HARDWARE)" : (isFull ? "ACTIVE (0x0007 • FULL)" : (isActive ? "ACTIVE (" + mglruVal + ")" : (mglruVal ? "DISABLED" : "NOT SUPPORTED")));
+        badgeMglru.innerHTML = `<span class="m3-chip-dot"></span><span>${badgeLabel}</span>`;
+      }
+
+      const btnMglru = document.getElementById('btn-force-mglru');
+      if (btnMglru) {
+        if (isMaxHw || isFull) {
+          btnMglru.innerText = `✅ MGLRU Active (${mglruVal} • Maximum Capacity)`;
+          btnMglru.className = "m3-btn m3-btn-filled success";
+        } else {
+          btnMglru.innerText = "Enforce Full MGLRU Capabilities (Caps 0x0007 / 0x0003)";
+          btnMglru.className = "m3-btn m3-btn-filled";
+        }
       }
 
       // Real-time RAM parse from /proc/meminfo
@@ -2259,7 +2356,7 @@
         const mAvail = meminfo.match(/MemAvailable:\s+(\d+)\s+kB/i);
         const mFree = meminfo.match(/MemFree:\s+(\d+)\s+kB/i);
         const mBuf = meminfo.match(/Buffers:\s+(\d+)\s+kB/i);
-        const mCached = meminfo.match(/^Cached:\s+(\d+)\s+kB/im);
+        const mCached = meminfo.match(/(?:^|\n)Cached:\s+(\d+)\s+kB/i);
 
         if (mTot) totalKb = parseInt(mTot[1], 10);
         if (mAvail) availKb = parseInt(mAvail[1], 10);
@@ -2267,7 +2364,7 @@
         if (mBuf) buffersKb = parseInt(mBuf[1], 10);
         if (mCached) cachedKb = parseInt(mCached[1], 10);
 
-        if (!availKb && freeKb) {
+        if (!availKb && (freeKb || cachedKb)) {
           availKb = freeKb + buffersKb + cachedKb;
         }
 
@@ -2329,10 +2426,17 @@
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
-      state.mglruCaps = "0x0007";
-      await exec("echo 7 > /sys/kernel/mm/lru_gen/enabled 2>/dev/null || echo 1 > /sys/kernel/mm/lru_gen/enabled || true");
+      showSnackbar("Enforcing full MGLRU capabilities in kernel...");
+      await exec("echo 7 > /sys/kernel/mm/lru_gen/enabled 2>/dev/null || echo 3 > /sys/kernel/mm/lru_gen/enabled 2>/dev/null || echo 1 > /sys/kernel/mm/lru_gen/enabled 2>/dev/null || true");
       await checkMemory();
-      showSnackbar("MGLRU capabilities locked to 0x0007 (Full Active)");
+      const cur = state.mglruCaps;
+      if (cur === '0x0003' || cur === '3') {
+        showSnackbar("MGLRU active at maximum CPU hardware capability (0x0003)");
+      } else if (cur === '0x0007' || cur === '7') {
+        showSnackbar("MGLRU active with full capabilities (0x0007)");
+      } else {
+        showSnackbar("MGLRU updated: " + (cur || "Active"));
+      }
     }
 
     async function dropCaches() {
