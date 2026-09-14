@@ -1336,13 +1336,13 @@
           <span class="m3-chip" id="badge-modules-count">--</span>
         </div>
 
-        <button class="m3-btn m3-btn-filled" onclick="loadAllAvailableModules()">
+        <button class="m3-btn m3-btn-filled" id="btn-load-all-modules" onclick="loadAllAvailableModules()">
           ⚡ Auto-Load All Available Modules
         </button>
 
         <!-- Category Filters -->
         <div style="display: flex; gap: 6px; overflow-x: auto; padding: 6px 0 8px 0; -webkit-overflow-scrolling: touch;">
-          <button id="filter-mod-all" class="root-term-chip active" onclick="setModuleFilter('all')">All (24)</button>
+          <button id="filter-mod-all" class="root-term-chip active" onclick="setModuleFilter('all')">All (27)</button>
           <button id="filter-mod-wifi" class="root-term-chip" onclick="setModuleFilter('wifi')">Wi-Fi (12)</button>
           <button id="filter-mod-serial" class="root-term-chip" onclick="setModuleFilter('serial')">Serial (5)</button>
           <button id="filter-mod-net" class="root-term-chip" onclick="setModuleFilter('net')">Ethernet (4)</button>
@@ -2846,12 +2846,12 @@
       { name: "rtw88_usb", file: "rtw88_usb.ko", cat: "wifi", desc: "Realtek RTL8821CU / 8822CU", deps: ["cfg80211", "mac80211", "rtw88_core"] },
       { name: "rtw88_8822cu", file: "rtw88_8822cu.ko", cat: "wifi", desc: "Realtek 8822CU 802.11ac Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_8822c", "rtw88_usb"] },
       { name: "rtw88_8821cu", file: "rtw88_8821cu.ko", cat: "wifi", desc: "Realtek 8821CU 802.11ac Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_8821c", "rtw88_usb"] },
-      { name: "ath9k_htc", file: "ath9k_htc.ko", cat: "wifi", desc: "Atheros AR9271 (WN722N v1)", deps: ["cfg80211", "mac80211"] },
+      { name: "ath9k_htc", file: "ath9k_htc.ko", cat: "wifi", desc: "Atheros AR9271 (WN722N v1)", deps: ["cfg80211", "mac80211", "ath", "ath9k_hw", "ath9k_common"] },
       { name: "rtl8xxxu", file: "rtl8xxxu.ko", cat: "wifi", desc: "Realtek RTL8188EUS / RTL8192EU", deps: ["cfg80211", "mac80211"] },
-      { name: "carl9170", file: "carl9170.ko", cat: "wifi", desc: "Atheros AR9170 USB 802.11n", deps: ["cfg80211", "mac80211"] },
-      { name: "rt2800usb", file: "rt2800usb.ko", cat: "wifi", desc: "Ralink RT2870 / RT3070", deps: ["cfg80211", "mac80211"] },
+      { name: "carl9170", file: "carl9170.ko", cat: "wifi", desc: "Atheros AR9170 USB 802.11n", deps: ["cfg80211", "mac80211", "ath"] },
+      { name: "rt2800usb", file: "rt2800usb.ko", cat: "wifi", desc: "Ralink RT2870 / RT3070", deps: ["cfg80211", "mac80211", "rt2x00lib", "rt2x00usb", "rt2800lib"] },
       { name: "zd1211rw", file: "zd1211rw.ko", cat: "wifi", desc: "ZyDAS ZD1211 / ZD1211B", deps: ["cfg80211", "mac80211"] },
-      { name: "rtl8187", file: "rtl8187.ko", cat: "wifi", desc: "Realtek RTL8187 (Alfa AWUS036H)", deps: ["cfg80211", "mac80211"] },
+      { name: "rtl8187", file: "rtl8187.ko", cat: "wifi", desc: "Realtek RTL8187 (Alfa AWUS036H)", deps: ["cfg80211", "mac80211", "eeprom_93cx6"] },
       { name: "mac80211", file: "mac80211.ko", cat: "wifi", desc: "Packet Injection Engine (WEXT=y)", deps: ["cfg80211"] },
       { name: "cfg80211", file: "cfg80211.ko", cat: "wifi", desc: "Wireless Configuration Core", deps: [] },
 
@@ -2860,13 +2860,13 @@
       { name: "cp210x", file: "cp210x.ko", cat: "serial", desc: "Silicon Labs CP210x Serial", deps: ["usbserial"] },
       { name: "ftdi_sio", file: "ftdi_sio.ko", cat: "serial", desc: "FTDI FT232 USB Serial", deps: ["usbserial"] },
       { name: "pl2303", file: "pl2303.ko", cat: "serial", desc: "Prolific PL2303 Serial", deps: ["usbserial"] },
-      { name: "cdc_acm", file: "cdc_acm.ko", cat: "serial", desc: "USB CDC ACM Serial Device", deps: [] },
+      { name: "cdc_acm", file: "cdc-acm.ko", cat: "serial", desc: "USB CDC ACM Serial Device", deps: [] },
 
       // USB Ethernet Adapters
-      { name: "r8152", file: "r8152.ko", cat: "net", desc: "Realtek RTL8152/8153 Gigabit LAN", deps: [] },
-      { name: "asix", file: "asix.ko", cat: "net", desc: "ASIX AX8817X USB Ethernet", deps: [] },
-      { name: "ax88179_178a", file: "ax88179_178a.ko", cat: "net", desc: "ASIX AX88179 USB 3.0 Gigabit", deps: [] },
-      { name: "cdc_ether", file: "cdc_ether.ko", cat: "net", desc: "CDC Ethernet USB Dongle", deps: [] },
+      { name: "r8152", file: "r8152.ko", cat: "net", desc: "Realtek RTL8152/8153 Gigabit LAN", deps: ["mii"] },
+      { name: "asix", file: "asix.ko", cat: "net", desc: "ASIX AX8817X USB Ethernet", deps: ["mii", "usbnet"] },
+      { name: "ax88179_178a", file: "ax88179_178a.ko", cat: "net", desc: "ASIX AX88179 USB 3.0 Gigabit", deps: ["mii", "usbnet"] },
+      { name: "cdc_ether", file: "cdc_ether.ko", cat: "net", desc: "CDC Ethernet USB Dongle", deps: ["usbnet"] },
 
       // Software-Defined Radio (SDR)
       { name: "hackrf", file: "hackrf.ko", cat: "sdr", desc: "Great Scott Gadgets HackRF SDR", deps: [] },
@@ -2875,8 +2875,8 @@
 
       // CAN Bus Diagnostics
       { name: "can", file: "can.ko", cat: "can", desc: "Controller Area Network Core", deps: [] },
-      { name: "can_raw", file: "can_raw.ko", cat: "can", desc: "Raw CAN Protocol Sockets", deps: ["can"] },
-      { name: "vcan", file: "vcan.ko", cat: "can", desc: "Virtual CAN Tunnel Device", deps: ["can"] }
+      { name: "can_raw", file: "can-raw.ko", cat: "can", desc: "Raw CAN Protocol Sockets", deps: ["can"] },
+      { name: "vcan", file: "vcan.ko", cat: "can", desc: "Virtual CAN Tunnel Device", deps: ["can", "can-dev"] }
     ];
 
     let currentModuleFilter = 'all';
@@ -2987,11 +2987,12 @@
       const fwSection = parts[1] || "";
 
       state.loadedModules.clear();
+      const paddedMod = "\n" + modSection.trim().toLowerCase() + "\n";
       NETHUNTER_MODULES.forEach(m => {
         const norm = m.name.toLowerCase();
         const alt = norm.replace(/_/g, '-');
-        if (modSection.includes("\n" + norm + " ") || modSection.includes("\n" + norm + "\n") ||
-            modSection.includes("\n" + alt + " ") || modSection.includes("\n" + alt + "\n")) {
+        if (paddedMod.includes("\n" + norm + " ") || paddedMod.includes("\n" + norm + "\n") ||
+            paddedMod.includes("\n" + alt + " ") || paddedMod.includes("\n" + alt + "\n")) {
           state.loadedModules.add(m.name);
         }
       });
@@ -3051,18 +3052,27 @@
               ;;
           esac
         fi
-        ${deps.map(dep => `
-          if [ -n "$MDIR" ] && [ -f "$MDIR/lkm/${dep}.ko" ]; then
-            insmod "$MDIR/lkm/${dep}.ko" 2>/dev/null || ksud insmod "$MDIR/lkm/${dep}.ko" 2>/dev/null || true
-          else
-            modprobe ${dep} 2>/dev/null || true
+
+        load_one() {
+          local m="$1"
+          local base=$(echo "$m" | sed 's/\\.ko$//' | tr '-' '_')
+          [ -d "/sys/module/$base" ] && return 0
+          grep -q "^${base}[[:space:]]" /proc/modules 2>/dev/null && return 0
+          if [ -n "$MDIR" ]; then
+            for f in "$MDIR/lkm/\${m}.ko" "$MDIR/lkm/$(echo "$m" | tr '_' '-').ko" "$MDIR/lkm/$(echo "$m" | tr '-' '_').ko" "$MDIR/lkm/\$m"; do
+              if [ -f "$f" ]; then
+                insmod "$f" 2>/dev/null || true
+                break
+              fi
+            done
           fi
-        `).join('\n')}
-        if [ -n "$MDIR" ] && [ -f "$MDIR/lkm/${modName}.ko" ]; then
-          insmod "$MDIR/lkm/${modName}.ko" 2>/dev/null || ksud insmod "$MDIR/lkm/${modName}.ko" 2>/dev/null || true
-        else
-          modprobe ${modName} 2>/dev/null || true
-        fi
+          if [ ! -d "/sys/module/$base" ] && ! grep -q "^${base}[[:space:]]" /proc/modules 2>/dev/null; then
+            modprobe "$base" 2>/dev/null || true
+          fi
+        }
+
+        ${deps.map(dep => `load_one "${dep}"`).join('\n')}
+        load_one "${modName}"
       `;
       await exec(script);
       state.loadedModules.add(modName);
@@ -3085,48 +3095,81 @@
     }
 
     async function loadAllAvailableModules() {
-      logProcess("action", "User requested batch auto-load for all available modules");
+      logProcess("action", "User requested batch auto-load for all NetHunter modules");
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
-      showSnackbar("Auto-loading all available NetHunter modules...");
-      const script = `
-        MDIR=""
-        for d in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/ksu/modules/nethunter_wireless_modules /data/adb/modules/*; do
-          [ -d "$d/lkm" ] && MDIR="$d" && break
-        done
-        if [ -n "$MDIR" ] && [ -d "$MDIR/lkm" ]; then
-          # Ensure kernel firmware search path includes module firmware
+      const btn = document.getElementById('btn-load-all-modules');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "⏳ Loading NetHunter Modules...";
+      }
+      showSnackbar("Auto-loading all NetHunter modules...");
+
+      try {
+        const script = `
+          MDIR=""
+          for d in /data/adb/modules/nethunter_wireless_modules /data/adb/modules/*nethunter* /data/adb/ksu/modules/nethunter_wireless_modules /data/adb/modules/*; do
+            [ -d "$d/lkm" ] && MDIR="$d" && break
+          done
           if [ -w /sys/module/firmware_class/parameters/path ]; then
             CURR_FW=$(cat /sys/module/firmware_class/parameters/path 2>/dev/null || echo "")
             case "$CURR_FW" in
-              *"$MDIR"*) ;;
+              *"/data/adb/modules"*) ;;
               *)
-                FW_DIRS=""
-                [ -d "$MDIR/firmware" ] && FW_DIRS="$MDIR/firmware"
-                [ -d "$MDIR/system/etc/firmware" ] && FW_DIRS="\${FW_DIRS:+\$FW_DIRS,}$MDIR/system/etc/firmware"
-                [ -n "$FW_DIRS" ] && echo "\$FW_DIRS,\$CURR_FW" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
+                if [ -n "$MDIR" ]; then
+                  FW_DIRS=""
+                  [ -d "$MDIR/firmware" ] && FW_DIRS="$MDIR/firmware"
+                  [ -d "$MDIR/system/etc/firmware" ] && FW_DIRS="\${FW_DIRS:+\$FW_DIRS,}$MDIR/system/etc/firmware"
+                  [ -n "$FW_DIRS" ] && echo "\$FW_DIRS,\$CURR_FW" > /sys/module/firmware_class/parameters/path 2>/dev/null || true
+                fi
                 ;;
             esac
           fi
-          # Priority 1: Core infrastructure
-          for b in cfg80211.ko mac80211.ko usbnet.ko can.ko can-dev.ko rtw88_core.ko rtw88_usb.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko rt2x00lib.ko rt2x00usb.ko rt2800lib.ko ath9k_hw.ko ath9k_common.ko; do
-            [ -f "$MDIR/lkm/$b" ] && (insmod "$MDIR/lkm/$b" 2>/dev/null || ksud insmod "$MDIR/lkm/$b" 2>/dev/null || true)
+
+          load_one() {
+            local m="$1"
+            local base=$(echo "$m" | sed 's/\\.ko$//' | tr '-' '_')
+            [ -d "/sys/module/$base" ] && return 0
+            grep -q "^${base}[[:space:]]" /proc/modules 2>/dev/null && return 0
+            if [ -n "$MDIR" ]; then
+              for f in "$MDIR/lkm/\${m}.ko" "$MDIR/lkm/$(echo "$m" | tr '_' '-').ko" "$MDIR/lkm/$(echo "$m" | tr '-' '_').ko" "$MDIR/lkm/\$m"; do
+                if [ -f "$f" ]; then
+                  insmod "$f" 2>/dev/null || true
+                  break
+                fi
+              done
+            fi
+            if [ ! -d "/sys/module/$base" ] && ! grep -q "^${base}[[:space:]]" /proc/modules 2>/dev/null; then
+              modprobe "$base" 2>/dev/null || true
+            fi
+          }
+
+          # 1. Base network, wireless, serial & CAN infrastructure
+          for b in cfg80211 mac80211 usbnet mii usbserial can can-dev; do
+            load_one "$b"
           done
-          # Priority 2: All remaining peripheral drivers
-          for ko in "$MDIR/lkm"/*.ko; do
-            [ -f "$ko" ] && (insmod "$ko" 2>/dev/null || ksud insmod "$ko" 2>/dev/null || true)
+
+          # 2. Wireless helper & sub-driver stacks
+          for b in ath ath9k_hw ath9k_common rtw88_core rtw88_usb rtw88_8822c rtw88_8821c mt76 mt76-usb mt76x02-lib mt76x02-usb mt76x2-common rt2x00lib rt2x00usb rt2800lib eeprom_93cx6; do
+            load_one "$b"
           done
-        else
-          for mod in mt7601u rtw88_usb rtw88_8822cu rtw88_8821cu ath9k_htc rtl8xxxu carl9170 rt2800usb zd1211rw rtl8187 ch341 cp210x ftdi_sio pl2303 cdc_acm r8152 asix ax88179_178a cdc_ether hackrf airspy msi2500 can can_raw vcan; do
-            modprobe "$mod" 2>/dev/null || true
+
+          # 3. All NetHunter peripheral drivers (Wi-Fi, Serial, Ethernet, SDR, CAN)
+          for m in mt7601u rtw88_usb rtw88_8822cu rtw88_8821cu ath9k_htc rtl8xxxu carl9170 rt2800usb zd1211rw rtl8187 ch341 cp210x ftdi_sio pl2303 cdc-acm r8152 asix ax88179_178a cdc_ether hackrf airspy msi2500 can can-raw vcan; do
+            load_one "$m"
           done
-        fi
-      `;
-      await exec(script);
-      await checkDriversAndFirmwares();
-      showSnackbar("All NetHunter modules synchronized");
+        `;
+        await exec(script);
+        await checkDriversAndFirmwares();
+        showSnackbar("All NetHunter modules synchronized");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = "⚡ Auto-Load All Available Modules";
+        }
+      }
     }
 
     async function resetDriversDefaults() {
