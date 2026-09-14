@@ -282,17 +282,17 @@ runs:
             local base
             base=$(echo "${mod%.ko}" | tr '-' '_')
             if [ ! -d "/sys/module/$base" ] && ! grep -q "^${base}[[:space:]]" /proc/modules 2>/dev/null; then
-              insmod "$MODULE_SRC/$mod" 2>/dev/null || ksud insmod "$MODULE_SRC/$mod" 2>/dev/null || true
+              insmod "$MODULE_SRC/$mod" 2>/dev/null || true
             fi
           }
 
           # Priority 1: Core wireless foundation & network infrastructure
-          for m in cfg80211.ko mac80211.ko usbnet.ko can.ko can-dev.ko; do
+          for m in cfg80211.ko mac80211.ko rfkill.ko usbnet.ko mii.ko usbserial.ko can.ko can-dev.ko; do
             load_mod "$m"
           done
 
           # Priority 2: Wireless common support libraries
-          for m in rtw88_core.ko rtw88_usb.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko rt2x00lib.ko rt2x00usb.ko rt2800lib.ko ath9k_hw.ko ath9k_common.ko; do
+          for m in ath.ko ath9k_hw.ko ath9k_common.ko eeprom_93cx6.ko rt2x00lib.ko rt2x00usb.ko rt2800lib.ko rtw88_core.ko rtw88_usb.ko rtw88_8822c.ko rtw88_8821c.ko mt76.ko mt76-usb.ko mt76x02-lib.ko mt76x02-usb.ko mt76x2-common.ko; do
             load_mod "$m"
           done
         fi

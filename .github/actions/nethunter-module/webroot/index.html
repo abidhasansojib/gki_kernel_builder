@@ -2846,12 +2846,12 @@
       { name: "rtw88_usb", file: "rtw88_usb.ko", cat: "wifi", desc: "Realtek RTL8821CU / 8822CU", deps: ["cfg80211", "mac80211", "rtw88_core"] },
       { name: "rtw88_8822cu", file: "rtw88_8822cu.ko", cat: "wifi", desc: "Realtek 8822CU 802.11ac Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_8822c", "rtw88_usb"] },
       { name: "rtw88_8821cu", file: "rtw88_8821cu.ko", cat: "wifi", desc: "Realtek 8821CU 802.11ac Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_8821c", "rtw88_usb"] },
-      { name: "ath9k_htc", file: "ath9k_htc.ko", cat: "wifi", desc: "Atheros AR9271 (WN722N v1)", deps: ["cfg80211", "mac80211", "ath", "ath9k_hw", "ath9k_common"] },
+      { name: "ath9k_htc", file: "ath9k_htc.ko", cat: "wifi", desc: "Atheros AR9271 (WN722N v1)", deps: ["cfg80211", "mac80211", "rfkill", "ath", "ath9k_hw", "ath9k_common"] },
       { name: "rtl8xxxu", file: "rtl8xxxu.ko", cat: "wifi", desc: "Realtek RTL8188EUS / RTL8192EU", deps: ["cfg80211", "mac80211"] },
       { name: "carl9170", file: "carl9170.ko", cat: "wifi", desc: "Atheros AR9170 USB 802.11n", deps: ["cfg80211", "mac80211", "ath"] },
-      { name: "rt2800usb", file: "rt2800usb.ko", cat: "wifi", desc: "Ralink RT2870 / RT3070", deps: ["cfg80211", "mac80211", "rt2x00lib", "rt2x00usb", "rt2800lib"] },
+      { name: "rt2800usb", file: "rt2800usb.ko", cat: "wifi", desc: "Ralink RT2870 / RT3070", deps: ["cfg80211", "mac80211", "rfkill", "rt2x00lib", "rt2x00usb", "rt2800lib"] },
       { name: "zd1211rw", file: "zd1211rw.ko", cat: "wifi", desc: "ZyDAS ZD1211 / ZD1211B", deps: ["cfg80211", "mac80211"] },
-      { name: "rtl8187", file: "rtl8187.ko", cat: "wifi", desc: "Realtek RTL8187 (Alfa AWUS036H)", deps: ["cfg80211", "mac80211", "eeprom_93cx6"] },
+      { name: "rtl8187", file: "rtl8187.ko", cat: "wifi", desc: "Realtek RTL8187 (Alfa AWUS036H)", deps: ["cfg80211", "mac80211", "rfkill", "eeprom_93cx6"] },
       { name: "mac80211", file: "mac80211.ko", cat: "wifi", desc: "Packet Injection Engine (WEXT=y)", deps: ["cfg80211"] },
       { name: "cfg80211", file: "cfg80211.ko", cat: "wifi", desc: "Wireless Configuration Core", deps: [] },
 
@@ -3075,10 +3075,13 @@
         load_one "${modName}"
       `;
       await exec(script);
-      state.loadedModules.add(modName);
-      deps.forEach(d => state.loadedModules.add(d));
       await checkDriversAndFirmwares();
-      showSnackbar("Module " + modName + " loaded");
+      const isLoadedNow = state.loadedModules.has(modName) || state.loadedModules.has(modName.replace(/_/g, '-'));
+      if (isLoadedNow) {
+        showSnackbar("Module " + modName + " loaded");
+      } else {
+        showSnackbar("Failed to load " + modName + " (check dmesg / Activity Log)");
+      }
     }
 
     async function unloadModule(modName) {
@@ -3147,12 +3150,12 @@
           }
 
           # 1. Base network, wireless, serial & CAN infrastructure
-          for b in cfg80211 mac80211 usbnet mii usbserial can can-dev; do
+          for b in cfg80211 mac80211 rfkill usbnet mii usbserial can can-dev; do
             load_one "$b"
           done
 
           # 2. Wireless helper & sub-driver stacks
-          for b in ath ath9k_hw ath9k_common rtw88_core rtw88_usb rtw88_8822c rtw88_8821c mt76 mt76-usb mt76x02-lib mt76x02-usb mt76x2-common rt2x00lib rt2x00usb rt2800lib eeprom_93cx6; do
+          for b in ath ath9k_hw ath9k_common eeprom_93cx6 rt2x00lib rt2x00usb rt2800lib rtw88_core rtw88_usb rtw88_8822c rtw88_8821c mt76 mt76-usb mt76x02-lib mt76x02-usb mt76x2-common; do
             load_one "$b"
           done
 
