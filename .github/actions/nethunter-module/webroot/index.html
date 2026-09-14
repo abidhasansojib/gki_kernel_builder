@@ -829,133 +829,30 @@
     }
 
     /* ==================================================== */
-    /* ROOTED TERMINAL CONSOLE                              */
+    /* FILTER & COMPACT BUTTON CHIPS                        */
     /* ==================================================== */
-    .root-terminal {
-      background: #07090e;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: var(--md-shape-corner-lg);
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-    }
-
-    .root-term-bar {
-      background: #10141d;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .root-term-title {
-      font-family: var(--font-family-mono);
-      font-size: 12px;
-      font-weight: 700;
-      color: #38bdf8;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
     .root-term-chip {
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.1);
       color: #cbd5e1;
       font-family: var(--font-family-mono);
       font-size: 10.5px;
-      padding: 3px 8px;
+      padding: 4px 10px;
       border-radius: var(--md-shape-corner-xs);
       cursor: pointer;
       transition: all 0.15s ease;
-    }
-    .root-term-chip:active { transform: scale(0.94); }
-
-    .root-term-presets {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 6px 10px;
-      background: #0a0d14;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .root-term-presets::-webkit-scrollbar { display: none; }
-
-    .root-term-screen {
-      background: #080a0f;
-      color: #e2e8f0;
-      padding: 12px 14px;
-      font-family: var(--font-family-mono);
-      font-size: 12.5px;
-      line-height: 1.65;
-      min-height: 270px;
-      max-height: 420px;
-      overflow-y: auto;
-      word-break: break-all;
-      white-space: pre-wrap;
-    }
-
-    .root-term-screen::-webkit-scrollbar { width: 4px; }
-    .root-term-screen::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 2px; }
-
-    .term-row-cmd {
-      color: #38bdf8;
-      font-weight: 600;
-      margin-top: 5px;
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-    }
-
-    .term-prompt-hash {
-      color: #4ade80;
-      font-weight: 700;
+      justify-content: center;
       user-select: none;
     }
-
-    .term-row-out {
-      color: #94a3b8;
-      padding-left: 2px;
-    }
-
-    .term-row-err {
-      color: #f87171;
-      padding-left: 2px;
-    }
-
-    .root-term-input-bar {
-      background: #0d1117;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .root-term-input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #f8fafc;
-      font-family: var(--font-family-mono);
-      font-size: 13px;
-    }
-    .root-term-input::placeholder { color: #475569; }
-
-    .root-term-btn {
-      background: #38bdf8;
-      color: #0c4a6e;
-      border: none;
-      border-radius: var(--md-shape-corner-xs);
-      padding: 7px 16px;
-      font-size: 12px;
+    .root-term-chip:active { transform: scale(0.94); }
+    .root-term-chip.active {
+      background: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      border-color: var(--md-sys-color-primary);
       font-weight: 700;
-      cursor: pointer;
     }
-    .root-term-btn:active { transform: scale(0.95); }
 
     /* M3 Bottom Navigation Bar */
     .m3-nav-bar {
@@ -1488,72 +1385,9 @@
       </button>
     </div>
 
-    <!-- ==================================================== -->
-    <!-- TAB 5: ROOT TERMINAL                                 -->
-    <!-- ==================================================== -->
-    <div id="tab-console" class="tab-view">
-      <div class="root-terminal">
-        <!-- Rooted Top Bar -->
-        <div class="root-term-bar">
-          <div class="root-term-title">
-            <span style="color: #4ade80;">#</span>
-            <span>root@android:/ #</span>
-          </div>
-          <div style="display: flex; gap: 6px;">
-            <button class="root-term-chip" onclick="clearConsole()">Clear</button>
-            <button class="root-term-chip" onclick="copyConsole()">Copy</button>
-          </div>
-        </div>
-
-        <!-- Presets Row -->
-        <div class="root-term-presets">
-          <button class="root-term-chip" onclick="runPreset('uname -a')">uname -a</button>
-          <button class="root-term-chip" onclick="runPreset('dmesg | tail -n 30')">dmesg</button>
-          <button class="root-term-chip" onclick="runPreset('lsmod')">lsmod</button>
-          <button class="root-term-chip" onclick="runPreset('ip link')">ip link</button>
-          <button class="root-term-chip" onclick="runPreset('free -h')">free -h</button>
-          <button class="root-term-chip" onclick="runPreset('cat /proc/version')">version</button>
-        </div>
-
-        <!-- Terminal Screen Output -->
-        <div id="box-console" class="root-term-screen">
-          <div class="term-row-out">Initializing root shell...</div>
-        </div>
-
-        <!-- Interactive Command Line -->
-        <div class="root-term-input-bar">
-          <span class="term-prompt-hash">#</span>
-          <input id="term-input" type="text" class="root-term-input" placeholder="Enter shell command..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" onkeydown="handleTermKey(event)" />
-          <button class="root-term-btn" onclick="executeCustomCommand()">Run</button>
-        </div>
-      </div>
-
-      <!-- Process & Activity Log Quick Launcher -->
-      <div class="m3-card" style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between; padding: 12px 14px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div class="top-app-bar-icon" style="width: 34px; height: 34px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-          </div>
-          <div style="display: flex; flex-direction: column;">
-            <span style="font-size: 13px; font-weight: 700; color: var(--md-sys-color-on-surface);">Process & Activity Log</span>
-            <span style="font-size: 11px; color: var(--md-sys-color-on-surface-variant);">Fullpage kernel & module execution trace</span>
-          </div>
-        </div>
-        <button class="m3-btn-inline" style="background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);" onclick="toggleLogModal(true)">
-          View Logs
-        </button>
-      </div>
-    </div>
-
   </div>
 
-  <!-- M3 Bottom Navigation Bar (5 Clean Tabs) -->
+  <!-- M3 Bottom Navigation Bar (4 Core Tabs) -->
   <nav class="m3-nav-bar">
     <button class="m3-nav-item active" onclick="navTo('network', this)">
       <div class="m3-nav-pill">
@@ -1600,16 +1434,6 @@
       </div>
       <span class="m3-nav-label">Memory</span>
     </button>
-
-    <button class="m3-nav-item" onclick="navTo('console', this)">
-      <div class="m3-nav-pill">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="4 17 10 11 4 5"></polyline>
-          <line x1="12" y1="19" x2="20" y2="19"></line>
-        </svg>
-      </div>
-      <span class="m3-nav-label">Terminal</span>
-    </button>
   </nav>
 
   <!-- Fullscreen / Fullpage Process & Activity Log View -->
@@ -1651,7 +1475,7 @@
         <button id="filter-log-system" class="root-term-chip" onclick="setLogFilter('system')">Kernel / Dmesg</button>
       </div>
 
-      <!-- Search & Auto-scroll Row -->
+      <!-- Search Filter Row -->
       <div class="log-search-row">
         <div class="log-search-box">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--md-sys-color-outline); flex-shrink: 0;">
@@ -1661,10 +1485,6 @@
           <input type="text" id="log-search-input" class="log-search-input" placeholder="Search logs (e.g. bbr, dmesg, error)..." oninput="handleLogSearch(this.value)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
           <button id="log-search-clear" class="log-search-clear" onclick="clearLogSearch()" style="display: none;" title="Clear search">✕</button>
         </div>
-        <button id="log-autoscroll-toggle" class="root-term-chip active" onclick="toggleAutoScroll()" title="Toggle auto-scrolling to newest logs" style="flex-shrink: 0; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px;">
-          <span id="log-autoscroll-dot" class="m3-chip-dot" style="background: var(--md-sys-color-success);"></span>
-          <span id="log-autoscroll-label">Auto-scroll</span>
-        </button>
       </div>
 
       <!-- Log Terminal Screen (Full Page) -->
@@ -1740,7 +1560,6 @@
     const processLogs = [];
     let currentLogFilter = 'all';
     let logSearchQuery = '';
-    let autoScrollEnabled = true;
     let isUserScrolledUp = false;
 
     function handleLogSearch(val) {
@@ -1759,31 +1578,6 @@
       const clearBtn = document.getElementById('log-search-clear');
       if (clearBtn) clearBtn.style.display = 'none';
       renderAllLogs();
-    }
-
-    function toggleAutoScroll() {
-      autoScrollEnabled = !autoScrollEnabled;
-      updateAutoScrollUI();
-      if (autoScrollEnabled) {
-        scrollToLogBottom();
-      }
-    }
-
-    function updateAutoScrollUI() {
-      const toggleBtn = document.getElementById('log-autoscroll-toggle');
-      const dot = document.getElementById('log-autoscroll-dot');
-      const label = document.getElementById('log-autoscroll-label');
-      if (toggleBtn && dot && label) {
-        if (autoScrollEnabled) {
-          toggleBtn.classList.add('active');
-          dot.style.background = "var(--md-sys-color-success)";
-          label.innerText = "Auto-scroll";
-        } else {
-          toggleBtn.classList.remove('active');
-          dot.style.background = "var(--md-sys-color-outline)";
-          label.innerText = "Paused";
-        }
-      }
     }
 
     function scrollToLogBottom() {
@@ -1886,7 +1680,7 @@
       `;
       screen.appendChild(div);
       while (screen.children.length > 500) screen.removeChild(screen.firstChild);
-      if (autoScrollEnabled && !isUserScrolledUp) {
+      if (!isUserScrolledUp) {
         screen.scrollTop = screen.scrollHeight;
       }
     }
@@ -1921,7 +1715,7 @@
         `;
         screen.appendChild(div);
       });
-      if (autoScrollEnabled && !isUserScrolledUp) {
+      if (!isUserScrolledUp) {
         screen.scrollTop = screen.scrollHeight;
       }
       updateLogCountBadge(filtered.length);
@@ -2083,7 +1877,6 @@
         if (screen) {
           screen.addEventListener('scroll', handleLogScroll, { passive: true });
         }
-        updateAutoScrollUI();
         renderAllLogs();
         scrollToLogBottom();
         // Auto-fetch complete system logs if buffer only has minimal init logs
@@ -3435,108 +3228,6 @@
       await checkMemory();
       showSnackbar("Memory & MGLRU reset to kernel defaults");
     }
-
-    // 5. Root Terminal Engine
-    const termHistory = [];
-    let termHistoryIdx = -1;
-
-    function logConsole(text) {
-      const box = document.getElementById('box-console');
-      if (!box) return;
-      const trimmed = (text || "").trim();
-      if (!trimmed) return;
-      const div = document.createElement('div');
-
-      if (trimmed.startsWith("$ ")) {
-        div.className = "term-row-cmd";
-        div.innerHTML = `<span class="term-prompt-hash">#</span><span>${trimmed.substring(2)}</span>`;
-      } else if (trimmed.toLowerCase().includes("error") || trimmed.toLowerCase().includes("failed") || trimmed.toLowerCase().includes("permission denied") || trimmed.includes("unavailable")) {
-        div.className = "term-row-err";
-        div.innerText = trimmed;
-      } else {
-        div.className = "term-row-out";
-        div.innerText = trimmed;
-      }
-
-      box.appendChild(div);
-      while (box.children.length > 250) box.removeChild(box.firstChild);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function handleTermKey(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        executeCustomCommand();
-      } else if (e.key === 'ArrowUp') {
-        if (termHistory.length > 0 && termHistoryIdx > 0) {
-          termHistoryIdx--;
-          e.target.value = termHistory[termHistoryIdx] || "";
-        }
-      } else if (e.key === 'ArrowDown') {
-        if (termHistoryIdx < termHistory.length - 1) {
-          termHistoryIdx++;
-          e.target.value = termHistory[termHistoryIdx] || "";
-        } else {
-          termHistoryIdx = termHistory.length;
-          e.target.value = "";
-        }
-      }
-    }
-
-    async function runPreset(cmd) {
-      logProcess("action", "Selected terminal preset: " + cmd);
-      const input = document.getElementById('term-input');
-      if (input) input.value = cmd;
-      await executeCustomCommand();
-    }
-
-    async function executeCustomCommand() {
-      const input = document.getElementById('term-input');
-      if (!input) return;
-      const cmd = input.value.trim();
-      if (!cmd) return;
-      logProcess("action", "Execute custom terminal command: " + cmd);
-      termHistory.push(cmd);
-      termHistoryIdx = termHistory.length;
-      input.value = "";
-
-      logConsole("$ " + cmd);
-
-      if (!hasBridge()) {
-        logConsole("Error: Cannot execute command. Root bridge not attached.");
-        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
-        input.focus();
-        return;
-      }
-
-      const res = await exec(cmd);
-      if (res && res.trim()) {
-        logConsole(res.trim());
-      } else if (res === "") {
-        logConsole("(Done)");
-      } else if (res === null) {
-        logConsole("Error: Root execution failed or bridge unavailable.");
-      }
-      input.focus();
-    }
-
-    function clearConsole() {
-      logProcess("action", "Cleared terminal console buffer");
-      const box = document.getElementById('box-console');
-      if (box) box.innerHTML = '<div class="term-row-out">Terminal buffer cleared.</div>';
-      showSnackbar("Terminal cleared");
-    }
-
-    function copyConsole() {
-      logProcess("action", "Copied terminal output to clipboard");
-      const box = document.getElementById('box-console');
-      if (box && navigator.clipboard) {
-        navigator.clipboard.writeText(box.innerText).then(() => showSnackbar("Terminal output copied"));
-      } else {
-        showSnackbar("Clipboard unavailable");
-      }
-    }
-
     // Master Refresh
     async function refreshAll() {
       logProcess("action", "Triggered full telemetry refresh");
@@ -3553,16 +3244,6 @@
         if (elBridge) elBridge.innerText = "No Root Bridge";
         if (chipBridge) chipBridge.className = "m3-chip warning";
         if (bannerNoBridge) bannerNoBridge.style.display = "flex";
-      }
-
-      // Initialize terminal prompt status message if clean
-      const box = document.getElementById('box-console');
-      if (box && (!box.innerHTML || box.innerHTML.includes('Initializing') || box.innerHTML.includes('Terminal buffer cleared'))) {
-        if (bridge) {
-          box.innerHTML = `<div class="term-row-out">[${bridge} Root Bridge Attached] Linux root shell ready.</div>`;
-        } else {
-          box.innerHTML = `<div class="term-row-err">[No Root Bridge Detected] Opened in standard browser mode.</div><div class="term-row-out">To run root commands and control kernel settings, open this WebUI inside KernelSU or SukiSU Manager.</div>`;
-        }
       }
 
       await checkTcp();
