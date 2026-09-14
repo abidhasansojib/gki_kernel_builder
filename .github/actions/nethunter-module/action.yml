@@ -109,14 +109,10 @@ runs:
         cp -rf "$STAGING_DIR/system/etc/firmware/"* "$STAGING_DIR/firmware/" 2>/dev/null || true
         touch "$STAGING_DIR/skip_mount"
 
-        echo "=== Installing NetHunter Module WebUI Dashboard & Action Handler ==="
+        echo "=== Installing NetHunter Module WebUI Dashboard ==="
         mkdir -p "$STAGING_DIR/webroot"
         if [ -f "${{ github.action_path }}/webroot/index.html" ]; then
           cp -vf "${{ github.action_path }}/webroot/index.html" "$STAGING_DIR/webroot/"
-        fi
-        if [ -f "${{ github.action_path }}/action.sh" ]; then
-          cp -vf "${{ github.action_path }}/action.sh" "$STAGING_DIR/action.sh"
-          chmod +x "$STAGING_DIR/action.sh"
         fi
 
         echo "=== Creating Module Metadata & Scripts ==="
@@ -127,7 +123,6 @@ runs:
         printf 'author=abidhasansojib\n' >> "$STAGING_DIR/module.prop"
         printf 'description=External USB WiFi (RTW88, RTL8xxxu, ATH9K-HTC, CARL9170, RT2800, MT76, ZD1211), BadUSB HID Gadget, TCP Congestion Switcher & WebUI Manager for Android 16 (6.12) GKI\n' >> "$STAGING_DIR/module.prop"
         printf 'webui=true\n' >> "$STAGING_DIR/module.prop"
-        printf 'action=true\n' >> "$STAGING_DIR/module.prop"
 
         # --- Flashing Script (customize.sh) ---
         cat << 'EOF' > "$STAGING_DIR/customize.sh"
@@ -147,13 +142,15 @@ runs:
         # Enforce skip_mount to prevent OverlayFS/NoMount /system VFS collision
         touch "$MODPATH/skip_mount"
 
+        # Remove legacy action.sh if present to ensure only WebUI button displays
+        rm -f "$MODPATH/action.sh" 2>/dev/null || true
+
         # Universal permission assignment for KernelSU, SukiSU, and Magisk
         if type set_perm_recursive >/dev/null 2>&1; then
           set_perm_recursive "$MODPATH" 0 0 0755 0644
           set_perm_recursive "$MODPATH/webroot" 0 0 0755 0644
           set_perm "$MODPATH/service.sh" 0 0 0755
           set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
-          [ -f "$MODPATH/action.sh" ] && set_perm "$MODPATH/action.sh" 0 0 0755
         fi
         chmod -R 755 "$MODPATH" 2>/dev/null || true
         find "$MODPATH" -type f -exec chmod 644 {} + 2>/dev/null || true
