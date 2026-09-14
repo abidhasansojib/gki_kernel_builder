@@ -1823,15 +1823,6 @@
       processLogs.push(entry);
       if (processLogs.length > 4000) processLogs.shift();
 
-      // Forward to Terminal tab console as well
-      if (level === 'cmd') {
-        logConsole(text);
-      } else if (level === 'error') {
-        logConsole("Error: " + text);
-      } else if (level === 'action') {
-        logConsole("[Action] " + text);
-      }
-
       renderSingleLogEntry(entry);
       updateLogCountBadge();
     }
@@ -2138,17 +2129,28 @@
       logProcess("action", `Option changed: [${label}] = ${target.value}`);
     }, true);
 
-    function detectBridge() {
-      if (typeof window.ksu !== 'undefined' && typeof window.ksu.exec === 'function') return "KernelSU";
-      if (typeof window.sukisu !== 'undefined' && typeof window.sukisu.exec === 'function') return "SukiSU";
-      if (typeof window.suki !== 'undefined' && typeof window.suki.exec === 'function') return "SukiSU";
-      if (typeof window.resukisu !== 'undefined' && typeof window.resukisu.exec === 'function') return "ReSukiSU";
-      if (typeof window.KernelSU !== 'undefined' && typeof window.KernelSU.exec === 'function') return "KernelSU";
+    function getBridgeObject() {
+      if (typeof window.ksu !== 'undefined' && typeof window.ksu.exec === 'function') return window.ksu;
+      if (typeof window.sukisu !== 'undefined' && typeof window.sukisu.exec === 'function') return window.sukisu;
+      if (typeof window.suki !== 'undefined' && typeof window.suki.exec === 'function') return window.suki;
+      if (typeof window.resukisu !== 'undefined' && typeof window.resukisu.exec === 'function') return window.resukisu;
+      if (typeof window.KernelSU !== 'undefined' && typeof window.KernelSU.exec === 'function') return window.KernelSU;
       return null;
     }
 
+    function detectBridge() {
+      const b = getBridgeObject();
+      if (!b) return null;
+      if (typeof window.ksu !== 'undefined' && b === window.ksu) return "KernelSU";
+      if (typeof window.sukisu !== 'undefined' && b === window.sukisu) return "SukiSU";
+      if (typeof window.suki !== 'undefined' && b === window.suki) return "SukiSU";
+      if (typeof window.resukisu !== 'undefined' && b === window.resukisu) return "ReSukiSU";
+      if (typeof window.KernelSU !== 'undefined' && b === window.KernelSU) return "KernelSU";
+      return "KernelSU";
+    }
+
     function hasBridge() {
-      return detectBridge() !== null;
+      return getBridgeObject() !== null;
     }
 
     function showSnackbar(msg) {
@@ -2169,51 +2171,105 @@
     }
 
     // Universal Shell Execution Engine
+    // Uses KernelSU / SukiSU asynchronous callback interface to capture 100% full multiline stdout.
+    // (Single-argument exec(cmd) uses ShellUtils.fastCmd in libsu which strips all but the last line of stdout).
     async function exec(cmd) {
-      const bridge = detectBridge();
-      if (!bridge) {
+      const bridgeObj = getBridgeObject();
+      if (!bridgeObj) {
         logProcess("error", "[Browser Mode] Shell unavailable: root bridge required for '" + cmd + "'");
         return null;
       }
       logProcess("cmd", "$ " + cmd);
-      const runner = (window.ksu && typeof window.ksu.exec === 'function') ? window.ksu.exec.bind(window.ksu) :
-                     (window.sukisu && typeof window.sukisu.exec === 'function') ? window.sukisu.exec.bind(window.sukisu) :
-                     (window.suki && typeof window.suki.exec === 'function') ? window.suki.exec.bind(window.suki) :
-                     (window.resukisu && typeof window.resukisu.exec === 'function') ? window.resukisu.exec.bind(window.resukisu) :
-                     (window.KernelSU && typeof window.KernelSU.exec === 'function') ? window.KernelSU.exec.bind(window.KernelSU) : null;
-      
-      if (!runner) return null;
 
-      try {
-        const res = runner(cmd);
-        if (res instanceof Promise) {
-          const data = await res;
-          const formatted = formatOutput(data);
-          if (formatted && formatted.trim()) logProcess("out", formatted.trim());
-          return formatted;
-        }
-        if (res !== undefined && res !== null) {
-          const formatted = formatOutput(res);
-          if (formatted && formatted.trim()) logProcess("out", formatted.trim());
-          return formatted;
-        }
-      } catch(e) {
-        return new Promise(resolve => {
-          try {
-            runner(cmd, (code, stdout, stderr) => {
-              const out = stdout || stderr || "";
-              if (out && out.trim()) {
-                logProcess(code === 0 ? "out" : "error", out.trim());
-              }
-              resolve(out);
-            });
-          } catch(err) {
-            logProcess("error", err.message || err);
-            resolve(null);
+      return new Promise((resolve) => {
+        const cbName = "ksu_cb_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+        let resolved = false;
+
+        const cleanup = () => {
+          try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+        };
+
+        const timer = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            cleanup();
+            logProcess("error", "Command timed out (15s): " + cmd.substring(0, 80));
+            resolve("");
           }
-        });
-      }
-      return null;
+        }, 15000);
+
+        window[cbName] = function(arg1, arg2, arg3) {
+          if (resolved) return;
+          resolved = true;
+          clearTimeout(timer);
+          cleanup();
+
+          let code = 0;
+          let stdout = "";
+          let stderr = "";
+
+          if (typeof arg1 === 'number') {
+            code = arg1;
+            stdout = arg2 || "";
+            stderr = arg3 || "";
+          } else if (typeof arg1 === 'string') {
+            stdout = arg1;
+            stderr = arg2 || "";
+          } else if (arg1 && typeof arg1 === 'object') {
+            code = arg1.errno !== undefined ? arg1.errno : (arg1.code || 0);
+            stdout = arg1.stdout || "";
+            stderr = arg1.stderr || "";
+          }
+
+          let raw = "";
+          if (stdout !== undefined && stdout !== null && String(stdout).length > 0) {
+            raw = String(stdout);
+          } else if (stderr !== undefined && stderr !== null && String(stderr).length > 0) {
+            raw = String(stderr);
+          }
+
+          const formatted = formatOutput(raw);
+          if (formatted && formatted.trim()) {
+            logProcess(code === 0 || code === null || code === undefined ? "out" : "system", formatted.trim());
+          }
+          resolve(formatted);
+        };
+
+        try {
+          // 1. Primary: Standard KernelSU / SukiSU / APatch 3-parameter overload: exec(cmd, optionsJson, callbackName)
+          bridgeObj.exec(cmd, "{}", cbName);
+        } catch (err3) {
+          try {
+            // 2. Secondary: 2-parameter overload: exec(cmd, callbackName)
+            bridgeObj.exec(cmd, cbName);
+          } catch (err2) {
+            // 3. Fallback: If bridge does not support callback overloads (e.g. mock or synchronous runner)
+            clearTimeout(timer);
+            cleanup();
+            resolved = true;
+            try {
+              const direct = bridgeObj.exec(cmd);
+              if (direct instanceof Promise) {
+                direct.then(data => {
+                  const f = formatOutput(data);
+                  if (f && f.trim()) logProcess("out", f.trim());
+                  resolve(f);
+                }).catch(err => {
+                  logProcess("error", String(err));
+                  resolve("");
+                });
+                return;
+              }
+              const formatted = formatOutput(direct);
+              if (formatted && formatted.trim()) logProcess("out", formatted.trim());
+              resolve(formatted);
+            } catch (errDirect) {
+              logProcess("error", errDirect.message || String(errDirect));
+              resolve("");
+            }
+          }
+        }
+      });
     }
 
     function formatOutput(res) {
@@ -2221,8 +2277,11 @@
       if (typeof res === 'string') {
         try {
           const p = JSON.parse(res);
-          const out = (p.stdout !== undefined) ? (p.stdout || p.stderr || "") : res;
-          return typeof out === 'string' ? out : JSON.stringify(out);
+          if (p && typeof p === 'object' && p.stdout !== undefined) {
+            const out = p.stdout || p.stderr || "";
+            return typeof out === 'string' ? out : JSON.stringify(out);
+          }
+          return res;
         } catch(e) {
           return res;
         }
@@ -3395,15 +3454,23 @@
       termHistoryIdx = termHistory.length;
       input.value = "";
 
+      logConsole("$ " + cmd);
+
       if (!hasBridge()) {
-        logConsole("$ " + cmd);
         logConsole("Error: Cannot execute command. Root bridge not attached.");
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         input.focus();
         return;
       }
 
-      await exec(cmd);
+      const res = await exec(cmd);
+      if (res && res.trim()) {
+        logConsole(res.trim());
+      } else if (res === "") {
+        logConsole("(Done)");
+      } else if (res === null) {
+        logConsole("Error: Root execution failed or bridge unavailable.");
+      }
       input.focus();
     }
 
