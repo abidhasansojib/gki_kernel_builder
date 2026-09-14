@@ -1162,7 +1162,7 @@
           <!-- Dynamically populated from /proc/sys/net/ipv4/tcp_available_congestion_control -->
         </div>
 
-        <!-- 3 Clean TCP Options -->
+        <!-- High Performance TCP Options -->
         <div class="m3-options-grid">
           <div id="opt-tcp-bbr3" class="m3-option-card" onclick="applyTcp('bbr3')">
             <div class="m3-option-header">
@@ -1178,14 +1178,6 @@
               <span class="m3-chip" id="chip-tcp-westwood">--</span>
             </div>
             <span class="m3-option-desc">Loss-tolerant • Unstable Wi-Fi & cellular</span>
-          </div>
-
-          <div id="opt-tcp-cubic" class="m3-option-card" onclick="applyTcp('cubic')">
-            <div class="m3-option-header">
-              <span class="m3-option-title">CUBIC</span>
-              <span class="m3-chip" id="chip-tcp-cubic">--</span>
-            </div>
-            <span class="m3-option-desc">Standard Android cubic window growth</span>
           </div>
         </div>
 
@@ -2268,7 +2260,7 @@
         if (chipsContainer) {
           chipsContainer.innerHTML = '<span style="font-size: 11px; color: var(--md-sys-color-outline);">Open in KernelSU / SukiSU WebUI to read kernel TCP stack</span>';
         }
-        ['bbr3', 'westwood', 'cubic'].forEach(a => {
+        ['bbr3', 'westwood'].forEach(a => {
           const el = document.getElementById('opt-tcp-' + a);
           if (el) el.classList.remove('selected');
           const chip = document.getElementById('chip-tcp-' + a);
@@ -2326,24 +2318,24 @@
       if (summary) summary.innerText = state.tcp + " • " + state.qdisc;
       if (availEl) availEl.innerText = state.availableTcps.length ? state.availableTcps.join(", ") : "--";
 
-      // Render interactive buttons for all detected available TCP protocols
+      // Render interactive buttons for custom detected available TCP protocols (excluding stock cubic)
       if (chipsContainer) {
-        if (state.availableTcps.length > 0) {
-          chipsContainer.innerHTML = state.availableTcps.map(p => {
+        const customTcps = state.availableTcps.filter(p => p.toLowerCase() !== 'cubic');
+        if (customTcps.length > 0) {
+          chipsContainer.innerHTML = customTcps.map(p => {
             const isCur = (p === state.tcp) || (p === 'bbr' && state.tcp === 'bbr3');
             const cls = isCur ? "root-term-chip active" : "root-term-chip";
             const style = isCur ? "border-color: var(--md-sys-color-primary); font-weight: 700;" : "";
             return `<button class="${cls}" style="${style}" onclick="applyTcp('${p}')">${p.toUpperCase()}${isCur ? ' (ACTIVE)' : ''}</button>`;
           }).join(" ");
         } else {
-          chipsContainer.innerHTML = '<span style="font-size: 11px; color: var(--md-sys-color-outline);">No protocols returned by /proc</span>';
+          chipsContainer.innerHTML = '';
         }
       }
 
       // Check presets availability
       const hasBbr = state.availableTcps.includes('bbr') || state.availableTcps.includes('bbr3');
       const hasWestwood = state.availableTcps.includes('westwood');
-      const hasCubic = state.availableTcps.includes('cubic');
 
       const updateCard = (id, targetAlgo, isAvailable, defaultBadge) => {
         const card = document.getElementById('opt-tcp-' + id);
@@ -2366,7 +2358,6 @@
 
       updateCard('bbr3', 'bbr3', hasBbr, 'RECOMMENDED');
       updateCard('westwood', 'westwood', hasWestwood, 'WIRELESS');
-      updateCard('cubic', 'cubic', hasCubic, 'STOCK');
 
       // Packet Scheduler (Qdisc)
       document.querySelectorAll('[id^="seg-qdisc-"]').forEach(el => el.classList.remove('active'));
