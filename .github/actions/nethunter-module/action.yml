@@ -201,6 +201,16 @@ runs:
           insmod "$MODDIR/lkm/cfg80211.ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/cfg80211.ko" 2>/dev/null || true
         fi
 
+        # Ensure NetHunter mac80211 with full LED trigger capabilities is loaded early
+        if grep -q "^mac80211[[:space:]]" /proc/modules 2>/dev/null; then
+          if ! grep -q "__ieee80211_create_tpt_led_trigger" /proc/kallsyms 2>/dev/null; then
+            rmmod mac80211 2>/dev/null || true
+          fi
+        fi
+        if [ ! -d /sys/module/mac80211 ] && [ -f "$MODDIR/lkm/mac80211.ko" ]; then
+          insmod "$MODDIR/lkm/mac80211.ko" 2>/dev/null || ksud insmod "$MODDIR/lkm/mac80211.ko" 2>/dev/null || true
+        fi
+
         # Safely prepend module firmware directories while strictly preserving stock vendor firmware search paths
         if [ -w /sys/module/firmware_class/parameters/path ]; then
           CURR_FW=$(cat /sys/module/firmware_class/parameters/path 2>/dev/null || echo "")
@@ -276,6 +286,23 @@ runs:
         # Safe driver loader from lkm/ directory (late boot)
         MODULE_SRC="$MODDIR/lkm"
         if [ -d "$MODULE_SRC" ]; then
+          # Ensure mac80211 with full NetHunter LED triggers is loaded
+          if grep -q "^mac80211[[:space:]]" /proc/modules 2>/dev/null; then
+            if ! grep -q "__ieee80211_create_tpt_led_trigger" /proc/kallsyms 2>/dev/null; then
+              for pass in 1 2 3; do
+                [ -d "/sys/module/mac80211/holders" ] || break
+                for h in /sys/module/mac80211/holders/*; do
+                  [ -e "$h" ] || continue
+                  rmmod "$(basename "$h")" 2>/dev/null || true
+                done
+              done
+              rmmod mac80211 2>/dev/null || true
+            fi
+          fi
+          if [ ! -d /sys/module/mac80211 ] && [ -f "$MODULE_SRC/mac80211.ko" ]; then
+            insmod "$MODULE_SRC/mac80211.ko" 2>/dev/null || true
+          fi
+
           load_mod() {
             local mod="$1"
             [ -f "$MODULE_SRC/$mod" ] || return 0

@@ -3097,9 +3097,57 @@
           esac
         fi
 
+        ensure_mac80211() {
+          if grep -q "^mac80211[[:space:]]" /proc/modules 2>/dev/null; then
+            if grep -q "__ieee80211_create_tpt_led_trigger" /proc/kallsyms 2>/dev/null; then
+              return 0
+            fi
+            local holders=""
+            for pass in 1 2 3; do
+              [ -d "/sys/module/mac80211/holders" ] || break
+              for h in /sys/module/mac80211/holders/*; do
+                [ -e "$h" ] || continue
+                local hname
+                hname=$(basename "$h")
+                case " $holders " in
+                  *" $hname "*) ;;
+                  *) holders="$holders $hname" ;;
+                esac
+                rmmod "$hname" 2>/dev/null || true
+              done
+            done
+            rmmod mac80211 2>/dev/null || true
+          fi
+
+          if [ -n "$MDIR" ]; then
+            for f in "$MDIR/lkm/mac80211.ko" "$MDIR/lkm/mac80211"; do
+              if [ -f "$f" ]; then
+                insmod "$f" 2>/dev/null || true
+                break
+              fi
+            done
+          fi
+
+          if [ -n "$holders" ] && [ -n "$MDIR" ]; then
+            for h in $holders; do
+              for f in "$MDIR/lkm/$h.ko" "$MDIR/lkm/$(echo "$h" | tr '_' '-').ko" "$MDIR/lkm/$(echo "$h" | tr '-' '_').ko"; do
+                if [ -f "$f" ]; then
+                  insmod "$f" 2>/dev/null || true
+                  break
+                fi
+              done
+            done
+          fi
+        }
+
         load_one() {
           local m="$1"
-          local base=$(echo "$m" | sed 's/\\.ko$//' | tr '-' '_')
+          local base
+          base=$(echo "$m" | sed 's/\\.ko$//' | tr '-' '_')
+          if [ "$base" = "mac80211" ]; then
+            ensure_mac80211
+            return 0
+          fi
           [ -d "/sys/module/$base" ] && return 0
           grep -q "^$base " /proc/modules 2>/dev/null && return 0
           if [ -n "$MDIR" ]; then
@@ -3175,9 +3223,57 @@
             esac
           fi
 
+          ensure_mac80211() {
+            if grep -q "^mac80211[[:space:]]" /proc/modules 2>/dev/null; then
+              if grep -q "__ieee80211_create_tpt_led_trigger" /proc/kallsyms 2>/dev/null; then
+                return 0
+              fi
+              local holders=""
+              for pass in 1 2 3; do
+                [ -d "/sys/module/mac80211/holders" ] || break
+                for h in /sys/module/mac80211/holders/*; do
+                  [ -e "$h" ] || continue
+                  local hname
+                  hname=$(basename "$h")
+                  case " $holders " in
+                    *" $hname "*) ;;
+                    *) holders="$holders $hname" ;;
+                  esac
+                  rmmod "$hname" 2>/dev/null || true
+                done
+              done
+              rmmod mac80211 2>/dev/null || true
+            fi
+
+            if [ -n "$MDIR" ]; then
+              for f in "$MDIR/lkm/mac80211.ko" "$MDIR/lkm/mac80211"; do
+                if [ -f "$f" ]; then
+                  insmod "$f" 2>/dev/null || true
+                  break
+                fi
+              done
+            fi
+
+            if [ -n "$holders" ] && [ -n "$MDIR" ]; then
+              for h in $holders; do
+                for f in "$MDIR/lkm/$h.ko" "$MDIR/lkm/$(echo "$h" | tr '_' '-').ko" "$MDIR/lkm/$(echo "$h" | tr '-' '_').ko"; do
+                  if [ -f "$f" ]; then
+                    insmod "$f" 2>/dev/null || true
+                    break
+                  fi
+                done
+              done
+            fi
+          }
+
           load_one() {
             local m="$1"
-            local base=$(echo "$m" | sed 's/\\.ko$//' | tr '-' '_')
+            local base
+            base=$(echo "$m" | sed 's/\\.ko$//' | tr '-' '_')
+            if [ "$base" = "mac80211" ]; then
+              ensure_mac80211
+              return 0
+            fi
             [ -d "/sys/module/$base" ] && return 0
             grep -q "^$base " /proc/modules 2>/dev/null && return 0
             if [ -n "$MDIR" ]; then
