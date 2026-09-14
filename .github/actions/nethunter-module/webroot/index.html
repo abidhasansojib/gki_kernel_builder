@@ -562,6 +562,146 @@
     .m3-btn-inline:active { transform: scale(0.96); }
 
     /* ==================================================== */
+    /* M3 PROCESS & ACTIVITY LOG MODAL                     */
+    /* ==================================================== */
+    .m3-modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      box-sizing: border-box;
+      opacity: 0;
+      transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .m3-modal-backdrop.open {
+      display: flex;
+      opacity: 1;
+    }
+
+    .m3-modal-container {
+      background: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-shape-corner-xl);
+      width: 100%;
+      max-width: 580px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
+      transform: scale(0.96) translateY(8px);
+      transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+      overflow: hidden;
+    }
+
+    .m3-modal-backdrop.open .m3-modal-container {
+      transform: scale(1) translateY(0);
+    }
+
+    .m3-modal-header {
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      background: var(--md-sys-color-surface);
+    }
+
+    .m3-modal-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--md-sys-color-on-surface);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .m3-modal-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .m3-modal-body {
+      flex: 1;
+      padding: 10px 12px;
+      overflow-y: auto;
+      background: #080b10;
+      font-family: var(--font-family-mono);
+      font-size: 11px;
+      line-height: 1.5;
+      color: #e6edf3;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-height: 280px;
+      max-height: 60vh;
+    }
+
+    .m3-modal-controls {
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--md-sys-color-surface);
+      border-top: 1px solid var(--md-sys-color-outline-variant);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .log-entry {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      word-break: break-all;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .log-entry:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .log-time {
+      color: #7d8590;
+      font-size: 10px;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .log-badge {
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      flex-shrink: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .log-badge.cmd { background: rgba(56, 189, 248, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .log-badge.action { background: rgba(192, 132, 252, 0.18); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.3); }
+    .log-badge.out { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
+    .log-badge.error { background: rgba(248, 113, 113, 0.22); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.35); }
+    .log-badge.system { background: rgba(251, 191, 36, 0.18); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+    .log-badge.success { background: rgba(74, 222, 128, 0.18); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+
+    .log-msg {
+      flex: 1;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* ==================================================== */
     /* ROOTED TERMINAL CONSOLE                              */
     /* ==================================================== */
     .root-terminal {
@@ -813,6 +953,15 @@
         <span class="m3-chip-dot"></span>
         <span id="bridge-name">Detecting...</span>
       </span>
+      <button class="btn-icon-m3" onclick="toggleLogModal()" title="View Activity & Process Logs">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+      </button>
       <button class="btn-icon-m3" onclick="refreshAll()" title="Refresh Telemetry">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="23 4 23 10 17 10"></polyline>
@@ -1310,6 +1459,82 @@
     </button>
   </nav>
 
+  <!-- M3 Process & System Activity Log Modal -->
+  <div id="log-modal" class="m3-modal-backdrop" onclick="if(event.target === this) toggleLogModal(false)">
+    <div class="m3-modal-container">
+      
+      <!-- Modal Header -->
+      <div class="m3-modal-header">
+        <div class="m3-modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--md-sys-color-primary);">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span>Kernel Process & Activity Log</span>
+          <span id="log-count-badge" class="m3-chip" style="font-size: 10px; padding: 1px 8px;">0 ENTRIES</span>
+        </div>
+        <div class="m3-modal-actions">
+          <button class="btn-icon-m3" style="width: 30px; height: 30px;" onclick="toggleLogModal(false)" title="Close">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Chips Row -->
+      <div style="padding: 8px 12px; background: var(--md-sys-color-surface-container); display: flex; gap: 6px; overflow-x: auto; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
+        <button id="filter-log-all" class="root-term-chip active" onclick="setLogFilter('all')">All</button>
+        <button id="filter-log-action" class="root-term-chip" onclick="setLogFilter('action')">User Actions</button>
+        <button id="filter-log-cmd" class="root-term-chip" onclick="setLogFilter('cmd')">Commands ($)</button>
+        <button id="filter-log-out" class="root-term-chip" onclick="setLogFilter('out')">Output</button>
+        <button id="filter-log-error" class="root-term-chip" onclick="setLogFilter('error')">Errors</button>
+        <button id="filter-log-system" class="root-term-chip" onclick="setLogFilter('system')">Kernel / Dmesg</button>
+      </div>
+
+      <!-- Log Terminal Screen -->
+      <div id="process-log-screen" class="m3-modal-body">
+        <div class="log-entry">
+          <span class="log-time">--:--:--</span>
+          <span class="log-badge system">System</span>
+          <span class="log-msg">Kernel Manager Activity & Process Logger initialized.</span>
+        </div>
+      </div>
+
+      <!-- Action Toolbar (Copy & Delete / Clear & Dmesg) -->
+      <div class="m3-modal-controls">
+        <div style="display: flex; gap: 6px;">
+          <button class="m3-btn-inline" style="background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);" onclick="copyProcessLogs()" title="Copy entire log to clipboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>Copy Logs</span>
+          </button>
+          <button class="m3-btn-inline" style="background: rgba(255, 180, 171, 0.15); color: var(--md-sys-color-error); border: 1px solid rgba(255, 180, 171, 0.35);" onclick="clearProcessLogs()" title="Delete and clear all logs">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Delete / Clear</span>
+          </button>
+        </div>
+        <button class="m3-btn-inline" style="background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); border: 1px solid var(--md-sys-color-outline-variant);" onclick="fetchSystemDmesg()" title="Fetch live kernel dmesg buffer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+            <polyline points="4 17 10 11 4 5"></polyline>
+            <line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg>
+          <span>Fetch Dmesg</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <script>
     const state = {
       bridge: null,
@@ -1330,6 +1555,214 @@
       ramSummary: "",
       loadedModules: new Set()
     };
+
+    // ====================================================
+    // GLOBAL PROCESS & ACTIVITY LOGGER ENGINE
+    // ====================================================
+    const processLogs = [];
+    let currentLogFilter = 'all';
+
+    function logProcess(level, msg) {
+      if (!msg) return;
+      const text = (typeof msg === 'object') ? JSON.stringify(msg) : String(msg).trim();
+      if (!text) return;
+
+      const now = new Date();
+      const timeStr = String(now.getHours()).padStart(2, '0') + ':' +
+                      String(now.getMinutes()).padStart(2, '0') + ':' +
+                      String(now.getSeconds()).padStart(2, '0');
+      
+      const entry = { time: timeStr, level: level.toLowerCase(), msg: text };
+      processLogs.push(entry);
+      if (processLogs.length > 1500) processLogs.shift();
+
+      // Forward to Terminal tab console as well
+      if (level === 'cmd') {
+        logConsole(text);
+      } else if (level === 'error') {
+        logConsole("Error: " + text);
+      } else if (level === 'action') {
+        logConsole("[Action] " + text);
+      }
+
+      renderSingleLogEntry(entry);
+      updateLogCountBadge();
+    }
+
+    function updateLogCountBadge() {
+      const badge = document.getElementById('log-count-badge');
+      if (badge) badge.innerText = `${processLogs.length} ENTRIES`;
+    }
+
+    function renderSingleLogEntry(entry) {
+      const screen = document.getElementById('process-log-screen');
+      if (!screen) return;
+      if (currentLogFilter !== 'all' && entry.level !== currentLogFilter) return;
+
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      div.innerHTML = `
+        <span class="log-time">${entry.time}</span>
+        <span class="log-badge ${entry.level}">${entry.level}</span>
+        <span class="log-msg">${escapeHtml(entry.msg)}</span>
+      `;
+      screen.appendChild(div);
+      while (screen.children.length > 400) screen.removeChild(screen.firstChild);
+      screen.scrollTop = screen.scrollHeight;
+    }
+
+    function renderAllLogs() {
+      const screen = document.getElementById('process-log-screen');
+      if (!screen) return;
+      screen.innerHTML = "";
+      const filtered = (currentLogFilter === 'all') ? processLogs : processLogs.filter(e => e.level === currentLogFilter);
+      if (filtered.length === 0) {
+        screen.innerHTML = `
+          <div class="log-entry">
+            <span class="log-time">--:--:--</span>
+            <span class="log-badge system">System</span>
+            <span class="log-msg">No logs recorded under "${currentLogFilter}" filter.</span>
+          </div>
+        `;
+        return;
+      }
+      filtered.forEach(entry => {
+        const div = document.createElement('div');
+        div.className = 'log-entry';
+        div.innerHTML = `
+          <span class="log-time">${entry.time}</span>
+          <span class="log-badge ${entry.level}">${entry.level}</span>
+          <span class="log-msg">${escapeHtml(entry.msg)}</span>
+        `;
+        screen.appendChild(div);
+      });
+      screen.scrollTop = screen.scrollHeight;
+      updateLogCountBadge();
+    }
+
+    function setLogFilter(filter) {
+      currentLogFilter = filter;
+      document.querySelectorAll('[id^="filter-log-"]').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('filter-log-' + filter);
+      if (activeBtn) activeBtn.classList.add('active');
+      renderAllLogs();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function copyProcessLogs() {
+      if (processLogs.length === 0) {
+        showSnackbar("Log buffer is empty");
+        return;
+      }
+      const text = processLogs.map(e => `[${e.time}] [${e.level.toUpperCase()}] ${e.msg}`).join("\n");
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(text).then(() => {
+          showSnackbar("Copied " + processLogs.length + " log entries to clipboard");
+        }).catch(() => {
+          fallbackCopyText(text);
+        });
+      } else {
+        fallbackCopyText(text);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.top = "-9999px";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        showSnackbar("Copied " + processLogs.length + " log entries to clipboard");
+      } catch(err) {
+        showSnackbar("Failed to copy logs to clipboard");
+      }
+    }
+
+    function clearProcessLogs() {
+      processLogs.length = 0;
+      const now = new Date();
+      const timeStr = String(now.getHours()).padStart(2, '0') + ':' +
+                      String(now.getMinutes()).padStart(2, '0') + ':' +
+                      String(now.getSeconds()).padStart(2, '0');
+      const resetEntry = { time: timeStr, level: "system", msg: "Log buffer deleted & cleared by user." };
+      processLogs.push(resetEntry);
+      const screen = document.getElementById('process-log-screen');
+      if (screen) {
+        screen.innerHTML = `
+          <div class="log-entry">
+            <span class="log-time">${timeStr}</span>
+            <span class="log-badge system">System</span>
+            <span class="log-msg">Log buffer deleted & cleared by user.</span>
+          </div>
+        `;
+      }
+      updateLogCountBadge();
+      showSnackbar("All logs deleted and cleared");
+    }
+
+    async function fetchSystemDmesg() {
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required to read dmesg");
+        return;
+      }
+      showSnackbar("Fetching kernel dmesg logs...");
+      logProcess("action", "Fetching kernel dmesg buffer...");
+      const out = await exec("dmesg -T 2>/dev/null | tail -n 80 || dmesg 2>/dev/null | tail -n 80");
+      if (out && out.trim()) {
+        const lines = out.trim().split("\n");
+        lines.forEach(l => logProcess("system", l));
+        showSnackbar("Appended " + lines.length + " kernel dmesg entries");
+      } else {
+        logProcess("error", "Failed to retrieve dmesg (empty or restricted)");
+      }
+    }
+
+    function toggleLogModal(show) {
+      const modal = document.getElementById('log-modal');
+      if (!modal) return;
+      const isOpen = modal.classList.contains('open');
+      const shouldOpen = (show !== undefined) ? show : !isOpen;
+      if (shouldOpen) {
+        logProcess("action", "Opened Process & Activity Log modal");
+        modal.classList.add('open');
+        renderAllLogs();
+      } else {
+        modal.classList.remove('open');
+      }
+    }
+
+    // Global listener: capture all user taps on cards, buttons, switches, tabs, and options
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('button, .m3-card, .m3-nav-item, .root-term-chip, .m3-switch, .m3-btn-inline, a');
+      if (!target) return;
+      if (target.closest('#log-modal')) return;
+
+      const raw = target.getAttribute('title') || target.getAttribute('aria-label') || target.innerText.trim();
+      const desc = raw.replace(/\s+/g, ' ').substring(0, 55);
+      if (desc && !desc.includes("ENTRIES") && !desc.startsWith("$")) {
+        logProcess("action", `User tap: [${desc}]`);
+      }
+    }, true);
+
+    document.addEventListener('change', (e) => {
+      const target = e.target;
+      if (target.closest('#log-modal')) return;
+      const label = target.getAttribute('title') || target.name || target.id || target.tagName.toLowerCase();
+      logProcess("action", `Option changed: [${label}] = ${target.value}`);
+    }, true);
 
     function detectBridge() {
       if (typeof window.ksu !== 'undefined' && typeof window.ksu.exec === 'function') return "KernelSU";
@@ -1365,10 +1798,10 @@
     async function exec(cmd) {
       const bridge = detectBridge();
       if (!bridge) {
-        logConsole("[Browser Mode] Shell unavailable: root bridge required for '" + cmd + "'");
+        logProcess("error", "[Browser Mode] Shell unavailable: root bridge required for '" + cmd + "'");
         return null;
       }
-      logConsole("$ " + cmd);
+      logProcess("cmd", "$ " + cmd);
       const runner = (window.ksu && typeof window.ksu.exec === 'function') ? window.ksu.exec.bind(window.ksu) :
                      (window.sukisu && typeof window.sukisu.exec === 'function') ? window.sukisu.exec.bind(window.sukisu) :
                      (window.suki && typeof window.suki.exec === 'function') ? window.suki.exec.bind(window.suki) :
@@ -1381,21 +1814,27 @@
         const res = runner(cmd);
         if (res instanceof Promise) {
           const data = await res;
-          return formatOutput(data);
+          const formatted = formatOutput(data);
+          if (formatted && formatted.trim()) logProcess("out", formatted.trim());
+          return formatted;
         }
         if (res !== undefined && res !== null) {
-          return formatOutput(res);
+          const formatted = formatOutput(res);
+          if (formatted && formatted.trim()) logProcess("out", formatted.trim());
+          return formatted;
         }
       } catch(e) {
         return new Promise(resolve => {
           try {
             runner(cmd, (code, stdout, stderr) => {
               const out = stdout || stderr || "";
-              if (out && out.trim()) logConsole(out.trim());
+              if (out && out.trim()) {
+                logProcess(code === 0 ? "out" : "error", out.trim());
+              }
               resolve(out);
             });
           } catch(err) {
-            logConsole("Error: " + (err.message || err));
+            logProcess("error", err.message || err);
             resolve(null);
           }
         });
@@ -1409,22 +1848,20 @@
         try {
           const p = JSON.parse(res);
           const out = (p.stdout !== undefined) ? (p.stdout || p.stderr || "") : res;
-          if (out && typeof out === 'string' && out.trim()) logConsole(out.trim());
           return typeof out === 'string' ? out : JSON.stringify(out);
         } catch(e) {
-          if (res.trim()) logConsole(res.trim());
           return res;
         }
       }
       if (typeof res === 'object') {
         const out = (res.stdout !== undefined) ? (res.stdout || res.stderr || "") : JSON.stringify(res);
-        if (out && typeof out === 'string' && out.trim()) logConsole(out.trim());
-        return out;
+        return typeof out === 'string' ? out : JSON.stringify(out);
       }
       return String(res);
     }
 
     function navTo(tabId, btn) {
+      logProcess("action", "Navigated to " + tabId.toUpperCase() + " tab");
       document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.m3-nav-item').forEach(el => el.classList.remove('active'));
       const target = document.getElementById('tab-' + tabId);
@@ -1573,6 +2010,7 @@
     }
 
     async function applyTcp(algo) {
+      logProcess("action", "Selected TCP congestion control algorithm: " + algo.toUpperCase());
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -1585,6 +2023,7 @@
     }
 
     async function saveTcpBootDefault() {
+      logProcess("action", "Saved " + state.tcp.toUpperCase() + " as persistent boot default");
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -1594,6 +2033,7 @@
     }
 
     async function applyQdisc(qdisc) {
+      logProcess("action", "Applied queuing discipline: " + qdisc);
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -1605,6 +2045,7 @@
     }
 
     async function setTtl(val) {
+      logProcess("action", "Configured tethering TTL: " + val);
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -1624,6 +2065,7 @@
     }
 
     async function toggleIpForward() {
+      logProcess("action", "Toggled IPv4 Forwarding: " + (!state.ipForward ? "ON" : "OFF"));
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -1637,6 +2079,7 @@
     }
 
     async function toggleOptimisticDad() {
+      logProcess("action", "Toggled IPv6 Optimistic DAD: " + (!state.optimisticDad ? "ON" : "OFF"));
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -1649,6 +2092,7 @@
     }
 
     async function resetNetworkDefaults() {
+      logProcess("action", "Reset network stack settings to defaults");
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -1750,6 +2194,7 @@
     }
 
     async function setUsbMode(mode) {
+      logProcess("action", "Selected USB mode: " + mode.toUpperCase());
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -1913,6 +2358,7 @@
     }
 
     async function injectTestKeystroke() {
+      logProcess("action", "Injected test HID keystroke (scan code 0x04 'a') to /dev/hidg0");
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -1929,6 +2375,7 @@
     }
 
     async function injectTestMouseClick() {
+      logProcess("action", "Injected test HID mouse click to /dev/hidg1");
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -1945,6 +2392,7 @@
     }
 
     async function resetUsbDefaults() {
+      logProcess("action", "Triggered USB reset to Stock Android (MTP + ADB)");
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -1997,6 +2445,7 @@
     let currentModuleFilter = 'all';
 
     function setModuleFilter(cat) {
+      logProcess("action", "Filtered module category: " + cat.toUpperCase());
       currentModuleFilter = cat;
       document.querySelectorAll('[id^="filter-mod-"]').forEach(el => el.classList.remove('active'));
       const activeBtn = document.getElementById('filter-mod-' + cat);
@@ -2135,6 +2584,7 @@
     }
 
     async function autoLoadModule(modName) {
+      logProcess("action", "User requested load for module: " + modName);
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -2183,6 +2633,7 @@
     }
 
     async function unloadModule(modName) {
+      logProcess("action", "User requested unload for module: " + modName);
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -2195,6 +2646,7 @@
     }
 
     async function loadAllAvailableModules() {
+      logProcess("action", "User requested batch auto-load for all available modules");
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -2239,6 +2691,7 @@
     }
 
     async function resetDriversDefaults() {
+      logProcess("action", "User requested reset/unload for dynamic driver modules");
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -2422,6 +2875,7 @@
     }
 
     async function forceMglru() {
+      logProcess("action", "Enforce full MGLRU capabilities (0x0007)");
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -2440,6 +2894,7 @@
     }
 
     async function dropCaches() {
+      logProcess("action", "Triggered RAM page/inode cache reclaim (echo 3 > drop_caches)");
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -2451,6 +2906,7 @@
     }
 
     async function setVfs(val) {
+      logProcess("action", "Set VFS Cache Pressure: " + val);
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -2466,6 +2922,7 @@
     }
 
     async function setSwappiness(val) {
+      logProcess("action", "Set VM Swappiness: " + val);
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -2481,6 +2938,7 @@
     }
 
     async function resetMemoryDefaults() {
+      logProcess("action", "Reset memory & MGLRU settings to defaults");
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
@@ -2539,6 +2997,7 @@
     }
 
     async function runPreset(cmd) {
+      logProcess("action", "Selected terminal preset: " + cmd);
       const input = document.getElementById('term-input');
       if (input) input.value = cmd;
       await executeCustomCommand();
@@ -2549,6 +3008,7 @@
       if (!input) return;
       const cmd = input.value.trim();
       if (!cmd) return;
+      logProcess("action", "Execute custom terminal command: " + cmd);
       termHistory.push(cmd);
       termHistoryIdx = termHistory.length;
       input.value = "";
@@ -2566,12 +3026,14 @@
     }
 
     function clearConsole() {
+      logProcess("action", "Cleared terminal console buffer");
       const box = document.getElementById('box-console');
       if (box) box.innerHTML = '<div class="term-row-out">Terminal buffer cleared.</div>';
       showSnackbar("Terminal cleared");
     }
 
     function copyConsole() {
+      logProcess("action", "Copied terminal output to clipboard");
       const box = document.getElementById('box-console');
       if (box && navigator.clipboard) {
         navigator.clipboard.writeText(box.innerText).then(() => showSnackbar("Terminal output copied"));
@@ -2582,6 +3044,7 @@
 
     // Master Refresh
     async function refreshAll() {
+      logProcess("action", "Triggered full telemetry refresh");
       const bridge = detectBridge();
       const elBridge = document.getElementById('bridge-name');
       const chipBridge = document.getElementById('bridge-chip');
@@ -2619,7 +3082,10 @@
       }
     }
 
-    window.addEventListener('DOMContentLoaded', refreshAll);
+    window.addEventListener('DOMContentLoaded', () => {
+      logProcess("system", "Kernel Manager WebUI initialized");
+      refreshAll();
+    });
   </script>
 </body>
 </html>
