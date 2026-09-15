@@ -66,6 +66,11 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 
 </details>
 
+> [!TIP]
+> **💡 Internal Wi-Fi (`wlan0`) & PixieDust / WPS Testing:**  
+> On MediaTek and Android SoC devices, turning off Wi-Fi triggers an OEM vendor power-collapse that unregisters `wlan0` (`Could not set interface flags (UP): No such device`).  
+> When running PixieDust or WPS testing tools (e.g., Stryker, Oneshot, PixieWps) on the internal `wlan0` interface, **turn on your mobile Hotspot** before launching the test. The active Hotspot holds a kernel wakelock on the Wi-Fi baseband and prevents the driver from powering down, keeping `wlan0` alive without needing an external USB adapter.
+
 ---
 
 ## 📱 NetHunter WebUI Dashboard
