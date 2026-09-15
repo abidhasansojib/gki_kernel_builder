@@ -737,6 +737,37 @@ jobs:
           fi
           echo "RELEASE_NAME=${RELEASE_NAME}" >> "$GITHUB_ENV"
 
+          # Generate Release Notes
+          RELEASE_BODY_FILE="release_notes.md"
+          > "$RELEASE_BODY_FILE"
+
+          if [ "${{ inputs.release_type }}" = "Pre-Release" ]; then
+            echo "> [!WARNING]" >> "$RELEASE_BODY_FILE"
+            echo "> ### ⚠️ Pre-Release / Experimental Build Notice" >> "$RELEASE_BODY_FILE"
+            echo "> Flashing this kernel is **not recommended** for general use. This pre-release build is intended **only for developers and for testing**." >> "$RELEASE_BODY_FILE"
+            echo ">" >> "$RELEASE_BODY_FILE"
+            echo "> *Proceed with caution and ensure you have a backup of your stock boot image before proceeding.*" >> "$RELEASE_BODY_FILE"
+            echo "" >> "$RELEASE_BODY_FILE"
+          fi
+
+          echo "## ⚡ Android 16 GKI Kernel (\`6.12.30\`) — Release #${{ github.run_number }}" >> "$RELEASE_BODY_FILE"
+          echo "" >> "$RELEASE_BODY_FILE"
+          echo "### 📦 Build & Release Information" >> "$RELEASE_BODY_FILE"
+          echo "- **Kernel Version:** \`6.12.30-android16\`" >> "$RELEASE_BODY_FILE"
+          echo "- **OS Patch Level:** \`2025-07\`" >> "$RELEASE_BODY_FILE"
+          echo "- **Root Implementation:** \`${FLAVOR}\`" >> "$RELEASE_BODY_FILE"
+          echo "- **Vendor Module Bypass:** Baked In (\`bad_version: return 1;\`)" >> "$RELEASE_BODY_FILE"
+          echo "- **Stealth Integration:** SUSFS v2.3.0 + NoMount VFS Metamodule" >> "$RELEASE_BODY_FILE"
+          echo "- **NetHunter Driver Stack:** 75+ Wireless WiFi drivers (\`=m\`), BadUSB HID (\`/dev/hidg*\`), CAN-Bus & RTL-SDR" >> "$RELEASE_BODY_FILE"
+          echo "" >> "$RELEASE_BODY_FILE"
+          echo "### 📲 Flashing Instructions" >> "$RELEASE_BODY_FILE"
+          echo "1. Download the all-in-one **\`*-Bundle.zip\`** matching your chosen root flavor and extract it." >> "$RELEASE_BODY_FILE"
+          echo "2. Flash **\`*-AnyKernel3.zip\`** using the **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** app. *(Vendor module bypass is built-in)*" >> "$RELEASE_BODY_FILE"
+          echo "3. Install the matching **Root Manager APK** (\`*.apk\`) included in the bundle." >> "$RELEASE_BODY_FILE"
+          echo "4. Reboot your device." >> "$RELEASE_BODY_FILE"
+          echo "5. Flash **[susfs4ksu-module (by sidex15)](https://github.com/sidex15/susfs4ksu-module/releases)** in your Root Manager for kernel-level root hiding." >> "$RELEASE_BODY_FILE"
+          echo "6. *(Optional)* Flash **\`Nethunter-Wireless-Modules.zip\`** or **\`NoMount-*.zip\`** inside the Root Manager." >> "$RELEASE_BODY_FILE"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -745,21 +776,4 @@ jobs:
           draft: ${{ inputs.release_type == 'Draft' }}
           prerelease: ${{ inputs.release_type == 'Pre-Release' }}
           files: dist/*
-          body: |
-            ## ⚡ Android 16 GKI Kernel (`6.12.30`) — Release #${{ github.run_number }}
-
-            ### 📦 Build & Release Information
-            - **Kernel Version:** `6.12.30-android16`
-            - **OS Patch Level:** `2025-07`
-            - **Root Implementation:** `${{ inputs.root_flavor }}`
-            - **Vendor Module Bypass:** Baked In (`bad_version: return 1;`)
-            - **Stealth Integration:** SUSFS v2.3.0 + NoMount VFS Metamodule
-            - **NetHunter Driver Stack:** 75+ Wireless WiFi drivers (`=m`), BadUSB HID (`/dev/hidg*`), CAN-Bus & RTL-SDR
-
-            ### 📲 Flashing Instructions
-            1. Download the all-in-one **`*-Bundle.zip`** matching your chosen root flavor and extract it.
-            2. Flash **`*-AnyKernel3.zip`** using the **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** app. *(Vendor module bypass is built-in)*
-            3. Install the matching **Root Manager APK** (`*.apk`) included in the bundle.
-            4. Reboot your device.
-            5. Flash **[susfs4ksu-module (by sidex15)](https://github.com/sidex15/susfs4ksu-module/releases)** in your Root Manager for kernel-level root hiding.
-            6. *(Optional)* Flash **`Nethunter-Wireless-Modules.zip`** or **`NoMount-*.zip`** inside the Root Manager.
+          body_path: release_notes.md

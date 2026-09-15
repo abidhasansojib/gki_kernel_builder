@@ -21,8 +21,8 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 
 - 🔐 **Multi-Root Support**: **KernelSU-Next**, **SukiSU-Ultra**, and **ReSukiSU** with automated manager APK bundling.
 - 🛡️ **SUSFS & NoMount**: Built-in SUSFS root hiding and NoMount stealth VFS support.
-- 🐉 **Kali NetHunter**: Monitor mode, frame injection, BadUSB HID keyboard/mouse (`/dev/hidg0`, `/dev/hidg1`), USB Wi-Fi dongles, SDR, CAN bus, and Bluetooth RFCOMM.
-- 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (BBR3), BadUSB, driver modules, RAM/MGLRU, and real-time activity log.
+- 🐉 **Kali NetHunter**: Monitor mode, frame injection, BadUSB HID keyboard/mouse (`/dev/hidg1`, `/dev/hidg2`), USB Wi-Fi dongles, SDR, CAN bus, and Bluetooth RFCOMM.
+- 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (BBR3), driver modules, RAM/MGLRU, and real-time activity log.
 - 📦 **NetHunter Wireless Module**: Flashable `Nethunter-Wireless-Modules.zip` with Wi-Fi/SDR drivers, firmware, and WebUI (fully compatible alongside NoMount).
 - 🛡️ **Baseband Guard (BBG)**: Partition protection against unauthorized writes.
 - 📦 **DroidSpaces-OSS**: Lightweight container runtime support.
@@ -40,14 +40,15 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 
 | Vendor | Driver | Popular Tested Adapters | Capabilities |
 | :--- | :--- | :--- | :--- |
-| **MediaTek** | `mt76x2u` / `mt76x0u` | **Alfa AWUS036ACM**, **AWUS036ACHM**, Archer T2U Plus, Netgear A6210 | Dual-band 2.4/5GHz 802.11ac, Monitor Mode, Injection, AP |
-| **MediaTek** | `mt7601u` | Generic MT7601U Mini Dongles | 2.4GHz 802.11n, Monitor Mode, Injection |
-| **Atheros** | `ath9k_htc` | **TP-Link TL-WN722N v1**, **Alfa AWUS036NHA**, AR9271 | 2.4GHz 802.11n, High-power Injection, AP |
-| **Atheros** | `carl9170` | AR9170 based USB dongles | 2.4/5GHz 802.11a/b/g/n, Monitor Mode, Injection |
-| **Ralink** | `rt2800usb` | **Alfa AWUS036NH**, **AWUS036NEH**, RT3070, RT2870, RT5370 | 2.4GHz 802.11n, Long-range Injection, AP |
-| **Realtek** | `rtw88` | **Alfa AWUS036ACH**, **AWUS036AC**, RTL8812BU, RTL8822BU/CU, RTL8821CU | Dual-band AC1200 / AC1300, Monitor Mode, Injection |
-| **Realtek** | `rtl8xxxu` | RTL8188EUS, RTL8192EU, RTL8723AU | 2.4GHz 802.11n, Monitor Mode |
+| **MediaTek** | `mt76x2u` / `mt76x0u` | **Alfa AWUS036ACM** (MT7612U), **Alfa AWUS036ACHM** (MT7610U), Archer T2U Plus v1, Netgear A6210, Panda PAU0B | Dual-band 2.4/5GHz 802.11ac, Monitor Mode, Injection, AP |
+| **MediaTek** | `mt7601u` | Generic MT7601U Mini Dongles, TP-Link TL-WN727N v5 | 2.4GHz 802.11n, Monitor Mode, Injection |
+| **Atheros** | `ath9k_htc` | **TP-Link TL-WN722N v1** (AR9271), **Alfa AWUS036NHA**, AR9271 / AR7010 Generic Dongles | 2.4GHz 802.11n, High-power Injection, AP |
+| **Atheros** | `carl9170` | **TP-Link TL-WN821N v2**, D-Link DWA-160 vA1/vA2, Netgear WNDA3100 v1 (AR9170) | Dual-band 2.4/5GHz 802.11a/b/g/n, Monitor Mode, Injection, AP |
+| **Ralink** | `rt2800usb` | **Alfa AWUS036NH**, **Alfa AWUS036NEH**, Panda PAU05/PAU06/PAU09 (RT5572), RT3070, RT5370 | 2.4GHz & 5GHz 802.11n, Long-range Injection, AP |
+| **Realtek** | `rtw88` | **Edimax EW-7822ULC** (RTL8822BU), **TP-Link Archer T2U Nano / Plus v2** (RTL8821CU), **Comfast CF-924AC v2** (RTL8822CU), ASUS USB-AC53 Nano | Dual-band 2.4/5GHz 802.11ac, Monitor Mode, Injection |
+| **Realtek** | `rtl8xxxu` | **TP-Link TL-WN725N v2/v3** (RTL8188EUS), **TL-WN823N** (RTL8192EU), Edimax EW-7811Un v1/v2, D-Link DWA-131 | 2.4GHz 802.11n, Monitor Mode |
 | **Realtek** | `rtl8187` | **Alfa AWUS036H** (RTL8187L) | Legacy 2.4GHz High-power Injection |
+| **ZyDAS** | `zd1211rw` | **TP-Link TL-WN321G v1/v2**, ZyXEL G-220 (ZD1211/ZD1211B) | 2.4GHz 802.11b/g, Monitor Mode, Injection |
 
 </details>
 
@@ -55,7 +56,7 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 <summary><b>🛠️ Hardware Gadgets, Network Dongles & SDR (Click to Expand)</b></summary>
 <br>
 
-- 🦆 **BadUSB / Rubber Ducky**: Native USB HID keyboard and mouse emulation (`/dev/hidg0`, `/dev/hidg1`) with dynamic node auto-healing for NetHunter DuckHunter payloads.
+- 🦆 **BadUSB / Rubber Ducky**: Native USB HID keyboard and mouse emulation (`/dev/hidg1` for keyboard, `/dev/hidg2` for mouse) for NetHunter DuckHunter and HID attack payloads.
 - 📻 **Software Defined Radio (SDR)**: RTL-SDR (`dvb_usb_rtl28xxu`), HackRF One, AirSpy, and Mirics.
 - 🚗 **Automotive Hacking (CARsenal)**: SocketCAN framework (`can`, `vcan`, `slcan`, PEAK PCAN-USB, Kvaser, EMS USB).
 - 🔌 **USB Serial**: CDC-ACM, FTDI, CH341, CP210X, and PL2303 for router consoles and hardware debugging.
@@ -71,8 +72,7 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 
 Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button in your root manager (KernelSU / SukiSU):
 
-- **TCP Control**: Switch congestion algorithms (BBR3, CUBIC, etc.) with one tap.
-- **USB / BadUSB**: Switch modes (Stock Android, HID Keyboard/Mouse with auto-healed `/dev/hidg0` and `/dev/hidg1`, Mass Storage, RNDIS).
+- **Network & TCP Control**: Switch congestion algorithms (BBR3, CUBIC, etc.) and toggle IP forwarding / TTL mangling.
 - **Drivers & Modules**: View, load, and manage Wi-Fi, SDR, and serial drivers with sequential loading queue and automated dependency resolution.
 - **Memory & MGLRU**: View real-time RAM usage, lock full MGLRU capabilities (`0x0007`), drop caches, and adjust VFS pressure.
 - **Process & Activity Log**: Real-time diagnostic stream with execution tracking, one-tap copy, and subsystem telemetry.

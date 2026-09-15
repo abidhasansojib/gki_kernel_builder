@@ -60,7 +60,7 @@ Android 16 GKI kernels are built with Google's modern Clang toolchain under stri
 The kernel integrates full Kali NetHunter capabilities natively into the 6.12 GKI tree:
 
 * **HID Keyboard & BadUSB Attack**:
-  * Emulates USB HID keyboard and mouse devices via `CONFIG_USB_CONFIGFS_F_HID=y`, `CONFIG_USB_F_HID=y`, and `/dev/hidg*` endpoints for high-speed DuckyScript keystroke injection.
+  * Emulates USB HID keyboard and mouse devices via `CONFIG_USB_CONFIGFS_F_HID=y`, `CONFIG_USB_F_HID=y`, and `/dev/hidg*` endpoints (`/dev/hidg1` keyboard, `/dev/hidg2` mouse) for high-speed DuckyScript keystroke injection.
 * **USB Arsenal & Hardware Hacking**:
   * Emulates CDC-ACM serial (`CONFIG_USB_CONFIGFS_ACM=y`, `CONFIG_USB_ACM=y`) for Proxmark3 and ChameleonMini RFID cloning.
   * USB Mass Storage gadget (`CONFIG_USB_CONFIGFS_MASS_STORAGE=y`) for DriveDroid and ISO delivery.
@@ -68,10 +68,10 @@ The kernel integrates full Kali NetHunter capabilities natively into the 6.12 GK
   * USB UART converters (`FTDI`, `CH341`, `CP210X`, `PL2303`) for router UART & embedded hardware hacking.
 * **Monitor Mode & Packet Injection**: Enabled in-tree via `CONFIG_CFG80211=y` and `CONFIG_MAC80211=y`.
 * **Modular USB WiFi Drivers (`=m`)**:
-  * Realtek: `rtw88` (802.11ac), `rtl8xxxu` (802.11n), `rtl8187`, `rtl8192cu`
-  * Atheros: `ath9k_htc` (AR9271), `carl9170`, `ath6kl`
-  * MediaTek / Ralink: `mt7601u`, `mt76x0u`, `mt76x2u`, `rt2800usb` (RT3070/RT5370), `rt2500usb`, `rt73usb`
-  * ZyDAS: `zd1211rw`, `zd1201`
+  * Realtek: `rtw88` (802.11ac: RTL8822BU/CU, RTL8821CU), `rtl8xxxu` (802.11n: RTL8188EU/FU, RTL8192EU/CU), `rtl8187`
+  * Atheros: `ath9k_htc` (AR9271), `carl9170` (AR9170), `ath6kl`
+  * MediaTek / Ralink: `mt7601u`, `mt76x0u` (MT7610U), `mt76x2u` (MT7612U), `rt2800usb` (RT3070/RT5370/RT5572), `rt2500usb`, `rt73usb`
+  * ZyDAS: `zd1211rw`
 * **Software-Defined Radio (SDR)**: RTL-SDR (`RTL2832U`), HackRF One (`CONFIG_USB_HACKRF=m`), AirSpy (`CONFIG_USB_AIRSPY=m`), Mirics (`CONFIG_USB_MSI2500=m`).
 * **Automotive Hacking (CARsenal)**: SocketCAN (`CONFIG_CAN=m`, `CONFIG_CAN_RAW=m`, `CONFIG_CAN_DEV=m`, `CONFIG_CAN_BCM=m`, `CONFIG_CAN_GW=m`), `vcan`, `slcan`, `PEAK PCAN-USB`, `Kvaser`, `EMS USB`.
 * **Network File Systems**: NFS client/server (`CONFIG_NFS_FS=y`, `CONFIG_NFSD=y`) and CIFS/SMB (`CONFIG_CIFS=y`).
@@ -93,16 +93,18 @@ flowchart TD
     end
 
     subgraph Core["Interactive Subsystems"]
-        KSU & SUKI --> NET[TCP Congestion Switcher: BBR3/BBR/Cubic]
-        KSU & SUKI --> USB[BadUSB HID Gadget: /dev/hidg0 & /dev/hidg1]
-        KSU & SUKI --> DRV[Modular Driver Loader: Sequential Queue & Dependencies]
-        KSU & SUKI --> MEM[Dynamic MGLRU & Real-Time RAM Telemetry]
-        KSU & SUKI --> LOG[Real-Time Process & Activity Log Console]
+        NET[TCP & Network Switcher: BBR3/BBR/Cubic & IP Forwarding]
+        DRV[Modular Driver Loader: Sequential Queue & Dependencies]
+        MEM[Dynamic MGLRU & Real-Time RAM Telemetry]
+        LOG[Real-Time Process & Activity Log Console]
+        KSU & SUKI --> NET
+        KSU & SUKI --> DRV
+        KSU & SUKI --> MEM
+        KSU & SUKI --> LOG
     end
 
     subgraph OS["Kernel & Android OS Integration"]
         NET --> SYS1[/proc/sys/net/ipv4/tcp_congestion_control]
-        USB --> SYS2[/config/usb_gadget/g_hid & /dev/hidg0,1]
         DRV --> SYS3[insmod /data/adb/modules/.../lkm/*.ko]
         MEM --> SYS4[/sys/kernel/mm/lru_gen/enabled]
         LOG --> SYS5[Live Shell & Root Telemetry Execution]
@@ -118,16 +120,15 @@ flowchart TD
    * **True RAM Usage**: Parses `/proc/meminfo` and calculates true memory consumption: $\text{Used} = \text{MemTotal} - \text{MemAvailable}$.
    * **MGLRU Locking**: Reads `/sys/kernel/mm/lru_gen/enabled` and allows one-tap locking to `0x0007` (full multi-generational generation & evictions).
    * **ZRAM Telemetry**: Extracts active compression algorithm (e.g., `lz4`, `zstd`) and allocated disk size directly from `/sys/block/zram0/`.
-3. **BadUSB HID Hotplug & Dynamic Auto-Healing**:
-   * Automatically provisions keyboard and mouse endpoints via ConfigFS (`/dev/hidg0` and `/dev/hidg1`).
-   * **Dynamic Major Auto-Healing**: Resolves the Android `ueventd` limitation for dynamically allocated character device majors ($> 255$) by creating `/dev/hidg0` and `/dev/hidg1` via `mknod` directly from `functions/hid.usb0/dev` and `functions/hid.usb1/dev`.
-   * Includes one-tap switching back to Stock Android (MTP + ADB) or USB Mass Storage, alongside an on-screen DuckyScript test keystroke injector.
+3. **BadUSB HID Support & Device Node Mapping**:
+   * Native USB HID keyboard and mouse emulation mapped cleanly to `/dev/hidg1` (keyboard) and `/dev/hidg2` (mouse) for NetHunter DuckHunter, Stryker, and Tap Ducky payloads.
+   * Android stock init pre-allocates minor 0 at `/config/usb_gadget/g1/functions/hid.gs0` (`/dev/hidg0`), allowing secondary NetHunter armed gadgets to bind cleanly to minors 1 and 2.
 4. **Resilient Driver Loading & Unloading**:
    * **Sequential Execution Queue**: Replaces asynchronous shell flooding with an orderly sequential insmod queue when loading all modules, completely eliminating WebUI browser lockups and freezes.
    * **Multi-Tier Dependency Resolution**: Loads base silicon modules (`rtw88_8822c`, `rtw88_8821c`, `rtw88_core`, `mac80211`, `cfg80211`) before binding USB interface frontends.
    * **Reverse-Order Driver Unloading**: Resets external drivers in reverse dependency order to prevent kernel `"device or resource busy"` unbind errors.
 5. **Streamlined 4-Tab Layout & Process Activity Log**:
-   * Four core tabs: **Network, USB, Drivers, Memory**.
+   * Four core tabs: **Network, Drivers, Memory, Logs**.
    * Replaced separate terminal tab with an integrated, high-visibility **Process & Activity Log** console featuring live event badges, timestamped command tracking, and one-tap copy/clear buttons.
 6. **Action Launcher & Manager Integration**:
    * Adheres to standard KernelSU-Next, SukiSU-Ultra, and ReSukiSU WebUI specifications (`webroot/` and `action.sh`).
