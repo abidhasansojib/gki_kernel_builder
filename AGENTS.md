@@ -51,7 +51,7 @@ The project supports 3 independent root implementations with automated patch res
 
 ### 4. Kali NetHunter & Penetration Testing Stack
 * **BadUSB / Rubber Ducky HID:**
-  * Enabled `/dev/hidg0` USB gadget keyboard/mouse emulation for DuckHunter payloads.
+  * Enabled native ConfigFS USB gadget keyboard (`/dev/hidg1`) and mouse (`/dev/hidg2`) emulation for DuckHunter and mobile penetration testing payloads.
 * **75+ Modular Wireless WiFi Drivers (`=m`):**
   * **Realtek:** `rtw88` (8822bu, 8822cu, 8821cu, 8723du), `rtl8xxxu` (8188eus, 8192eu), `rtl8187`.
   * **Atheros:** `ath9k_htc` (AR9271 / TP-Link WN722N v1), `carl9170`.
@@ -65,15 +65,15 @@ The project supports 3 independent root implementations with automated patch res
   * USB Bluetooth dongles via `btusb.ko` with RFCOMM TTY (`rfcomm.ko`), BNEP, and HIDP.
 * **Integrated Material 3 WebUI Dashboard & Action Launcher:**
   * **Module Staging:** `webroot/index.html` (embedded within `Nethunter-Wireless-Modules.zip`).
+  * **4 Streamlined Modules:** Network, Drivers, Memory, and Logs.
   * **Root Bridge Execution:** Supports KernelSU-Next (`window.ksu`), SukiSU-Ultra, and ReSukiSU (`window.suki`). Automatically falls back to safe read-only preview mode when opened in standard web browsers.
   * **Zero Fake Telemetry:** Fully dynamic real-time parsing from kernel filesystems:
     * Available TCP algorithms dynamically queried from `/proc/sys/net/ipv4/tcp_available_congestion_control`.
     * True RAM usage calculated dynamically via $\text{Used} = \text{MemTotal} - \text{MemAvailable}$ from `/proc/meminfo`.
     * MGLRU capabilities inspected from `/sys/kernel/mm/lru_gen/enabled` (with one-tap `0x0007` locking).
     * ZRAM compression algorithm and disk size extracted directly from `/sys/block/zram0/`.
-  * **BadUSB HID & Gadget Controller:** ConfigFS integration supporting hotplug toggling between Stock Android USB (MTP + ADB), BadUSB HID Keyboard/Mouse (`/dev/hidg0`, `/dev/hidg1`), USB Mass Storage, and RNDIS Ethernet, including an on-screen DuckyScript test keystroke injector.
   * **Driver Manager:** Dynamic category filtering, multi-tier dependency auto-loading from `lkm/`, and safe reverse-order driver unbinding.
-  * **Subsystem Reset Buttons:** One-tap Reset buttons on every view to restore network, USB, driver, and memory parameters back to kernel defaults.
+  * **Subsystem Reset Buttons:** One-tap Reset buttons to restore network, driver, and memory parameters back to kernel defaults.
   * **Testing Mirror & Recovery Resilience:** Automatically synced to internal storage during development/testing (`customize.sh` and `service.sh`) for inspection, while end users interact natively through the root manager's built-in WebUI.
   * **Safe Action Launcher (`action.sh`):** Launches the WebUI avoiding Android cross-app `ERR_ACCESS_DENIED` errors from `/data/adb`.
 * **Single-Storage Packaging (`Nethunter-Wireless-Modules.zip`):**
@@ -169,6 +169,7 @@ The project supports 3 independent root implementations with automated patch res
 5. **Continuous Documentation & AGENTS.md Updates:**
    * Keep `AGENTS.md` continuously updated with all chat decisions, completed milestones, technical fixes, and workflow structural changes.
 6. **Workflow & Repository Architecture Constraints:**
+   * **Primary Build Workflow:** `.github/workflows/build-kernel.yml` (dispatches root flavor matrix, vendor bypass, and artifact packaging).
    * **Root Flavors:** `KernelSU-Next`, `SukiSU-Ultra`, `ReSukiSU`, `All` (concurrent multi-flavor matrix build) (strictly NO official KernelSU).
    * **Commit Modes:** `verified` (audited pins in `commits.json`), `latest` (branch tips), and `update` (builds latest then auto-promotes pins on success).
    * **Feature Toggles:** Granular boolean checkboxes for `NoMount`, `Baseband Guard`, `Networking`, `DroidSpaces`, `NTSync`, `Ptrace Patch`, `Unicode Fix`, `BPF Stack`, `Performance`, `Kali NetHunter`, `CIFS`, and `Cache`.
