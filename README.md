@@ -90,6 +90,9 @@ Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button i
 ---
 
 ## 📋 Installation Instructions
+<details>
+<summary><b>Installation Steps(Click to Expand)</b></summary>
+<br>
 
 1. **Prerequisites**:
    - Unlocked bootloader.
@@ -107,6 +110,7 @@ Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button i
    - **NetHunter**: Flash `Nethunter-Wireless-Modules.zip` in your root manager for USB Wi-Fi/SDR drivers and the WebUI manager.
    - **NoMount**: Flash `NoMount-6.12.30-android16-*.zip` in your root manager for stealth VFS root hiding.
    - *Note: Both modules can be flashed and used together without conflicts.*
+</details>
 
 ---
 
