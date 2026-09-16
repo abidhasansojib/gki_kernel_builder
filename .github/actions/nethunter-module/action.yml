@@ -156,14 +156,6 @@ runs:
         find "$MODPATH" -type f -exec chmod 644 {} + 2>/dev/null || true
         chmod 755 "$MODPATH"/*.sh 2>/dev/null || true
         [ -d "$MODPATH/lkm" ] && chmod 644 "$MODPATH/lkm"/*.ko 2>/dev/null || true
-
-        # Sync WebUI directly to storage for immediate browser & manager access
-        mkdir -p /storage/emulated/0 /storage/emulated/0/Download 2>/dev/null || true
-        if [ -f "$MODPATH/webroot/index.html" ]; then
-          cp -f "$MODPATH/webroot/index.html" /storage/emulated/0/nethunter_webui.html 2>/dev/null || true
-          cp -f "$MODPATH/webroot/index.html" /storage/emulated/0/Download/nethunter_webui.html 2>/dev/null || true
-          chmod 666 /storage/emulated/0/nethunter_webui.html /storage/emulated/0/Download/nethunter_webui.html 2>/dev/null || true
-        fi
         EOF
         sed -i 's/^[[:space:]]*//' "$STAGING_DIR/customize.sh"
 
@@ -265,14 +257,6 @@ runs:
         chmod 666 /dev/hidg* /dev/uhid /dev/rfkill /dev/net/tun 2>/dev/null || true
         chmod 666 /dev/ttyUSB* /dev/ttyACM* /dev/rfcomm* 2>/dev/null || true
         chmod -R 666 /dev/bus/usb/ 2>/dev/null || true
-
-        # Sync WebUI directly to storage for immediate browser & manager access (handles TWRP installs)
-        mkdir -p /storage/emulated/0 /storage/emulated/0/Download 2>/dev/null || true
-        if [ -f "$MODDIR/webroot/index.html" ]; then
-          cp -f "$MODDIR/webroot/index.html" /storage/emulated/0/nethunter_webui.html 2>/dev/null || true
-          cp -f "$MODDIR/webroot/index.html" /storage/emulated/0/Download/nethunter_webui.html 2>/dev/null || true
-          chmod 666 /storage/emulated/0/nethunter_webui.html /storage/emulated/0/Download/nethunter_webui.html 2>/dev/null || true
-        fi
 
         # Performance tuning: enforce saved TCP congestion control only if explicitly configured by user
         if [ -f /data/adb/service.d/00-tcp.sh ]; then

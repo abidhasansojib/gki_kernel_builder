@@ -2332,14 +2332,15 @@
     }
 
     async function saveTcpBootDefault() {
-      logProcess("action", "Saved " + state.tcp.toUpperCase() + " as persistent boot default");
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
-      await exec(`mkdir -p /data/adb/service.d && printf '#!/system/bin/sh\\nsysctl -w net.ipv4.tcp_congestion_control=${state.tcp}\\n' > /data/adb/service.d/00-tcp.sh && chmod 0755 /data/adb/service.d/00-tcp.sh`);
-      state.tcpBoot = state.tcp;
-      showSnackbar("Saved " + state.tcp.toUpperCase() + " as boot default");
+      const target = (state.tcp && state.tcp !== 'unknown') ? state.tcp : 'cubic';
+      logProcess("action", "Saved " + target.toUpperCase() + " as persistent boot default");
+      await exec(`mkdir -p /data/adb/service.d && printf '#!/system/bin/sh\\nsysctl -w net.ipv4.tcp_congestion_control=${target}\\n' > /data/adb/service.d/00-tcp.sh && chmod 0755 /data/adb/service.d/00-tcp.sh`);
+      state.tcpBoot = target;
+      showSnackbar("Saved " + target.toUpperCase() + " as boot default");
       await checkTcp();
     }
 

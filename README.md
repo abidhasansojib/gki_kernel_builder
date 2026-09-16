@@ -22,7 +22,7 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 - 🔐 **Multi-Root Support**: **KernelSU-Next**, **SukiSU-Ultra**, and **ReSukiSU** with automated manager APK bundling.
 - 🛡️ **SUSFS & NoMount**: Built-in SUSFS root hiding and NoMount stealth VFS support.
 - 🐉 **Kali NetHunter**: Monitor mode, frame injection, BadUSB HID keyboard/mouse (`/dev/hidg1`, `/dev/hidg2`), USB Wi-Fi dongles, SDR, CAN bus, and Bluetooth RFCOMM.
-- 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (BBR3), driver modules, RAM/MGLRU, and real-time activity log.
+- 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (CUBIC / BBR3 / Westwood+), driver modules, RAM/MGLRU, and real-time activity log.
 - 📦 **NetHunter Wireless Module**: Flashable `Nethunter-Wireless-Modules.zip` with Wi-Fi/SDR drivers, firmware, and WebUI (fully compatible alongside NoMount).
 - 🛡️ **Baseband Guard (BBG)**: Partition protection against unauthorized writes.
 - 📦 **DroidSpaces-OSS**: Lightweight container runtime support.

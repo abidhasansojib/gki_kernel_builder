@@ -4,7 +4,7 @@ inputs:
   flavor:
     description: 'Root flavor (KernelSU-Next, SukiSU-Ultra, ReSukiSU, or All)'
     required: false
-    default: 'KernelSU-Next'
+    default: 'SukiSU-Ultra'
   output_dir:
     description: 'Absolute path of directory to place downloaded APKs'
     required: false
@@ -99,7 +99,7 @@ runs:
             fetch_latest_release_apks "ReSukiSU" "ReSukiSU" "resukisu"
             ;;
           *)
-            fetch_latest_release_apks "KernelSU-Next" "KernelSU-Next" "kernelsu-next"
+            fetch_latest_release_apks "SukiSU-Ultra" "SukiSU-Ultra" "sukisu-ultra"
             ;;
         esac
 

@@ -28,11 +28,11 @@ on:
         description: "Root Flavor"
         type: choice
         options:
-          - KernelSU-Next
           - SukiSU-Ultra
+          - KernelSU-Next
           - ReSukiSU
           - All
-        default: KernelSU-Next
+        default: SukiSU-Ultra
       ksu_branch:
         description: "Custom Branch / Tag for Root Flavor (empty = default)"
         type: string
@@ -185,7 +185,7 @@ jobs:
               ROOT_MATRIX="[$(mk_entry KernelSU-Next "$REF" "$KSUN_SHA")]"
               ;;
             *)
-              ROOT_MATRIX="[$(mk_entry KernelSU-Next dev-susfs "$KSUN_SHA")]"
+              ROOT_MATRIX="[$(mk_entry SukiSU-Ultra main "$ULTRA_SHA")]"
               ;;
           esac
 

@@ -19,9 +19,15 @@ def main():
     with open(manifest_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    pattern = r"(<project\s+path=[\"\x27]common[\"\x27]\s+name=[\"\x27]kernel/common[\"\x27])[^>]*>"
-    replacement = f"\\g<1> revision=\"{revision}\">"
-    new_content, count = re.subn(pattern, replacement, content)
+    pattern = r"(<project\s+[^>]*?(?:path=[\"\x27]common[\"\x27][^>]*?name=[\"\x27]kernel/common[\"\x27]|name=[\"\x27]kernel/common[\"\x27][^>]*?path=[\"\x27]common[\"\x27])[^>]*?)(/?>)"
+
+    def repl(m):
+        tag_start = m.group(1)
+        tag_end = m.group(2)
+        tag_start = re.sub(r"\s+revision=[\"\x27][^\"\x27]*[\"\x27]", "", tag_start)
+        return f"{tag_start} revision=\"{revision}\"{tag_end}"
+
+    new_content, count = re.subn(pattern, repl, content)
 
     if count == 0:
         print(f"WARNING: kernel/common project tag not found in {manifest_path}", file=sys.stderr)
