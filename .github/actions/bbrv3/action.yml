@@ -34,6 +34,7 @@ runs:
         # Clean any competing default TCP congestion control configs from defconfig
         DEFCONFIG="arch/arm64/configs/gki_defconfig"
         if [ -f "$DEFCONFIG" ]; then
+          sed -i '/CONFIG_TCP_CONG_BIC/d' "$DEFCONFIG" || true
           sed -i '/CONFIG_DEFAULT_BIC/d' "$DEFCONFIG" || true
           sed -i '/CONFIG_DEFAULT_CUBIC/d' "$DEFCONFIG" || true
           sed -i '/CONFIG_DEFAULT_BBR=/d' "$DEFCONFIG" || true
