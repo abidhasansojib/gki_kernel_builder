@@ -2224,12 +2224,11 @@
       if (summary) summary.innerText = state.tcp + " • " + state.qdisc;
       if (availEl) availEl.innerText = state.availableTcps.length ? state.availableTcps.join(", ") : "--";
 
-      // Render interactive buttons for custom detected available TCP protocols (excluding stock cubic)
+      // Render interactive buttons for all detected available TCP protocols
       if (chipsContainer) {
-        const customTcps = state.availableTcps.filter(p => p.toLowerCase() !== 'cubic');
-        if (customTcps.length > 0) {
-          chipsContainer.innerHTML = customTcps.map(p => {
-            const isCur = (p === state.tcp) || (p === 'bbr' && state.tcp === 'bbr3');
+        if (state.availableTcps.length > 0) {
+          chipsContainer.innerHTML = state.availableTcps.map(p => {
+            const isCur = (p.toLowerCase() === state.tcp.toLowerCase());
             const cls = isCur ? "root-term-chip active" : "root-term-chip";
             const style = isCur ? "border-color: var(--md-sys-color-primary); font-weight: 700;" : "";
             return `<button class="${cls}" style="${style}" onclick="applyTcp('${p}')">${p.toUpperCase()}${isCur ? ' (ACTIVE)' : ''}</button>`;
@@ -2246,7 +2245,7 @@
       const updateCard = (id, targetAlgo, isAvailable, defaultBadge) => {
         const card = document.getElementById('opt-tcp-' + id);
         const chip = document.getElementById('chip-tcp-' + id);
-        const isSelected = (state.tcp === targetAlgo) || (id === 'bbr3' && (state.tcp === 'bbr' || state.tcp === 'bbr3'));
+        const isSelected = (state.tcp.toLowerCase() === targetAlgo.toLowerCase());
         if (card) card.classList.toggle('selected', isSelected);
         if (chip) {
           if (isSelected) {
@@ -2373,7 +2372,7 @@
         return;
       }
       showSnackbar("Restoring network settings to defaults...");
-      await exec("sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=cubic; sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 64 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 65 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 64 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 65 2>/dev/null; sysctl -w net.ipv4.ip_forward=0 2>/dev/null; sysctl -w net.ipv6.conf.all.optimistic_dad=1 2>/dev/null; rm -f /data/adb/service.d/00-tcp.sh 2>/dev/null; rm -f /data/adb/service.d/01-ttl.sh 2>/dev/null || true");
+      await exec("sysctl -w net.ipv4.tcp_congestion_control=bbr3 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=cubic; sysctl -w net.core.default_qdisc=fq 2>/dev/null || sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 64 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 65 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 64 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 65 2>/dev/null; sysctl -w net.ipv4.ip_forward=0 2>/dev/null; sysctl -w net.ipv6.conf.all.optimistic_dad=1 2>/dev/null; rm -f /data/adb/service.d/00-tcp.sh 2>/dev/null; rm -f /data/adb/service.d/01-ttl.sh 2>/dev/null || true");
       await checkTcp();
       showSnackbar("Network settings reset to defaults");
     }

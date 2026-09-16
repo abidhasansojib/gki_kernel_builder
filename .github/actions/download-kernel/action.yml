@@ -43,6 +43,7 @@ runs:
           repo init -u https://android.googlesource.com/kernel/manifest -b common-${FORMATTED_BRANCH} --depth=1 || { echo "ERROR: repo init failed" >&2; return 1; }
           DEFAULT_MANIFEST_PATH=.repo/manifests/default.xml
           DEPRECATED=false
+          TAG_FALLBACK=""
 
           REMOTE_BRANCH=$(git ls-remote --heads https://android.googlesource.com/kernel/common "${FORMATTED_BRANCH}" 2>/dev/null || true)
 
@@ -72,6 +73,7 @@ runs:
                 if [ -n "$TAG_REF" ]; then
                   echo "Resolved fallback tag for common: $TAG_REF"
                   python3 "${{ github.workspace }}/.github/scripts/patch_manifest.py" "$DEFAULT_MANIFEST_PATH" "$TAG_REF"
+                  TAG_FALLBACK="$TAG_REF"
                 fi
               fi
             fi
@@ -88,7 +90,9 @@ runs:
         while [ $attempt -le $MAX_RETRIES ]; do
           echo "Attempt $attempt/$MAX_RETRIES: initialize and sync kernel repository (sync timeout $SYNC_TIMEOUT)..."
           if init_repo; then
-            if timeout $SYNC_TIMEOUT repo sync -c --current-branch --no-clone-bundle --no-tags --jobs-checkout=4 -j4; then
+            SYNC_TAG_FLAGS="--no-tags"
+            if [ -n "$TAG_FALLBACK" ]; then SYNC_TAG_FLAGS=""; fi
+            if timeout $SYNC_TIMEOUT repo sync -c --current-branch --no-clone-bundle $SYNC_TAG_FLAGS --jobs-checkout=4 -j4; then
               echo "Kernel repository initialization and sync succeeded on attempt $attempt."
               break
             else
