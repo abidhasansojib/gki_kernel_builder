@@ -26,11 +26,6 @@ runs:
           patch -p1 < "${{ github.action_path }}/patches/0001-net-tcp-backport-BBRv3-to-android16-6.12.patch" || echo "BBRv3 patch applied or already present"
         fi
 
-        # Enforce DEFAULT_BBR3 as the built-in choice default in net/ipv4/Kconfig
-        if [ -f net/ipv4/Kconfig ]; then
-          sed -i '/prompt "Default TCP congestion control"/!b;n;c\\tdefault DEFAULT_BBR3' net/ipv4/Kconfig || true
-        fi
-
         # Clean any competing default TCP congestion control configs from defconfig
         DEFCONFIG="arch/arm64/configs/gki_defconfig"
         if [ -f "$DEFCONFIG" ]; then
@@ -38,18 +33,18 @@ runs:
           sed -i '/CONFIG_TCP_CONG_BBR=/d' "$DEFCONFIG" || true
           sed -i '/CONFIG_TCP_CONG_HTCP/d' "$DEFCONFIG" || true
           sed -i '/CONFIG_DEFAULT_BIC/d' "$DEFCONFIG" || true
-          sed -i '/CONFIG_DEFAULT_CUBIC/d' "$DEFCONFIG" || true
           sed -i '/CONFIG_DEFAULT_BBR=/d' "$DEFCONFIG" || true
+          sed -i '/CONFIG_DEFAULT_BBR3/d' "$DEFCONFIG" || true
           sed -i '/CONFIG_DEFAULT_RENO/d' "$DEFCONFIG" || true
           sed -i '/CONFIG_DEFAULT_TCP_CONG/d' "$DEFCONFIG" || true
         fi
 
-        echo "✅ BBRv3 patches applied and Kconfig default set to BBRv3"
+        echo "✅ BBRv3 patches applied and kernel default configured as CUBIC"
 
     - name: Enable BBRv3 Kernel Config
       uses: ./.github/actions/set-kernel-config
       with:
         config_list: |
           CONFIG_TCP_CONG_BBR3=y
-          CONFIG_DEFAULT_BBR3=y
-          CONFIG_DEFAULT_TCP_CONG="bbr3"
+          CONFIG_DEFAULT_CUBIC=y
+          CONFIG_DEFAULT_TCP_CONG="cubic"

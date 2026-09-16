@@ -1169,20 +1169,20 @@
 
         <!-- High Performance TCP Options Grid -->
         <div class="m3-options-grid">
+          <div id="opt-tcp-cubic" class="m3-option-card" onclick="applyTcp('cubic')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">CUBIC</span>
+              <span class="m3-chip" id="chip-tcp-cubic">--</span>
+            </div>
+            <span class="m3-option-desc">Stock standard • Reliable on fiber Wi-Fi & cellular</span>
+          </div>
+
           <div id="opt-tcp-bbr3" class="m3-option-card" onclick="applyTcp('bbr3')">
             <div class="m3-option-header">
               <span class="m3-option-title">BBRv3</span>
               <span class="m3-chip" id="chip-tcp-bbr3">--</span>
             </div>
             <span class="m3-option-desc">Google model-based • Max speed & lowest ping</span>
-          </div>
-
-          <div id="opt-tcp-cubic" class="m3-option-card" onclick="applyTcp('cubic')">
-            <div class="m3-option-header">
-              <span class="m3-option-title">CUBIC</span>
-              <span class="m3-chip" id="chip-tcp-cubic">--</span>
-            </div>
-            <span class="m3-option-desc">Stock standard • Reliable on fiber Wi-Fi</span>
           </div>
 
           <div id="opt-tcp-westwood" class="m3-option-card" onclick="applyTcp('westwood')">
@@ -1194,9 +1194,14 @@
           </div>
         </div>
 
-        <button class="m3-btn m3-btn-tonal" onclick="saveTcpBootDefault()">
-          Save Selected Algorithm at Boot
-        </button>
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+          <button class="m3-btn m3-btn-tonal" style="flex: 1;" onclick="saveTcpBootDefault()">
+            Save Selected at Boot
+          </button>
+          <button class="m3-btn m3-btn-outlined" style="flex: 1;" onclick="clearTcpBootDefault()">
+            Use Stock Boot (CUBIC)
+          </button>
+        </div>
       </div>
 
       <!-- Queueing Disciplines & Tethering -->
@@ -2249,7 +2254,7 @@
         if (state.tcpBoot) {
           bootEl.innerText = state.tcpBoot.toUpperCase() + " (Saved in /data/adb/service.d)";
         } else {
-          bootEl.innerText = "BBR3 (Kernel Built-in Default)";
+          bootEl.innerText = "CUBIC (Kernel Built-in Default)";
         }
       }
 
@@ -2291,8 +2296,8 @@
         }
       };
 
-      updateCard('bbr3', 'bbr3', hasBbr3, 'RECOMMENDED');
-      updateCard('cubic', 'cubic', hasCubic, 'STANDARD');
+      updateCard('cubic', 'cubic', hasCubic, 'DEFAULT / STOCK');
+      updateCard('bbr3', 'bbr3', hasBbr3, 'PERFORMANCE');
       updateCard('westwood', 'westwood', hasWestwood, 'WIRELESS');
 
       // Packet Scheduler (Qdisc)
@@ -2335,6 +2340,18 @@
       await exec(`mkdir -p /data/adb/service.d && printf '#!/system/bin/sh\\nsysctl -w net.ipv4.tcp_congestion_control=${state.tcp}\\n' > /data/adb/service.d/00-tcp.sh && chmod 0755 /data/adb/service.d/00-tcp.sh`);
       state.tcpBoot = state.tcp;
       showSnackbar("Saved " + state.tcp.toUpperCase() + " as boot default");
+      await checkTcp();
+    }
+
+    async function clearTcpBootDefault() {
+      logProcess("action", "Cleared persistent boot default; stock CUBIC will be used");
+      if (!hasBridge()) {
+        showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
+        return;
+      }
+      await exec("rm -f /data/adb/service.d/00-tcp.sh 2>/dev/null || true");
+      state.tcpBoot = "";
+      showSnackbar("Boot default cleared (Kernel will boot stock CUBIC)");
       await checkTcp();
     }
 
@@ -2404,7 +2421,7 @@
         return;
       }
       showSnackbar("Restoring network settings to defaults...");
-      await exec("sysctl -w net.ipv4.tcp_congestion_control=bbr3 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=cubic; sysctl -w net.core.default_qdisc=fq 2>/dev/null || sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 64 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 65 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 64 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 65 2>/dev/null; sysctl -w net.ipv4.ip_forward=0 2>/dev/null; sysctl -w net.ipv6.conf.all.optimistic_dad=1 2>/dev/null; rm -f /data/adb/service.d/00-tcp.sh 2>/dev/null; rm -f /data/adb/service.d/01-ttl.sh 2>/dev/null || true");
+      await exec("sysctl -w net.ipv4.tcp_congestion_control=cubic; sysctl -w net.core.default_qdisc=fq 2>/dev/null || sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 64 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 65 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 64 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 65 2>/dev/null; sysctl -w net.ipv4.ip_forward=0 2>/dev/null; sysctl -w net.ipv6.conf.all.optimistic_dad=1 2>/dev/null; rm -f /data/adb/service.d/00-tcp.sh 2>/dev/null; rm -f /data/adb/service.d/01-ttl.sh 2>/dev/null || true");
       await checkTcp();
       showSnackbar("Network settings reset to defaults");
     }
