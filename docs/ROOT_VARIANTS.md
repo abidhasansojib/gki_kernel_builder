@@ -93,7 +93,7 @@ flowchart TD
     end
 
     subgraph Core["Interactive Subsystems"]
-        NET[TCP & Network Switcher: BBR3/BBR/Cubic & IP Forwarding]
+        NET[TCP & Network Switcher: BBR3/CUBIC/Westwood & IP Forwarding]
         DRV[Modular Driver Loader: Sequential Queue & Dependencies]
         MEM[Dynamic MGLRU & Real-Time RAM Telemetry]
         LOG[Real-Time Process & Activity Log Console]

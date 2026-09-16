@@ -1192,14 +1192,6 @@
             </div>
             <span class="m3-option-desc">Loss-tolerant • Unstable Wi-Fi & cellular</span>
           </div>
-
-          <div id="opt-tcp-bbr" class="m3-option-card" onclick="applyTcp('bbr')">
-            <div class="m3-option-header">
-              <span class="m3-option-title">BBR</span>
-              <span class="m3-chip" id="chip-tcp-bbr">--</span>
-            </div>
-            <span class="m3-option-desc">Google BBRv1 • High throughput streaming</span>
-          </div>
         </div>
 
         <button class="m3-btn m3-btn-tonal" onclick="saveTcpBootDefault()">
@@ -2187,7 +2179,7 @@
         if (chipsContainer) {
           chipsContainer.innerHTML = '<span style="font-size: 11px; color: var(--md-sys-color-outline);">Open in KernelSU / SukiSU WebUI to read kernel TCP stack</span>';
         }
-        ['bbr3', 'cubic', 'westwood', 'bbr'].forEach(a => {
+        ['bbr3', 'cubic', 'westwood'].forEach(a => {
           const el = document.getElementById('opt-tcp-' + a);
           if (el) el.classList.remove('selected');
           const chip = document.getElementById('chip-tcp-' + a);
@@ -2279,7 +2271,6 @@
       const hasBbr3 = state.availableTcps.includes('bbr3');
       const hasCubic = state.availableTcps.includes('cubic');
       const hasWestwood = state.availableTcps.includes('westwood');
-      const hasBbr = state.availableTcps.includes('bbr');
 
       const updateCard = (id, targetAlgo, isAvailable, defaultBadge) => {
         const card = document.getElementById('opt-tcp-' + id);
@@ -2303,7 +2294,6 @@
       updateCard('bbr3', 'bbr3', hasBbr3, 'RECOMMENDED');
       updateCard('cubic', 'cubic', hasCubic, 'STANDARD');
       updateCard('westwood', 'westwood', hasWestwood, 'WIRELESS');
-      updateCard('bbr', 'bbr', hasBbr, 'STREAMING');
 
       // Packet Scheduler (Qdisc)
       document.querySelectorAll('[id^="seg-qdisc-"]').forEach(el => el.classList.remove('active'));
@@ -2331,8 +2321,7 @@
         return;
       }
       state.tcp = algo;
-      if (algo === 'bbr3') await exec("sysctl -w net.ipv4.tcp_congestion_control=bbr3 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=bbr");
-      else await exec("sysctl -w net.ipv4.tcp_congestion_control=" + algo);
+      await exec("sysctl -w net.ipv4.tcp_congestion_control=" + algo);
       showSnackbar("TCP: " + algo.toUpperCase());
       await checkTcp();
     }
@@ -2415,7 +2404,7 @@
         return;
       }
       showSnackbar("Restoring network settings to defaults...");
-      await exec("sysctl -w net.ipv4.tcp_congestion_control=bbr3 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=cubic; sysctl -w net.core.default_qdisc=fq 2>/dev/null || sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 64 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 65 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 64 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 65 2>/dev/null; sysctl -w net.ipv4.ip_forward=0 2>/dev/null; sysctl -w net.ipv6.conf.all.optimistic_dad=1 2>/dev/null; rm -f /data/adb/service.d/00-tcp.sh 2>/dev/null; rm -f /data/adb/service.d/01-ttl.sh 2>/dev/null || true");
+      await exec("sysctl -w net.ipv4.tcp_congestion_control=bbr3 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=cubic; sysctl -w net.core.default_qdisc=fq 2>/dev/null || sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 64 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 65 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 64 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 65 2>/dev/null; sysctl -w net.ipv4.ip_forward=0 2>/dev/null; sysctl -w net.ipv6.conf.all.optimistic_dad=1 2>/dev/null; rm -f /data/adb/service.d/00-tcp.sh 2>/dev/null; rm -f /data/adb/service.d/01-ttl.sh 2>/dev/null || true");
       await checkTcp();
       showSnackbar("Network settings reset to defaults");
     }

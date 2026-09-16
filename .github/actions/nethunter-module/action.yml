@@ -278,7 +278,7 @@ runs:
         if [ -f /data/adb/service.d/00-tcp.sh ]; then
           sh /data/adb/service.d/00-tcp.sh 2>/dev/null || true
         else
-          sysctl -w net.ipv4.tcp_congestion_control=bbr3 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null || true
+          sysctl -w net.ipv4.tcp_congestion_control=bbr3 2>/dev/null || sysctl -w net.ipv4.tcp_congestion_control=cubic 2>/dev/null || true
         fi
         [ -f /sys/kernel/mm/lru_gen/enabled ] && echo 7 > /sys/kernel/mm/lru_gen/enabled 2>/dev/null || true
         if [ ! -f /data/adb/service.d/00-cpugov.sh ]; then
