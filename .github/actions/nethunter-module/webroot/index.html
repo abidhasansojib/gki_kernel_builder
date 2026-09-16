@@ -1152,6 +1152,11 @@
           <span class="m3-telemetry-val" id="val-tcp-summary">--</span>
         </div>
 
+        <div class="m3-telemetry-box" style="margin-bottom: 6px;">
+          <span class="m3-telemetry-key">Persistent Boot Default</span>
+          <span class="m3-telemetry-val" id="val-tcp-boot" style="color: var(--md-sys-color-primary); font-weight: 600;">--</span>
+        </div>
+
         <div class="m3-telemetry-box" style="margin-bottom: 8px;">
           <span class="m3-telemetry-key">Available in Kernel (/proc)</span>
           <span class="m3-telemetry-val" id="val-tcp-avail" style="font-size: 11px;">--</span>
@@ -1162,14 +1167,22 @@
           <!-- Dynamically populated from /proc/sys/net/ipv4/tcp_available_congestion_control -->
         </div>
 
-        <!-- High Performance TCP Options -->
+        <!-- High Performance TCP Options Grid -->
         <div class="m3-options-grid">
           <div id="opt-tcp-bbr3" class="m3-option-card" onclick="applyTcp('bbr3')">
             <div class="m3-option-header">
               <span class="m3-option-title">BBRv3</span>
               <span class="m3-chip" id="chip-tcp-bbr3">--</span>
             </div>
-            <span class="m3-option-desc">Model-based congestion • Max speed & low latency</span>
+            <span class="m3-option-desc">Google model-based • Max speed & lowest ping</span>
+          </div>
+
+          <div id="opt-tcp-cubic" class="m3-option-card" onclick="applyTcp('cubic')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">CUBIC</span>
+              <span class="m3-chip" id="chip-tcp-cubic">--</span>
+            </div>
+            <span class="m3-option-desc">Stock standard • Reliable on fiber Wi-Fi</span>
           </div>
 
           <div id="opt-tcp-westwood" class="m3-option-card" onclick="applyTcp('westwood')">
@@ -1178,6 +1191,14 @@
               <span class="m3-chip" id="chip-tcp-westwood">--</span>
             </div>
             <span class="m3-option-desc">Loss-tolerant • Unstable Wi-Fi & cellular</span>
+          </div>
+
+          <div id="opt-tcp-bbr" class="m3-option-card" onclick="applyTcp('bbr')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">BBR</span>
+              <span class="m3-chip" id="chip-tcp-bbr">--</span>
+            </div>
+            <span class="m3-option-desc">Google BBRv1 • High throughput streaming</span>
           </div>
         </div>
 
@@ -2166,7 +2187,7 @@
         if (chipsContainer) {
           chipsContainer.innerHTML = '<span style="font-size: 11px; color: var(--md-sys-color-outline);">Open in KernelSU / SukiSU WebUI to read kernel TCP stack</span>';
         }
-        ['bbr3', 'westwood'].forEach(a => {
+        ['bbr3', 'cubic', 'westwood', 'bbr'].forEach(a => {
           const el = document.getElementById('opt-tcp-' + a);
           if (el) el.classList.remove('selected');
           const chip = document.getElementById('chip-tcp-' + a);
@@ -2186,6 +2207,10 @@
         cat /proc/sys/net/ipv4/tcp_congestion_control 2>/dev/null
         echo "===TCP_AVAIL==="
         cat /proc/sys/net/ipv4/tcp_available_congestion_control 2>/dev/null
+        echo "===TCP_BOOT==="
+        if [ -f /data/adb/service.d/00-tcp.sh ]; then
+          grep -o "tcp_congestion_control=[^ ]*" /data/adb/service.d/00-tcp.sh 2>/dev/null | cut -d= -f2 || true
+        fi
         echo "===QDISC==="
         cat /proc/sys/net/core/default_qdisc 2>/dev/null
         echo "===IP_FWD==="
@@ -2207,15 +2232,18 @@
 
       const cur = getSection("TCP_CUR");
       const avail = getSection("TCP_AVAIL");
+      const tcpBoot = getSection("TCP_BOOT");
       const qdisc = getSection("QDISC");
       const ipFwd = getSection("IP_FWD");
       const optDad = getSection("OPT_DAD");
 
       const trimmedCur = cur ? cur.trim() : "";
       const trimmedAvail = avail ? avail.trim() : "";
+      const trimmedBoot = tcpBoot ? tcpBoot.trim() : "";
       const trimmedQ = qdisc ? qdisc.trim() : "";
 
       state.tcp = trimmedCur || "unknown";
+      state.tcpBoot = trimmedBoot ? trimmedBoot.toLowerCase() : "";
       state.qdisc = trimmedQ || "unknown";
       state.availableTcps = trimmedAvail ? trimmedAvail.split(/\s+/).filter(Boolean) : [];
 
@@ -2223,6 +2251,15 @@
       if (badgeTcp) badgeTcp.className = "m3-chip success";
       if (summary) summary.innerText = state.tcp + " • " + state.qdisc;
       if (availEl) availEl.innerText = state.availableTcps.length ? state.availableTcps.join(", ") : "--";
+
+      const bootEl = document.getElementById('val-tcp-boot');
+      if (bootEl) {
+        if (state.tcpBoot) {
+          bootEl.innerText = state.tcpBoot.toUpperCase() + " (Saved in /data/adb/service.d)";
+        } else {
+          bootEl.innerText = "BBR3 (Kernel Built-in Default)";
+        }
+      }
 
       // Render interactive buttons for all detected available TCP protocols
       if (chipsContainer) {
@@ -2239,8 +2276,10 @@
       }
 
       // Check presets availability
-      const hasBbr = state.availableTcps.includes('bbr') || state.availableTcps.includes('bbr3');
+      const hasBbr3 = state.availableTcps.includes('bbr3');
+      const hasCubic = state.availableTcps.includes('cubic');
       const hasWestwood = state.availableTcps.includes('westwood');
+      const hasBbr = state.availableTcps.includes('bbr');
 
       const updateCard = (id, targetAlgo, isAvailable, defaultBadge) => {
         const card = document.getElementById('opt-tcp-' + id);
@@ -2261,8 +2300,10 @@
         }
       };
 
-      updateCard('bbr3', 'bbr3', hasBbr, 'RECOMMENDED');
+      updateCard('bbr3', 'bbr3', hasBbr3, 'RECOMMENDED');
+      updateCard('cubic', 'cubic', hasCubic, 'STANDARD');
       updateCard('westwood', 'westwood', hasWestwood, 'WIRELESS');
+      updateCard('bbr', 'bbr', hasBbr, 'STREAMING');
 
       // Packet Scheduler (Qdisc)
       document.querySelectorAll('[id^="seg-qdisc-"]').forEach(el => el.classList.remove('active'));
@@ -2303,7 +2344,9 @@
         return;
       }
       await exec(`mkdir -p /data/adb/service.d && printf '#!/system/bin/sh\\nsysctl -w net.ipv4.tcp_congestion_control=${state.tcp}\\n' > /data/adb/service.d/00-tcp.sh && chmod 0755 /data/adb/service.d/00-tcp.sh`);
-      showSnackbar("Saved " + state.tcp + " as boot default");
+      state.tcpBoot = state.tcp;
+      showSnackbar("Saved " + state.tcp.toUpperCase() + " as boot default");
+      await checkTcp();
     }
 
     async function applyQdisc(qdisc) {
