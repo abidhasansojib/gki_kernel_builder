@@ -63,13 +63,13 @@ runs:
               DEPRECATED=true
             else
               echo "⚠ Branch ${FORMATTED_BRANCH} not found as head on remote. Resolving commit from superproject..."
-              SUPER_COMMIT=$(curl -s "https://android.googlesource.com/kernel/superproject/+/refs/heads/common-${FORMATTED_BRANCH}/?format=JSON" 2>/dev/null | sed 1d | jq -r '.entries[]? | select(.name=="common") | .id' 2>/dev/null || true)
+              SUPER_COMMIT=$(curl -fLSs --retry 3 --retry-delay 2 "https://android.googlesource.com/kernel/superproject/+/refs/heads/common-${FORMATTED_BRANCH}/?format=JSON" 2>/dev/null | sed 1d | jq -r '.entries[]? | select(.name=="common") | .id' 2>/dev/null || true)
 
               if [ -n "$SUPER_COMMIT" ] && [ "$SUPER_COMMIT" != "null" ]; then
                 echo "Resolved common commit from superproject: $SUPER_COMMIT"
                 python3 "${{ github.workspace }}/.github/scripts/patch_manifest.py" "$DEFAULT_MANIFEST_PATH" "$SUPER_COMMIT"
               else
-                TAG_REF=$(git ls-remote --tags https://android.googlesource.com/kernel/common "*${FORMATTED_BRANCH}*" 2>/dev/null | tail -n 1 | awk '{print $2}' || true)
+                TAG_REF=$(git ls-remote --tags https://android.googlesource.com/kernel/common "*${FORMATTED_BRANCH}*" 2>/dev/null | grep -v '\^{}' | tail -n 1 | awk '{print $2}' || true)
                 if [ -n "$TAG_REF" ]; then
                   echo "Resolved fallback tag for common: $TAG_REF"
                   python3 "${{ github.workspace }}/.github/scripts/patch_manifest.py" "$DEFAULT_MANIFEST_PATH" "$TAG_REF"

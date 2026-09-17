@@ -12,6 +12,9 @@ def main():
     manifest_path = sys.argv[1]
     revision = sys.argv[2]
 
+    # Sanitize revision: strip peeled tag suffixes if present
+    revision = re.sub(r"\^{}\s*$", "", revision.strip())
+
     if not os.path.isfile(manifest_path):
         print(f"ERROR: manifest file not found: {manifest_path}", file=sys.stderr)
         sys.exit(1)
@@ -24,7 +27,7 @@ def main():
     def repl(m):
         tag_start = m.group(1)
         tag_end = m.group(2)
-        tag_start = re.sub(r"\s+revision=[\"\x27][^\"\x27]*[\"\x27]", "", tag_start)
+        tag_start = re.sub(r"\s+(?:revision|upstream|dest-branch)=[\"\x27][^\"\x27]*[\"\x27]", "", tag_start)
         return f"{tag_start} revision=\"{revision}\"{tag_end}"
 
     new_content, count = re.subn(pattern, repl, content)
