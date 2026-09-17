@@ -19,10 +19,10 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 
 ## ✨ Features
 
-- 🔐 **Multi-Root Support**: **KernelSU-Next**, **SukiSU-Ultra**, and **ReSukiSU** with automated manager APK bundling.
+- 🔐 **Multi-Root Support**: **SukiSU-Ultra** (Default), **KernelSU-Next**, and **ReSukiSU** with automated manager APK bundling.
 - 🛡️ **SUSFS & NoMount**: Built-in SUSFS root hiding and NoMount stealth VFS support.
-- 🐉 **Kali NetHunter**: Monitor mode, frame injection, BadUSB HID keyboard/mouse (`/dev/hidg1`, `/dev/hidg2`), USB Wi-Fi dongles, SDR, CAN bus, and Bluetooth RFCOMM.
-- 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (CUBIC / BBR3 / Westwood+), driver modules, RAM/MGLRU, and real-time activity log.
+- 🐉 **Kali NetHunter**: Monitor mode, frame injection, BadUSB HID keyboard/mouse (`/dev/hidg*`), USB Wi-Fi dongles, SDR, CAN bus, and Bluetooth RFCOMM.
+- 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (CUBIC stock default / BBR3 / Westwood+), driver modules, RAM/MGLRU, and real-time activity log.
 - 📦 **NetHunter Wireless Module**: Flashable `Nethunter-Wireless-Modules.zip` with Wi-Fi/SDR drivers, firmware, and WebUI (fully compatible alongside NoMount).
 - 🛡️ **Baseband Guard (BBG)**: Partition protection against unauthorized writes.
 - 📦 **DroidSpaces-OSS**: Lightweight container runtime support.
@@ -56,8 +56,8 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 <summary><b>🛠️ Hardware Gadgets, Network Dongles & SDR (Click to Expand)</b></summary>
 <br>
 
-- 🦆 **BadUSB / Rubber Ducky**: Native USB HID keyboard and mouse emulation (`/dev/hidg1` for keyboard, `/dev/hidg2` for mouse) for NetHunter DuckHunter and HID attack payloads.
-- 📻 **Software Defined Radio (SDR)**: RTL-SDR (`dvb_usb_rtl28xxu`), HackRF One, AirSpy, and Mirics.
+- 🦆 **BadUSB / Rubber Ducky**: Native USB HID keyboard and mouse emulation (`/dev/hidg*`) for NetHunter DuckHunter and HID attack payloads.
+- 📻 **Software Defined Radio (SDR)**: HackRF One, AirSpy, and Mirics (MSI2500), plus RTL-SDR via direct USB access (`/dev/bus/usb/`).
 - 🚗 **Automotive Hacking (CARsenal)**: SocketCAN framework (`can`, `vcan`, `slcan`, PEAK PCAN-USB, Kvaser, EMS USB).
 - 🔌 **USB Serial**: CDC-ACM, FTDI, CH341, CP210X, and PL2303 for router consoles and hardware debugging.
 - 🌐 **USB Ethernet**: Realtek RTL8152/RTL8153, ASIX AX88179, CDC-ECM, and CDC-NCM.
@@ -75,9 +75,9 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 
 ## 📱 NetHunter WebUI Dashboard
 
-Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button in your root manager (KernelSU / SukiSU):
+Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button in your root manager (KernelSU / SukiSU / APatch):
 
-- **Network & TCP Control**: Switch congestion algorithms (BBR3, CUBIC, etc.) and toggle IP forwarding / TTL mangling.
+- **Network & TCP Control**: Switch congestion algorithms (CUBIC stock default, BBR3, Westwood+) with persistent boot profile saving, and toggle IP forwarding / TTL mangling.
 - **Drivers & Modules**: View, load, and manage Wi-Fi, SDR, and serial drivers with sequential loading queue and automated dependency resolution.
 - **Memory & MGLRU**: View real-time RAM usage, lock full MGLRU capabilities (`0x0007`), drop caches, and adjust VFS pressure.
 - **Process & Activity Log**: Real-time diagnostic stream with execution tracking, one-tap copy, and subsystem telemetry.
@@ -87,8 +87,8 @@ Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button i
 
 ## 📱 Tested Device & Compatibility
 
-- **Device**: **Redmi Note 14 4G (`tanzanite`)** — fully working.
-- **OS / ROM**: Xiaomi HyperOS 3 (Android 16).
+- **Device**: **Redmi Note 14 4G (`tanzanite`)** / MediaTek Helio G99 (MT6789) family — fully working.
+- **OS / ROM**: Xiaomi HyperOS (Android 16).
 - **Target Kernel**: Android 16 GKI (`6.12.30-android16`).
 - **Stability**: Tested and verified with **SUSFS + NoMount + NetHunter** running together with full cellular and internal Wi-Fi functionality.
 
@@ -96,18 +96,22 @@ Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button i
 
 ## 📋 Installation Instructions
 <details>
-<summary><b>Installation Steps(Click to Expand)</b></summary>
+<summary><b>Installation Steps (Click to Expand)</b></summary>
 <br>
 
 1. **Prerequisites**:
    - Unlocked bootloader.
    - Backup of your current boot image (`boot.img`).
-   - **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** app.
+   - **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** app or PC with Fastboot.
 
 2. **Flash Kernel & Root**:
    - Download the release bundle (`*-Bundle.zip`) and extract it.
-   - Flash `*-AnyKernel3.zip` via **Kernel Flasher** or custom recovery.
-   - Install the matching root manager APK (`KernelSU_Next_*.apk`, `SukiSU_*.apk`, or `ReSukiSU_*.apk`).
+   - **Method A (Kernel Flasher / Custom Recovery)**: Flash `*-AnyKernel3.zip`.
+   - **Method B (Fastboot)**: Flash `boot.img` via fastboot:
+     ```bash
+     fastboot flash boot boot.img
+     ```
+   - Install the matching root manager APK (`SukiSU_*.apk`, `KernelSU_Next_*.apk`, or `ReSukiSU_*.apk`).
    - Reboot device.
    - *(Optional)* Flash **[susfs4ksu-module](https://github.com/sidex15/susfs4ksu-module/releases)** in your root manager for root hiding.
 
