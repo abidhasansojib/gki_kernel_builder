@@ -6,29 +6,19 @@ permissions:
 
 on:
   workflow_dispatch:
-    inputs:
-      root_flavor:
-        description: "Root flavor to fetch manager APK for"
-        type: choice
-        options:
-          - All
-          - KernelSU-Next
-          - SukiSU-Ultra
-          - ReSukiSU
-        default: All
 
 jobs:
   fetch-managers:
-    name: "Fetch Root Manager APKs"
+    name: "Fetch SukiSU-Ultra Manager APK"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
 
-      - name: Fetch Root Manager APKs
+      - name: Fetch SukiSU-Ultra Manager APK
         uses: ./.github/actions/fetch-root-managers
         with:
-          flavor: ${{ inputs.root_flavor }}
+          flavor: SukiSU-Ultra
           output_dir: ${{ github.workspace }}/root-managers
 
       - name: Upload Manager APKs

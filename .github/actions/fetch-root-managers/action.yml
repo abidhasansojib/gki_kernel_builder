@@ -1,8 +1,8 @@
 name: 'Fetch Root Manager APKs'
-description: 'Download the matching latest root manager APKs for KernelSU-Next, SukiSU-Ultra, or ReSukiSU'
+description: 'Download the latest SukiSU-Ultra root manager APK'
 inputs:
   flavor:
-    description: 'Root flavor (KernelSU-Next, SukiSU-Ultra, ReSukiSU, or All)'
+    description: 'Root flavor (default: SukiSU-Ultra)'
     required: false
     default: 'SukiSU-Ultra'
   output_dir:
@@ -22,7 +22,6 @@ runs:
       run: |
         set -euo pipefail
 
-        FLAVOR="${{ inputs.flavor }}"
         OUT_DIR="${{ inputs.output_dir }}"
         GH_TOKEN="${{ inputs.token }}"
 
@@ -82,26 +81,8 @@ runs:
           done
         }
 
-        # Case matching: ReSukiSU MUST be checked before SukiSU-Ultra so *sukisu* does not match resukisu
-        case "$(echo "$FLAVOR" | tr '[:upper:]' '[:lower:]')" in
-          *resukisu*)
-            fetch_latest_release_apks "ReSukiSU" "ReSukiSU" "resukisu"
-            ;;
-          *ultra*|*sukisu*)
-            fetch_latest_release_apks "SukiSU-Ultra" "SukiSU-Ultra" "sukisu-ultra"
-            ;;
-          *next*)
-            fetch_latest_release_apks "KernelSU-Next" "KernelSU-Next" "kernelsu-next"
-            ;;
-          *all*)
-            fetch_latest_release_apks "KernelSU-Next" "KernelSU-Next" "kernelsu-next"
-            fetch_latest_release_apks "SukiSU-Ultra" "SukiSU-Ultra" "sukisu-ultra"
-            fetch_latest_release_apks "ReSukiSU" "ReSukiSU" "resukisu"
-            ;;
-          *)
-            fetch_latest_release_apks "SukiSU-Ultra" "SukiSU-Ultra" "sukisu-ultra"
-            ;;
-        esac
+        # Fetch SukiSU-Ultra Manager APK
+        fetch_latest_release_apks "SukiSU-Ultra" "SukiSU-Ultra" "sukisu-ultra"
 
         rm -rf /tmp/manager-dl
 

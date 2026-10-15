@@ -1,12 +1,6 @@
 {
-  "kernelsu_next": {
-    "dev-susfs": "5dfc3359e1cf2f4d953c74205c8d06e6eaadbec0"
-  },
   "sukisu_ultra": {
     "main": "7755cdb36f63945f286d7b1cab662b42b18f2789"
-  },
-  "resukisu": {
-    "main": "6d674e50a022a85076dcfe4498af9a8bfead2cf9"
   },
   "susfs": {
     "gki-android16-6.12": "55e16cb62127057f36a16e6a3068217ba5dade31"

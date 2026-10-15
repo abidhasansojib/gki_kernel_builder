@@ -4,15 +4,13 @@ This document details the root implementations, stealth modules, coexistence str
 
 ---
 
-## 1. Supported Root Implementations
+## 1. Supported Root Implementation
 
-The build system supports three distinct root flavors selectable via the `root_flavor` workflow input. Each flavor is isolated and cleanly integrated during build time:
+The build system utilizes **SukiSU-Ultra** as the standard kernel-level root implementation:
 
-| Root Flavor | Upstream Repository | Default Branch / Target | Integration Mechanism |
+| Root Implementation | Upstream Repository | Default Branch | Integration Mechanism |
 | :--- | :--- | :--- | :--- |
-| **KernelSU-Next** *(Default)* | [pershoot/KernelSU-Next](https://github.com/pershoot/KernelSU-Next) | `dev-susfs` | Native SUSFS support; driver symlinked to `common/drivers/kernelsu`. |
 | **SukiSU-Ultra** | [SukiSU-Ultra/SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra) | `main` | Kernel-level root solution & KPM engine; native SUSFS compatibility. |
-| **ReSukiSU** | [ReSukiSU/ReSukiSU](https://github.com/ReSukiSU/ReSukiSU) | `main` | Alternative hooking integration; compatible with SUSFS and NoMount. |
 
 ---
 
@@ -140,9 +138,9 @@ flowchart TD
 
 Every completed build workflow produces structured release and testing assets:
 
-1. **`*-Bundle.zip`**: All-in-one release bundle containing the root flavor's `AnyKernel3.zip`, matching Manager `APK`, NetHunter driver module, and NoMount metamodule.
+1. **`*-Bundle.zip`**: All-in-one release bundle containing `AnyKernel3.zip`, matching SukiSU-Ultra Manager `APK`, NetHunter driver module, and NoMount metamodule.
 2. **`AnyKernel3.zip`**: Flashable kernel installer containing the bypassed kernel `Image`.
-3. **`Nethunter-Wireless-Modules.zip`**: Flashable KernelSU-Next / SukiSU-Ultra / ReSukiSU module for external USB WiFi dongles, firmware, BadUSB, and WebUI manager.
+3. **`Nethunter-Wireless-Modules.zip`**: Flashable SukiSU-Ultra module for external USB WiFi dongles, firmware, BadUSB, and WebUI manager.
 4. **`NoMount-Metamodule.zip`**: Standalone NoMount companion module matching the kernel's exact commit SHA.
-5. **`*-Manager.apk`**: Matching Root Manager APK automatically fetched for the selected root flavor.
+5. **`*-Manager.apk`**: Matching SukiSU-Ultra Root Manager APK automatically fetched during build.
 6. **`Build-Summary.md`**: Detailed provenance metadata containing compiler strings, KSU tag, commit SHAs, and active feature flags.

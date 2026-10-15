@@ -1,12 +1,12 @@
-name: Setup Root Implementation (KernelSU-Next / SukiSU-Ultra / ReSukiSU)
-description: Download and configure selected root implementation with version tracking
+name: Setup Root Implementation (SukiSU-Ultra)
+description: Download and configure SukiSU-Ultra root implementation with version tracking
 inputs:
   flavor:
-    description: 'Root flavor: next, ultra, or resukisu'
+    description: 'Root flavor (default: SukiSU-Ultra)'
     required: false
-    default: 'next'
+    default: 'SukiSU-Ultra'
   ksu_branch:
-    description: 'Branch or commit (empty = default for selected flavor)'
+    description: 'Branch or commit (empty = default)'
     required: false
     default: ""
   commit:
@@ -17,7 +17,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Download Selected Root Implementation
+    - name: Download SukiSU-Ultra Root Implementation
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
       run: |
@@ -34,34 +34,12 @@ runs:
           return 1
         }
 
-        # Normalize flavor name
-        RAW_FLAVOR="${{ inputs.flavor }}"
-        case "$(echo "$RAW_FLAVOR" | tr '[:upper:]' '[:lower:]')" in
-          *resukisu*)
-            FLAVOR="resukisu"
-            REPO="https://github.com/ReSukiSU/ReSukiSU.git"
-            SETUP_URL="https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh"
-            DEFAULT_REF="main"
-            DIR_NAME="ReSukiSU"
-            MANAGER_NAME="ReSukiSU Manager"
-            ;;
-          *ultra*|*sukisu*)
-            FLAVOR="ultra"
-            REPO="https://github.com/SukiSU-Ultra/SukiSU-Ultra.git"
-            SETUP_URL="https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh"
-            DEFAULT_REF="main"
-            DIR_NAME="SukiSU-Ultra"
-            MANAGER_NAME="SukiSU-Ultra Manager"
-            ;;
-          *next*|*)
-            FLAVOR="next"
-            REPO="https://github.com/pershoot/KernelSU-Next.git"
-            SETUP_URL="https://raw.githubusercontent.com/pershoot/KernelSU-Next/dev-susfs/kernel/setup.sh"
-            DEFAULT_REF="dev-susfs"
-            DIR_NAME="KernelSU-Next"
-            MANAGER_NAME="KernelSU Next Manager"
-            ;;
-        esac
+        FLAVOR="ultra"
+        REPO="https://github.com/SukiSU-Ultra/SukiSU-Ultra.git"
+        SETUP_URL="https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh"
+        DEFAULT_REF="main"
+        DIR_NAME="SukiSU-Ultra"
+        MANAGER_NAME="SukiSU-Ultra Manager"
 
         KSU_INPUT="${{ inputs.ksu_branch }}"
         if [ -z "$KSU_INPUT" ]; then
@@ -69,7 +47,7 @@ runs:
         fi
         PINNED_COMMIT="${{ inputs.commit }}"
 
-        echo "Selected root flavor: $FLAVOR ($DIR_NAME)"
+        echo "Root implementation: SukiSU-Ultra ($DIR_NAME)"
         echo "Target ref: $KSU_INPUT"
         if [ -n "$PINNED_COMMIT" ]; then
           echo "Target pinned commit: $PINNED_COMMIT"
@@ -84,12 +62,6 @@ runs:
         TARGET_DIR=""
         if [ -d "$DIR_NAME" ]; then
           TARGET_DIR="$DIR_NAME"
-        elif [ -d "KernelSU-Next" ]; then
-          TARGET_DIR="KernelSU-Next"
-        elif [ -d "SukiSU-Ultra" ]; then
-          TARGET_DIR="SukiSU-Ultra"
-        elif [ -d "ReSukiSU" ]; then
-          TARGET_DIR="ReSukiSU"
         elif [ -d "KernelSU" ]; then
           TARGET_DIR="KernelSU"
         fi
@@ -167,7 +139,7 @@ runs:
           cd "${{ github.workspace }}/kernel"
         fi
 
-        echo "ROOT_IMPLEMENTATION=$FLAVOR" >> "$GITHUB_ENV"
+        echo "ROOT_IMPLEMENTATION=ultra" >> "$GITHUB_ENV"
         echo "ROOT_MANAGER=$MANAGER_NAME" >> "$GITHUB_ENV"
 
     - name: Extract KSU Version Info
@@ -175,7 +147,7 @@ runs:
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
       run: |
-        for candidate in KernelSU-Next SukiSU-Ultra ReSukiSU KernelSU common/drivers/kernelsu drivers/kernelsu; do
+        for candidate in SukiSU-Ultra KernelSU common/drivers/kernelsu drivers/kernelsu; do
           if [ -d "$candidate/.git" ] || [ -f "$candidate/.git" ]; then
             cd "$candidate"
             BASE_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | sed 's:-.*::' || echo "main")
@@ -198,32 +170,10 @@ runs:
       working-directory: ${{ github.workspace }}/kernel
       run: |
         set -euo pipefail
-        FLAVOR="${ROOT_IMPLEMENTATION:-kernelsu-next}"
-        echo "Applying selinux_hide patches for root implementation: $FLAVOR"
-
-        case "$FLAVOR" in
-          next|ksun|kernelsu-next)
-            echo "[INFO] Applying static.patch for KernelSU-Next..."
-            if [ -f "${{ github.action_path }}/patches/static.patch" ]; then
-              for candidate in KernelSU-Next KernelSU common/drivers/kernelsu drivers/kernelsu; do
-                if [ -d "$candidate" ]; then
-                  cp "${{ github.action_path }}/patches/static.patch" "$candidate/static.patch"
-                  (cd "$candidate" && patch -p1 < static.patch) || true
-                  rm -f "$candidate/static.patch" "$candidate"/*.rej "$candidate"/kernel/*.rej "$candidate"/kernel/feature/*.rej 2>/dev/null || true
-                fi
-              done
-            fi
-            ;;
-          ultra|sukisu-ultra|sukisu)
-            echo "[INFO] SukiSU-Ultra detected: skipping static.patch, applying native symbol linkage fixes..."
-            ;;
-          resukisu)
-            echo "[INFO] ReSukiSU detected: skipping static.patch..."
-            ;;
-        esac
+        echo "[INFO] SukiSU-Ultra detected: native symbol linkage verified, checking selinux_hide.c..."
 
         for f in $(find . -name "selinux_hide.c" 2>/dev/null); do
-          echo "Patching $f for extern linkage across all root solutions..."
+          echo "Patching $f for extern linkage..."
           sed -i 's/^static int security_context_to_sid_with_policy/int security_context_to_sid_with_policy/g' "$f"
           sed -i 's/^static int security_sid_to_context_with_policy/int security_sid_to_context_with_policy/g' "$f"
           sed -i 's/^static void security_compute_av_user_with_policy/void security_compute_av_user_with_policy/g' "$f"
@@ -235,11 +185,3 @@ runs:
       with:
         config_list: |
           CONFIG_KSU=y
-
-    - name: Configure ReSukiSU Options
-      if: ${{ contains(inputs.flavor, 'resukisu') || contains(inputs.flavor, 'ReSukiSU') || env.ROOT_IMPLEMENTATION == 'resukisu' }}
-      uses: ./.github/actions/set-kernel-config
-      with:
-        config_list: |
-          CONFIG_KSU_MULTI_MANAGER_SUPPORT=n
-          CONFIG_KSU_TOOLKIT_SUPPORT=y

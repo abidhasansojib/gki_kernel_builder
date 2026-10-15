@@ -26,9 +26,9 @@ inputs:
     required: false
     default: "30"
   root_flavor:
-    description: 'Selected root implementation (next / resukisu).'
+    description: 'Selected root implementation (default: SukiSU-Ultra)'
     required: false
-    default: "next"
+    default: "SukiSU-Ultra"
 
 runs:
   using: "composite"

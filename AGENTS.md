@@ -23,18 +23,13 @@
 
 ## 🛠️ Comprehensive Feature Implementations
 
-### 1. Root Solutions & Coexistence (`root_flavor`)
-The project supports 3 independent root implementations with automated patch resolution (strictly NO official KernelSU):
-* **KernelSU-Next (`next` / `kernelsu-next`):**
-  * Cloned from upstream `dev-susfs` branch.
-  * Applied with `static.patch` to convert `static` functions in `selinux_hide.c` to `extern` for seamless coexistence with SUSFS.
+### 1. Root Implementation: SukiSU-Ultra Exclusively
+The project exclusively uses **SukiSU-Ultra** as its kernel root implementation (KernelSU-Next and ReSukiSU removed; no selection menu required):
 * **SukiSU-Ultra (`ultra` / `sukisu-ultra`):**
-  * Cloned from `SukiSU-Ultra` main branch.
-  * **Skips `static.patch`** and applies native symbol linkage fixes.
-* **ReSukiSU (`resukisu`):**
-  * Cloned from `ReSukiSU` main branch (pinned to `3c188288`).
-  * **Skips `static.patch`** as ReSukiSU already provides native extern declarations.
-  * Configured with `CONFIG_KSU_MULTI_MANAGER_SUPPORT=n` (isolates manager access) and `CONFIG_KSU_TOOLKIT_SUPPORT=y` (enables built-in root toolkit).
+  * Cloned from upstream `SukiSU-Ultra` main branch.
+  * Native SUSFS v2.3.0 compatibility and symbol linkage.
+  * Kernel-level root solution & KPM engine.
+  * Direct manager APK fetching via `fetch-root-managers`.
 
 ### 2. Stealth & Root Hiding Stack
 * **SUSFS v2.3.0:**
@@ -46,7 +41,7 @@ The project supports 3 independent root implementations with automated patch res
 
 ### 3. Automated Root Manager App Fetching
 * **`fetch-root-managers` Action & `managers.yml` Workflow:**
-  * Automatically fetches official manager APKs for KernelSU-Next, SukiSU-Ultra, or ReSukiSU during the kernel build or via standalone dispatch workflow.
+  * Automatically fetches the official SukiSU-Ultra manager APK during the kernel build or via standalone dispatch workflow.
   * Uploads the manager APK artifact directly alongside build releases.
 
 ### 4. Kali NetHunter & Penetration Testing Stack
@@ -152,6 +147,7 @@ The project supports 3 independent root implementations with automated patch res
 * **NetHunter WebUI USB & HID Tab Decoupling:** Removed the USB & HID tab from the WebUI (`webroot/index.html`) per user request to delegate USB HID and BadUSB attack orchestration directly to dedicated Android apps (e.g., Kali NetHunter app, Tap Ducky, Stryker). Streamlined the WebUI navigation bar to 4 balanced primary modules (Network, Drivers, Memory, Logs) and synced changes across repository and local internal storage mirrors.
 * **Repository Cleanup & Documentation Audit:** Removed `.vscode/` editor directory and ignored it in `.gitignore`; rewrote project `LICENSE` specifically for `gki_kernel_builder` under GPL-3.0-or-later with full unabridged GPLv3 text; added automated developer/testing warning notices to GitHub Pre-Release builds in `build.yml`; audited BadUSB device node mappings (`/dev/hidg1` keyboard, `/dev/hidg2` mouse); and verified the supported wireless Wi-Fi adapter table in `README.md` and `docs/ROOT_VARIANTS.md`.
 * **Release, Tag & Workflow History Reset:** Purged all historical releases and Git tags from the repository, cleaned out past GitHub Actions run history, and renamed `.github/workflows/build.yml` to `.github/workflows/build-kernel.yml` to reset GitHub's internal workflow run counter so the next dispatched build begins cleanly at Run #1.
+* **SukiSU-Ultra Exclusivity & Flavor Menu Simplification:** Consolidated the entire kernel root pipeline exclusively onto **SukiSU-Ultra**, completely removing KernelSU-Next and ReSukiSU. Removed the `root_flavor` selection menu from `.github/workflows/build-kernel.yml` and `.github/workflows/managers.yml` so builds trigger directly without manual flavor selection. Streamlined dependency commit resolution, manager APK downloads, and pin promotion specifically for SukiSU-Ultra.
 
 ---
 
@@ -169,8 +165,8 @@ The project supports 3 independent root implementations with automated patch res
 5. **Continuous Documentation & AGENTS.md Updates:**
    * Keep `AGENTS.md` continuously updated with all chat decisions, completed milestones, technical fixes, and workflow structural changes.
 6. **Workflow & Repository Architecture Constraints:**
-   * **Primary Build Workflow:** `.github/workflows/build-kernel.yml` (dispatches root flavor matrix, vendor bypass, and artifact packaging).
-   * **Root Flavors:** `KernelSU-Next`, `SukiSU-Ultra`, `ReSukiSU`, `All` (concurrent multi-flavor matrix build) (strictly NO official KernelSU).
+   * **Primary Build Workflow:** `.github/workflows/build-kernel.yml` (direct build with vendor bypass and artifact packaging).
+   * **Root Implementation:** Exclusively **SukiSU-Ultra** (no menu selection required; KernelSU-Next and ReSukiSU fully removed).
    * **Commit Modes:** `verified` (audited pins in `commits.json`), `latest` (branch tips), and `update` (builds latest then auto-promotes pins on success).
    * **Feature Toggles:** Granular boolean checkboxes for `NoMount`, `Baseband Guard`, `Networking`, `DroidSpaces`, `NTSync`, `Ptrace Patch`, `Unicode Fix`, `BPF Stack`, `Performance`, `Kali NetHunter`, `CIFS`, and `Cache`.
    * **Vendor Module Bypass:** Built-in by default as a single bypassed kernel image (`Image`) without requiring a separate bypass checkbox.

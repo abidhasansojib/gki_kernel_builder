@@ -19,7 +19,7 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 
 ## ✨ Features
 
-- 🔐 **Multi-Root Support**: **SukiSU-Ultra** (Default), **KernelSU-Next**, and **ReSukiSU** with automated manager APK bundling.
+- 🔐 **Root Stack**: **SukiSU-Ultra** with native SUSFS root hiding, KPM support, and automated manager APK bundling.
 - 🛡️ **SUSFS & NoMount**: Built-in SUSFS root hiding and NoMount stealth VFS support.
 - 🐉 **Kali NetHunter**: Monitor mode, frame injection, BadUSB HID keyboard/mouse (`/dev/hidg1`, `/dev/hidg2`), USB Wi-Fi dongles, SDR, CAN bus, and Bluetooth RFCOMM.
 - 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (CUBIC stock default / BBR3 / Westwood+), driver modules, RAM/MGLRU, and real-time activity log.
@@ -107,7 +107,7 @@ Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button i
 2. **Flash Kernel & Root**:
    - Download the release bundle (`*-Bundle.zip`) and extract it.
    - Flash `*-AnyKernel3.zip` via **Kernel Flasher** or custom recovery.
-   - Install the matching root manager APK (`SukiSU_*.apk`, `KernelSU_Next_*.apk`, or `ReSukiSU_*.apk`).
+   - Install the matching root manager APK (`SukiSU_*.apk`).
    - Reboot device.
    - *(Optional)* Flash **[susfs4ksu-module](https://github.com/sidex15/susfs4ksu-module/releases)** in your root manager for root hiding.
 
@@ -122,9 +122,7 @@ Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button i
 ## 🏆 Credits
 
 - 🏗️ **GKI KernelSU SUSFS**: Based on work by [WildKernels](https://github.com/WildKernels/GKI_KernelSU_SUSFS)
-- 🚀 **KernelSU-Next**: Developed by [rifsxd](https://github.com/KernelSU-Next/KernelSU-Next) and [pershoot](https://github.com/pershoot/KernelSU-Next)
 - 🔐 **SukiSU-Ultra**: Developed by [SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra)
-- 💫 **ReSukiSU**: Developed by [ReSukiSU](https://github.com/ReSukiSU/ReSukiSU)
 - 🛡️ **SUSFS**: Developed by [simonpunk](https://gitlab.com/simonpunk/susfs4ksu.git)
 - 🐉 **Kali NetHunter**: Developed by the [Offensive Security / Kali NetHunter Team](https://www.kali.org/docs/nethunter/)
 - 🪝 **NoMount**: Developed by [maxsteeel](https://github.com/maxsteeel/nomount)

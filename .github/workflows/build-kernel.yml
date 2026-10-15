@@ -24,17 +24,8 @@ on:
           - latest
           - update
         default: verified
-      root_flavor:
-        description: "Root Flavor"
-        type: choice
-        options:
-          - SukiSU-Ultra
-          - KernelSU-Next
-          - ReSukiSU
-          - All
-        default: SukiSU-Ultra
       ksu_branch:
-        description: "Custom Branch / Tag for Root Flavor (empty = default)"
+        description: "Custom Branch / Tag for SukiSU-Ultra (empty = default)"
         type: string
         required: false
         default: ""
@@ -95,9 +86,7 @@ jobs:
       nomount_commit: ${{ steps.resolve.outputs.nomount_commit }}
       susfs_commit: ${{ steps.resolve.outputs.susfs_commit }}
       root_matrix: ${{ steps.resolve.outputs.root_matrix }}
-      ksun_commit: ${{ steps.resolve.outputs.ksun_commit }}
       ultra_commit: ${{ steps.resolve.outputs.ultra_commit }}
-      resukisu_commit: ${{ steps.resolve.outputs.resukisu_commit }}
     steps:
       - uses: actions/checkout@v7
 
@@ -137,9 +126,7 @@ jobs:
           COMMITS_FILE=".github/config/commits.json"
           PIN_NOMOUNT=$(jq -r '.nomount.dev // empty' "$COMMITS_FILE" 2>/dev/null || echo "09257d7bee031f35124ed7a39e6094a4395d5746")
           PIN_SUSFS=$(jq -r '."susfs"."gki-android16-6.12" // empty' "$COMMITS_FILE" 2>/dev/null || echo "fb58aef70a9c2aca8f0f85fba14017af94c4e789")
-          PIN_KSUN=$(jq -r '."kernelsu_next"."dev-susfs" // empty' "$COMMITS_FILE" 2>/dev/null || echo "ca10476f73698c1e6ac8b23415f2993e7e8ebc27")
           PIN_ULTRA=$(jq -r '."sukisu_ultra"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "9fbe8fe8ca90c62c259c5894bf96d02ac31209b9")
-          PIN_RESUKISU=$(jq -r '."resukisu"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "23a40c0f1dc047ee73a1dfd70a3f14df70021cac")
 
           pick() {
             local pinned="$1" repo="$2" ref="$3"
@@ -153,41 +140,17 @@ jobs:
           echo "Resolving dependencies..."
           emit nomount_commit "$(pick "$PIN_NOMOUNT" https://github.com/maxsteeel/nomount.git refs/heads/dev)"
           emit susfs_commit "$(pick "$PIN_SUSFS" https://gitlab.com/simonpunk/susfs4ksu.git refs/heads/gki-android16-6.12)"
-          emit ksun_commit "$(pick "$PIN_KSUN" https://github.com/pershoot/KernelSU-Next.git refs/heads/dev-susfs)"
           emit ultra_commit "$(pick "$PIN_ULTRA" https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/main)"
-          emit resukisu_commit "$(pick "$PIN_RESUKISU" https://github.com/ReSukiSU/ReSukiSU.git refs/heads/main)"
 
-          KSUN_SHA="$(pick "$PIN_KSUN" https://github.com/pershoot/KernelSU-Next.git refs/heads/dev-susfs)"
           ULTRA_SHA="$(pick "$PIN_ULTRA" https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/main)"
-          RESUKISU_SHA="$(pick "$PIN_RESUKISU" https://github.com/ReSukiSU/ReSukiSU.git refs/heads/main)"
 
           mk_entry() {
             printf '{"flavor":"%s","ref":"%s","commit":"%s"}' "$1" "$2" "$3"
           }
 
-          ROOT="${{ inputs.root_flavor }}"
           CUSTOM_REF="${{ inputs.ksu_branch }}"
-
-          case "$ROOT" in
-            All)
-              ROOT_MATRIX="[$(mk_entry KernelSU-Next dev-susfs "$KSUN_SHA"),$(mk_entry SukiSU-Ultra main "$ULTRA_SHA"),$(mk_entry ReSukiSU main "$RESUKISU_SHA")]"
-              ;;
-            SukiSU-Ultra)
-              REF="${CUSTOM_REF:-main}"
-              ROOT_MATRIX="[$(mk_entry SukiSU-Ultra "$REF" "$ULTRA_SHA")]"
-              ;;
-            ReSukiSU)
-              REF="${CUSTOM_REF:-main}"
-              ROOT_MATRIX="[$(mk_entry ReSukiSU "$REF" "$RESUKISU_SHA")]"
-              ;;
-            KernelSU-Next)
-              REF="${CUSTOM_REF:-dev-susfs}"
-              ROOT_MATRIX="[$(mk_entry KernelSU-Next "$REF" "$KSUN_SHA")]"
-              ;;
-            *)
-              ROOT_MATRIX="[$(mk_entry SukiSU-Ultra main "$ULTRA_SHA")]"
-              ;;
-          esac
+          REF="${CUSTOM_REF:-main}"
+          ROOT_MATRIX="[$(mk_entry SukiSU-Ultra "$REF" "$ULTRA_SHA")]"
 
           echo "root_matrix=$ROOT_MATRIX" >> "$GITHUB_OUTPUT"
           echo "Generated Root Matrix: $ROOT_MATRIX"
@@ -684,14 +647,10 @@ jobs:
         env:
           NOMOUNT_SHA: ${{ needs.resolve-sources.outputs.nomount_commit }}
           SUSFS_SHA: ${{ needs.resolve-sources.outputs.susfs_commit }}
-          KERNELSU_NEXT_SHA: ${{ needs.resolve-sources.outputs.ksun_commit }}
           SUKISU_ULTRA_SHA: ${{ needs.resolve-sources.outputs.ultra_commit }}
-          RESUKISU_SHA: ${{ needs.resolve-sources.outputs.resukisu_commit }}
           APPROVE_NOMOUNT: ${{ inputs.use_nomount }}
           APPROVE_SUSFS: 'true'
-          APPROVE_KERNELSU_NEXT: ${{ inputs.root_flavor == 'KernelSU-Next' || inputs.root_flavor == 'All' }}
-          APPROVE_SUKISU_ULTRA: ${{ inputs.root_flavor == 'SukiSU-Ultra' || inputs.root_flavor == 'All' }}
-          APPROVE_RESUKISU: ${{ inputs.root_flavor == 'ReSukiSU' || inputs.root_flavor == 'All' }}
+          APPROVE_SUKISU_ULTRA: 'true'
         run: |
           set -euo pipefail
           echo "Promoting verified pins on successful build..."
@@ -729,12 +688,7 @@ jobs:
           echo "Release assets prepared:"
           ls -la dist/
 
-          FLAVOR="${{ inputs.root_flavor }}"
-          if [ "$FLAVOR" = "All" ]; then
-            RELEASE_NAME="Release #${{ github.run_number }} (All Flavors)"
-          else
-            RELEASE_NAME="Release #${{ github.run_number }} (${FLAVOR})"
-          fi
+          RELEASE_NAME="Release #${{ github.run_number }} (SukiSU-Ultra)"
           echo "RELEASE_NAME=${RELEASE_NAME}" >> "$GITHUB_ENV"
 
           # Generate Release Notes
@@ -755,7 +709,7 @@ jobs:
           echo "### 📦 Build & Release Information" >> "$RELEASE_BODY_FILE"
           echo "- **Kernel Version:** \`6.12.30-android16\`" >> "$RELEASE_BODY_FILE"
           echo "- **OS Patch Level:** \`2025-07\`" >> "$RELEASE_BODY_FILE"
-          echo "- **Root Implementation:** \`${FLAVOR}\`" >> "$RELEASE_BODY_FILE"
+          echo "- **Root Implementation:** \`SukiSU-Ultra\`" >> "$RELEASE_BODY_FILE"
           echo "- **Vendor Module Bypass:** Baked In (\`bad_version: return 1;\`)" >> "$RELEASE_BODY_FILE"
           echo "- **Stealth Integration:** SUSFS v2.3.0 + NoMount VFS Metamodule" >> "$RELEASE_BODY_FILE"
           echo "- **NetHunter Driver Stack:** 75+ Wireless WiFi drivers (\`=m\`), BadUSB HID (\`/dev/hidg*\`), CAN-Bus & RTL-SDR" >> "$RELEASE_BODY_FILE"
