@@ -1,0 +1,14 @@
+{
+  "updated_at": "2026-10-15T13:14:12.152439+00:00",
+  "previous_verified": {
+    "sukisu_ultra": {
+      "main": "7755cdb36f63945f286d7b1cab662b42b18f2789"
+    },
+    "susfs": {
+      "gki-android16-6.12": "55e16cb62127057f36a16e6a3068217ba5dade31"
+    },
+    "nomount": {
+      "dev": "7919faf2ab574110e388a4f444e5fef909c24e16"
+    }
+  }
+}
