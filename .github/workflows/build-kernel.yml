@@ -11,10 +11,9 @@ on:
         description: "Release Type"
         type: choice
         options:
-          - Action
           - Pre-Release
           - Release
-        default: Action
+        default: Pre-Release
       commit_mode:
         description: "latest = branch tips, verified = audited pins, update = build latest then promote verified pins on success"
         required: false
@@ -666,7 +665,7 @@ jobs:
   release:
     name: "Create Release"
     needs: [build-kernel, resolve-sources]
-    if: ${{ inputs.release_type != 'Action' && needs.build-kernel.result == 'success' }}
+    if: ${{ needs.build-kernel.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
