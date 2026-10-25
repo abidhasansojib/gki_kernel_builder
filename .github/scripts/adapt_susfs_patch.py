@@ -96,12 +96,20 @@ def adapt_patch(patch_path: str, kernel_dir: str) -> None:
         if not exec_has_dmabuf and patch_has_dmabuf:
             print("[INFO] Kernel fs/exec.c lacks dma-buf.h; removing context line from patch...")
             patch_text = patch_text.replace(
+                "@@ -70,6 +70,9 @@",
+                "@@ -70,5 +70,8 @@",
+            )
+            patch_text = patch_text.replace(
                 " #include <linux/dma-buf.h>\n+#ifdef CONFIG_KSU_SUSFS",
                 "+#ifdef CONFIG_KSU_SUSFS",
             )
             modified = True
         elif exec_has_dmabuf and not patch_has_dmabuf and " #include <linux/ksm.h>\n+#ifdef CONFIG_KSU_SUSFS" in patch_text:
             print("[INFO] Kernel fs/exec.c has dma-buf.h; adding context line to patch...")
+            patch_text = patch_text.replace(
+                "@@ -70,5 +70,8 @@",
+                "@@ -70,6 +70,9 @@",
+            )
             patch_text = patch_text.replace(
                 " #include <linux/ksm.h>\n+#ifdef CONFIG_KSU_SUSFS",
                 " #include <linux/ksm.h>\n #include <linux/dma-buf.h>\n+#ifdef CONFIG_KSU_SUSFS",
