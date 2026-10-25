@@ -1,11 +1,11 @@
 {
   "sukisu_ultra": {
-    "main": "1324dd358468801868339d3b963b639b64947c1d"
+    "main": "d6437210be1230bc96ca666ed219e023f18c4a8b"
   },
   "susfs": {
-    "gki-android16-6.12": "acb92d4abc922cac384a207744b2db40281a7c7f"
+    "gki-android16-6.12": "3ff9fd3fac5bb01b71b2cfe96c612d469710fb74"
   },
   "nomount": {
-    "dev": "da36b5cae06a8380024b0486fb3a09700ec90cd7"
+    "dev": "bf1847f98fed382369c43bfd652cd93774b9b8e3"
   }
 }
