@@ -65,19 +65,14 @@ runs:
           rm -f /tmp/susfs_statfs_stub.c
         fi
 
-    - name: Apply Android 16 6.12 Fake Patches
+    - name: Adapt SUSFS Patch for Target Kernel Sublevel
       shell: bash
-      if: inputs.version == 'android16-6.12'
       working-directory: ${{ github.workspace }}/kernel/common
       run: |
-        echo "Applying 6.12 SUSFS fixes"
-        if [ "${{ inputs.sublevel }}" -ge "58" ]; then
-          echo "Applying exec.c Android 16 6.12 Fake Patch"
-          sed -i '/^#include <linux\/dma-buf.h>$/d' fs/exec.c
-        fi
-        if [ "${{ inputs.sublevel }}" -ge "69" ]; then
-          echo "Applying task_mmu.c Android 16 6.12 Fake Patch"
-          sed -i 's/vma_data_pages/vma_pages/g' fs/proc/task_mmu.c
+        if [ -f "50_add_susfs_in_gki-${{ inputs.version }}.patch" ]; then
+          python3 "${{ github.workspace }}/.github/scripts/adapt_susfs_patch.py" \
+            --patch "50_add_susfs_in_gki-${{ inputs.version }}.patch" \
+            --kernel-dir "${{ github.workspace }}/kernel/common"
         fi
 
     - name: Apply Kernel SUSFS Patches
