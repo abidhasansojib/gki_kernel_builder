@@ -32,8 +32,9 @@ runs:
       fi
 
       # bash, not sh: scripts/config is `#!/usr/bin/env bash` and uses [[ ]] and arrays.
-      # --keep-case is required so mixed-case symbols (e.g. CONFIG_MT76x02_LIB) retain their exact casing.
-      kc() { bash scripts/config --keep-case "$@"; }
+      # In Linux 6.12, scripts/config strictly requires --file <file> as the very first argument ($1),
+      # followed by --keep-case so mixed-case symbols (e.g. CONFIG_MT76x02_LIB) retain exact casing.
+      kc() { bash scripts/config --file "$DEFCONFIG" --keep-case "$@"; }
 
       apply_line() {
         local line="$1"
@@ -50,10 +51,10 @@ runs:
         fi
 
         case "$value" in
-          y) kc --file "$DEFCONFIG" --enable  "$key" ;;
-          m) kc --file "$DEFCONFIG" --module  "$key" ;;
-          n) kc --file "$DEFCONFIG" --disable "$key" ;;
-          *) kc --file "$DEFCONFIG" --set-val "$key" "$value" ;;
+          y) kc --enable  "$key" ;;
+          m) kc --module  "$key" ;;
+          n) kc --disable "$key" ;;
+          *) kc --set-val "$key" "$value" ;;
         esac
 
         # Verify the file reflects the request. A silent no-op here means the
