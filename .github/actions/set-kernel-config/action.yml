@@ -32,7 +32,8 @@ runs:
       fi
 
       # bash, not sh: scripts/config is `#!/usr/bin/env bash` and uses [[ ]] and arrays.
-      kc() { bash scripts/config "$@"; }
+      # --keep-case is required so mixed-case symbols (e.g. CONFIG_MT76x02_LIB) retain their exact casing.
+      kc() { bash scripts/config --keep-case "$@"; }
 
       apply_line() {
         local line="$1"
