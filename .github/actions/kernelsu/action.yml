@@ -182,6 +182,57 @@ runs:
           sed -i 's/^static bool ksu_selinux_hide_enabled/bool ksu_selinux_hide_enabled/g' "$f"
         done
 
+    - name: 'Fix LSM Hook API for Linux 6.12+'
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        set -euo pipefail
+
+        # Linux 6.12+ changed security_add_hooks() third argument from
+        # const char* to const struct lsm_id* -- patch lsm_hook.c if needed.
+
+        # Find lsm_hook.c inside the KernelSU source tree
+        LSM_HOOK_FILE=""
+        for candidate in \
+          SukiSU-Ultra/kernel/hook/lsm_hook.c \
+          KernelSU/kernel/hook/lsm_hook.c \
+          common/drivers/kernelsu/hook/lsm_hook.c \
+          drivers/kernelsu/hook/lsm_hook.c; do
+          if [ -f "$candidate" ]; then
+            LSM_HOOK_FILE="$candidate"
+            break
+          fi
+        done
+
+        if [ -z "$LSM_HOOK_FILE" ]; then
+          echo "[INFO] lsm_hook.c not found, skipping LSM API patch."
+          exit 0
+        fi
+
+        # Detect whether the running kernel uses the new lsm_id API
+        LSM_HOOKS_H=""
+        for h in \
+          common/include/linux/lsm_hooks.h \
+          include/linux/lsm_hooks.h; do
+          if [ -f "$h" ]; then
+            LSM_HOOKS_H="$h"
+            break
+          fi
+        done
+
+        if [ -z "$LSM_HOOKS_H" ]; then
+          echo "[WARN] lsm_hooks.h not found, skipping LSM API patch."
+          exit 0
+        fi
+
+        if ! grep -q "const struct lsm_id \*" "$LSM_HOOKS_H"; then
+          echo "[INFO] Kernel does not use lsm_id API, skipping patch."
+          exit 0
+        fi
+
+        echo "[INFO] Linux 6.12+ lsm_id API detected, patching $LSM_HOOK_FILE ..."
+        python3 "${{ github.workspace }}/.github/scripts/patch_lsm_hook.py" "$LSM_HOOK_FILE"
+
     - name: Enable Kernel Configs
       uses: ./.github/actions/set-kernel-config
       with:
