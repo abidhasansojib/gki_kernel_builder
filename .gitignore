@@ -10,4 +10,14 @@ AnyKernel3/
 Nethunter-Wireless-Module/
 Nethunter-Wireless-Modules/
 *.zip
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary & editor artifacts
+*.swp
+*.swo
+*~
+.DS_Store
 .vscode/
