@@ -26,10 +26,11 @@
 ### 1. Root Implementation: SukiSU-Ultra Exclusively
 The project exclusively uses **SukiSU-Ultra** as its kernel root implementation (KernelSU-Next and ReSukiSU removed; no selection menu required):
 * **SukiSU-Ultra (`ultra` / `sukisu-ultra`):**
-  * Cloned from upstream `SukiSU-Ultra` main branch.
-  * Native SUSFS v2.3.0 compatibility and symbol linkage.
-  * Kernel-level root solution & KPM engine.
+  * Cloned from upstream `SukiSU-Ultra` official in-tree `builtin` branch (with automatic fallback/adaptation for `main`).
+  * Native SUSFS v2.3.0 compatibility, `ksu_handle_sys_reboot` command dispatcher (`magic2 == SUSFS_MAGIC`), and symbol linkage.
+  * Native Kernel Patch Module (KPM) engine (`CONFIG_KPM=y`, `CONFIG_KALLSYMS=y`, `CONFIG_KALLSYMS_ALL=y`) enabling extension features and runtime module loading.
   * Direct manager APK fetching via `fetch-root-managers`.
+  * Complete support for both "kpm" and "susfs" under Manager -> "Extension features".
 
 ### 2. Stealth & Root Hiding Stack
 * **SUSFS v2.3.0:**
@@ -153,6 +154,7 @@ The project exclusively uses **SukiSU-Ultra** as its kernel root implementation 
 * **Kernel-Native `scripts/config` Defconfig Engine (`set-kernel-config`):** Upgraded `.github/actions/set-kernel-config/action.yml` from fragile `sed` regexes to the kernel's native `bash scripts/config --file $DEFCONFIG --keep-case`. Strictly enforces `--file` as first argument for Linux 6.12 option-parser compatibility, preserves exact casing for mixed-case symbols (e.g. `CONFIG_MT76x02_LIB`), enables robust `=n` symbol disabling (`# CONFIG_FOO is not set`), protects quoted values (e.g. `CONFIG_DEFAULT_TCP_CONG="cubic"`), eliminates delimiter corruption, and strictly asserts that every requested configuration exists in the target defconfig before proceeding.
 * **UFW REJECT Target & Complete DroidSpaces Container Suite:** Fixed missing/misnamed UFW reject targets in `networking-config/action.yml` and `droidspaces/action.yml` by setting the true Linux 6.12 symbols `CONFIG_IP_NF_TARGET_REJECT=y` and `CONFIG_IP6_NF_TARGET_REJECT=y`. Added full DroidSpaces container runtime support configs: `CONFIG_TMPFS_POSIX_ACL=y`, `CONFIG_TMPFS_XATTR=y`, and `CONFIG_MACVLAN=y`.
 * **Filesystem Access Notification & Permission Subsystem (`FANOTIFY`):** Enabled `CONFIG_FANOTIFY=y` and `CONFIG_FANOTIFY_ACCESS_PERMISSIONS=y` in `misc/action.yml` to unlock userspace `FAN_OPEN_PERM` permission listeners, on-the-fly content rewriting, and security gatekeeper mechanisms.
+* **SukiSU-Ultra Native KPM & SUSFS Extension Support:** Integrated native Kernel Patch Module (KPM) and SUSFS v2.3.0 support into SukiSU-Ultra so both extensions report fully supported and functional under Manager -> "Extension features" -> "kpm" and "susfs". Switched SukiSU-Ultra checkout to the official in-tree `builtin` branch (pinned to audited commit `f9aa2fec`), which natively implements in-tree SUSFS static hooks (`SUSFS_INLINE_HOOK`), `menu "KernelSU - SUSFS"`, `ksu_handle_sys_reboot` command routing (`magic2 == SUSFS_MAGIC`), and `CONFIG_KPM`. Enabled `CONFIG_KPM=y`, `CONFIG_KALLSYMS=y`, and `CONFIG_KALLSYMS_ALL=y` in `kernelsu/action.yml`. Created `.github/scripts/patch_sukisu_susfs.py` and integrated into `.github/actions/susfs/action.yml` to bridge Kconfig symbols, SELinux batch SIDs, priority UID filter (`CONFIG_KSU_SUSFS_PRIORITY_UID_FILTER=y`), and un-static `ksu_selinux_hide_running`/`ksu_selinux_hide_enabled` across both `builtin` and `main` branches with 100% idempotency.
 
 ---
 

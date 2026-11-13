@@ -19,7 +19,7 @@ COMMITS_JSON = os.path.join(REPO, ".github/config/commits.json")
 PINS = [
     ("nomount", "dev", "NOMOUNT_SHA", "APPROVE_NOMOUNT"),
     ("susfs", "gki-android16-6.12", "SUSFS_SHA", "APPROVE_SUSFS"),
-    ("sukisu_ultra", "main", "SUKISU_ULTRA_SHA", "APPROVE_SUKISU_ULTRA"),
+    ("sukisu_ultra", "builtin", "SUKISU_ULTRA_SHA", "APPROVE_SUKISU_ULTRA"),
 ]
 
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")

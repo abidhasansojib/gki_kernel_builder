@@ -39,6 +39,15 @@ runs:
         susfs_commit: ${{ inputs.susfs_commit }}
         version: ${{ inputs.version }}
 
+    - name: Enable SUSFS for SukiSU-Ultra
+      if: inputs.root_flavor == 'ultra' || inputs.root_flavor == 'SukiSU-Ultra' || inputs.root_flavor == 'sukisu-ultra' || inputs.root_flavor == ''
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        set -euo pipefail
+        python3 "${{ github.workspace }}/.github/scripts/patch_sukisu_susfs.py" \
+          --kernel-dir "${{ github.workspace }}/kernel"
+
     - name: Enable SUSFS for KernelSU (tiann)
       if: inputs.root_flavor == 'kernelsu' || inputs.root_flavor == 'classic' || inputs.root_flavor == 'KernelSU'
       shell: bash

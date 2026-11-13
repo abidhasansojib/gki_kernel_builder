@@ -125,7 +125,7 @@ jobs:
           COMMITS_FILE=".github/config/commits.json"
           PIN_NOMOUNT=$(jq -r '.nomount.dev // empty' "$COMMITS_FILE" 2>/dev/null || echo "09257d7bee031f35124ed7a39e6094a4395d5746")
           PIN_SUSFS=$(jq -r '."susfs"."gki-android16-6.12" // empty' "$COMMITS_FILE" 2>/dev/null || echo "fb58aef70a9c2aca8f0f85fba14017af94c4e789")
-          PIN_ULTRA=$(jq -r '."sukisu_ultra"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "9fbe8fe8ca90c62c259c5894bf96d02ac31209b9")
+          PIN_ULTRA=$(jq -r '."sukisu_ultra"."builtin" // ."sukisu_ultra"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "f9aa2fec23c3f4a06a935f69dc04cb85b261e7f3")
 
           pick() {
             local pinned="$1" repo="$2" ref="$3"
@@ -139,16 +139,16 @@ jobs:
           echo "Resolving dependencies..."
           emit nomount_commit "$(pick "$PIN_NOMOUNT" https://github.com/maxsteeel/nomount.git refs/heads/dev)"
           emit susfs_commit "$(pick "$PIN_SUSFS" https://gitlab.com/simonpunk/susfs4ksu.git refs/heads/gki-android16-6.12)"
-          emit ultra_commit "$(pick "$PIN_ULTRA" https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/main)"
+          emit ultra_commit "$(pick "$PIN_ULTRA" https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/builtin)"
 
-          ULTRA_SHA="$(pick "$PIN_ULTRA" https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/main)"
+          ULTRA_SHA="$(pick "$PIN_ULTRA" https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/builtin)"
 
           mk_entry() {
             printf '{"flavor":"%s","ref":"%s","commit":"%s"}' "$1" "$2" "$3"
           }
 
           CUSTOM_REF="${{ inputs.ksu_branch }}"
-          REF="${CUSTOM_REF:-main}"
+          REF="${CUSTOM_REF:-builtin}"
           ROOT_MATRIX="[$(mk_entry SukiSU-Ultra "$REF" "$ULTRA_SHA")]"
 
           echo "root_matrix=$ROOT_MATRIX" >> "$GITHUB_OUTPUT"

@@ -36,8 +36,8 @@ runs:
 
         FLAVOR="ultra"
         REPO="https://github.com/SukiSU-Ultra/SukiSU-Ultra.git"
-        SETUP_URL="https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh"
-        DEFAULT_REF="main"
+        SETUP_URL="https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/builtin/kernel/setup.sh"
+        DEFAULT_REF="builtin"
         DIR_NAME="SukiSU-Ultra"
         MANAGER_NAME="SukiSU-Ultra Manager"
 
@@ -178,6 +178,8 @@ runs:
           sed -i 's/^static int security_sid_to_context_with_policy/int security_sid_to_context_with_policy/g' "$f"
           sed -i 's/^static void security_compute_av_user_with_policy/void security_compute_av_user_with_policy/g' "$f"
           sed -i 's/^static void __nocfi security_compute_av_user_with_policy/void __nocfi security_compute_av_user_with_policy/g' "$f"
+          sed -i 's/^static bool ksu_selinux_hide_running/bool ksu_selinux_hide_running/g' "$f"
+          sed -i 's/^static bool ksu_selinux_hide_enabled/bool ksu_selinux_hide_enabled/g' "$f"
         done
 
     - name: Enable Kernel Configs
@@ -185,3 +187,6 @@ runs:
       with:
         config_list: |
           CONFIG_KSU=y
+          CONFIG_KPM=y
+          CONFIG_KALLSYMS=y
+          CONFIG_KALLSYMS_ALL=y
