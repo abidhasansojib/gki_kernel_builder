@@ -86,6 +86,12 @@ runs:
           sed -i 's/getname_flags(filename, lookup_flags, NULL)/getname_flags(filename, lookup_flags)/g' fs/open.c
         fi
 
+        # Fix fanotify_fdinfo signature mismatch when CONFIG_FANOTIFY is enabled alongside SUSFS show_fdinfo
+        if [ -f fs/notify/fdinfo.c ]; then
+          sed -i 's/static void fanotify_fdinfo(struct seq_file \*m, struct fsnotify_mark \*mark)/#if defined(CONFIG_KSU_SUSFS_SUS_MOUNT) || defined(CONFIG_KSU_SUSFS_SUS_KSTAT)\nstatic void fanotify_fdinfo(struct seq_file *m, struct fsnotify_mark *mark, struct file *file)\n#else\nstatic void fanotify_fdinfo(struct seq_file *m, struct fsnotify_mark *mark)\n#endif/' fs/notify/fdinfo.c
+          echo "Patched fs/notify/fdinfo.c for SUSFS fanotify_fdinfo signature"
+        fi
+
         # Fallback definition for VMA_PAD_START if not provided by kernel headers
         if grep -q 'VMA_PAD_START(' fs/proc/task_mmu.c && ! grep -qE '#include <linux/pgsize_migration(_inline)?\.h>|define VMA_PAD_START' fs/proc/task_mmu.c; then
           sed -i '1a #ifndef VMA_PAD_START\n#define VMA_PAD_START(vma) ((vma)->vm_end)\n#endif' fs/proc/task_mmu.c
