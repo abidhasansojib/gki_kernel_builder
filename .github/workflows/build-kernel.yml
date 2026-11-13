@@ -715,7 +715,7 @@ jobs:
           echo "" >> "$RELEASE_BODY_FILE"
           echo "### 📲 Flashing Instructions" >> "$RELEASE_BODY_FILE"
           echo "1. Download the all-in-one **\`*-Bundle.zip\`** matching your chosen root flavor and extract it." >> "$RELEASE_BODY_FILE"
-          echo "2. Flash **\`*-AnyKernel3.zip\`** using **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** or **SukiSU Manager**. *(Vendor module bypass is built-in; when flashing via SukiSU Manager, enabling **KPM Latch** activates KPM on boot)*" >> "$RELEASE_BODY_FILE"
+          echo "2. Flash **\`*-AnyKernel3.zip\`** using **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** or **SukiSU Manager**. *(Vendor module bypass is built-in; when flashing via SukiSU Manager, selecting **KPM Operation → KPM Patch** activates KPM on boot)*" >> "$RELEASE_BODY_FILE"
           echo "3. Install the matching **Root Manager APK** (\`*.apk\`) included in the bundle." >> "$RELEASE_BODY_FILE"
           echo "4. Reboot your device." >> "$RELEASE_BODY_FILE"
           echo "5. Flash **[susfs4ksu-module (by sidex15)](https://github.com/sidex15/susfs4ksu-module/releases)** in your Root Manager for kernel-level root hiding." >> "$RELEASE_BODY_FILE"

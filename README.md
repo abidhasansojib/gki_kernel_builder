@@ -107,7 +107,7 @@ Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button i
 2. **Flash Kernel & Root**:
    - Download the release bundle (`*-Bundle.zip`) and extract it.
    - Flash `*-AnyKernel3.zip` via **Kernel Flasher**, custom recovery, or **SukiSU Manager**.
-   - *(KPM Activation)*: When flashing via SukiSU Manager, enabling the **KPM Latch** option latches the boot payload and activates KPM module support immediately on boot.
+   - *(KPM Activation)*: When flashing via SukiSU Manager, selecting **KPM Operation → KPM Patch** injects the KPM payload into the kernel image and activates KPM module support immediately on boot.
    - Install the matching root manager APK (`SukiSU_*.apk`).
    - Reboot device.
    - *(Optional)* Flash **[susfs4ksu-module](https://github.com/sidex15/susfs4ksu-module/releases)** in your root manager for root hiding.
