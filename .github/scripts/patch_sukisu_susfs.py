@@ -308,6 +308,7 @@ def find_ksu_directory(base_dir):
         os.path.join(base_dir, "kernel", "SukiSU-Ultra"),
         os.path.join(base_dir, "kernel", "KernelSU", "kernel"),
         os.path.join(base_dir, "kernel", "KernelSU"),
+        os.path.join(base_dir, "kernel"),
         base_dir,
     ]
     for c in candidates:

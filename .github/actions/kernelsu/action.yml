@@ -230,8 +230,16 @@ runs:
           exit 0
         fi
 
-        echo "[INFO] Linux 6.12+ lsm_id API detected, patching $LSM_HOOK_FILE ..."
-        python3 "${{ github.workspace }}/.github/scripts/patch_lsm_hook.py" "$LSM_HOOK_FILE"
+        echo "[INFO] Linux 6.12+ lsm_id API detected, patching lsm_hook.c candidates..."
+        for candidate in \
+          SukiSU-Ultra/kernel/hook/lsm_hook.c \
+          KernelSU/kernel/hook/lsm_hook.c \
+          common/drivers/kernelsu/hook/lsm_hook.c \
+          drivers/kernelsu/hook/lsm_hook.c; do
+          if [ -f "$candidate" ]; then
+            python3 "${{ github.workspace }}/.github/scripts/patch_lsm_hook.py" "$candidate"
+          fi
+        done
 
     - name: Enable Kernel Configs
       uses: ./.github/actions/set-kernel-config

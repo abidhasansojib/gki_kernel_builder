@@ -112,6 +112,8 @@ The project exclusively uses **SukiSU-Ultra** as its kernel root implementation 
 * **Real Bazel Cache Restoration:** Integrated `actions/cache@v4` in `cache-setup/action.yml` to restore and save `/home/runner/.cache/bazel` across runs.
 * **CIFS Input Decoupling:** Removed unconditional CIFS invocation inside `networking/action.yml`, restoring granular control via `use_cifs`.
 * **Full Inline Shell Script Validation:** Enhanced `validate_shell.py` to extract all 60+ inline `run:` blocks from workflows and composite actions and validate their syntax via `bash -n`.
+* **SukiSU-Ultra Linux 6.12 LSM Hook Adaptor (`patch_lsm_hook.py`):** Patches `security_add_hooks()` in `hook/lsm_hook.c` to support Linux 6.12's `const struct lsm_id *` API signature by injecting `static const struct lsm_id ksu_lsm_id` directly before `ksu_lsm_hook_init()`. Handles the fact that `lsm_hook.c` is an included header/unit without its own `#include` directives.
+* **Native KPM & SUSFS Extension Support in SukiSU-Ultra:** Integrated `CONFIG_KPM=y`, `CONFIG_KALLSYMS=y`, `CONFIG_KALLSYMS_ALL=y`, and verified native SUSFS integration (`ksu_handle_sys_reboot`, `susfs_set_batch_sid`, `CMD_SUSFS_*`) so that under SukiSU-Ultra Manager -> Extension features, both "kpm" and "susfs" are active and functional.
 * **Heredoc Compliance in FUSE-BPF:** Replaced base64 string dumps with clean, standard heredocs in `fuse-bpf/action.yml`.
 * **Stable Zig Compiler Pinning:** Pinned Zig version to `0.13.0` in `nomount-metamodule/action.yml` for CI build stability.
 * **Idempotent IPC Symbol Exports:** Protected `EXPORT_SYMBOL_GPL(put_ipc_ns)` and `EXPORT_SYMBOL_GPL(init_ipc_ns)` in `droidspaces/action.yml` against duplicate symbol appends.
