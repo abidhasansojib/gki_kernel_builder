@@ -209,3 +209,5 @@ The project exclusively uses **SukiSU-Nova** (`https://github.com/SukiSU-Nova/Su
    * **Vendor Module Bypass:** Built-in by default as a single bypassed kernel image (`Image`) without requiring a separate bypass checkbox.
    * **NetHunter Module Metadata:** Name must always be `Nethunter Wireless,HID Driver & Modules`, ID `nethunter_wireless_modules`, ZIP `Nethunter-Wireless-Modules.zip`, and author `abidhasansojib`.
    * **Heredocs in Composite Actions:** Always write inline scripts via clean heredocs (`cat << 'EOF' > file`) with 8-space YAML indentation and trailing `sed -i 's/^[[:space:]]*//' file`. Never use base64 encoding.
+
+- **Upstream note (SukiSU-Nova `builtin`):** no `Kbuild`; versioning lives in `kernel/Makefile` (`30000 + commits(main) - 4001`). `kernelsu` action mirrors this formula for release notes; `setup.sh` clones into `KernelSU/`.
