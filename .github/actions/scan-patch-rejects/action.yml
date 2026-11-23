@@ -20,7 +20,7 @@ runs:
 
         for REJ in "${REJS[@]}"; do
           REL="${REJ#"$CONFIG_DIR"/}"
-          if [ "$(basename "$REL")" = "i2c-nomadik.c.rej" ]; then
+          if [ "$(basename "$REL")" = "i2c-nomadik.c.rej" ] || [ "$REL" = "common/mm/rmap.c.rej" ]; then
             echo "Skipping $REL because it matches the ignored reject file"
             continue
           fi

@@ -168,6 +168,42 @@ def adapt_patch(patch_path: str, kernel_dir: str) -> None:
                 patch_text = patch_text.replace(OLD_ROLLUP_HUNK, NEW_ROLLUP_HUNK)
                 modified = True
 
+    # 4. fs/proc/base.c: dma-buf.h context line alignment
+    base_c_path = os.path.join(kernel_dir, "fs", "proc", "base.c")
+    if os.path.isfile(base_c_path):
+        with open(base_c_path, "r", encoding="utf-8", errors="replace") as f:
+            base_c = f.read()
+
+        base_has_dmabuf = "<linux/dma-buf.h>" in base_c
+        patch_base_dmabuf = " #include <uapi/linux/lsm.h>\n #include <linux/dma-buf.h>\n #include <trace/events/oom.h>"
+        if not base_has_dmabuf and patch_base_dmabuf in patch_text:
+            print("[INFO] Kernel fs/proc/base.c lacks dma-buf.h; adapting hunk context...")
+            patch_text = patch_text.replace(
+                "@@ -100,6 +100,10 @@\n #include <linux/cn_proc.h>",
+                "@@ -100,5 +100,9 @@\n #include <linux/cn_proc.h>",
+            )
+            patch_text = patch_text.replace(
+                patch_base_dmabuf,
+                " #include <uapi/linux/lsm.h>\n #include <trace/events/oom.h>",
+            )
+            modified = True
+
+    # 5. security/selinux/hooks.c: SECMARK vs ANDROID KMI comment context alignment
+    hooks_c_path = os.path.join(kernel_dir, "security", "selinux", "hooks.c")
+    if os.path.isfile(hooks_c_path):
+        with open(hooks_c_path, "r", encoding="utf-8", errors="replace") as f:
+            hooks_c = f.read()
+
+        patch_hooks_ctx = " /*\n  * ANDROID: selinux_state is part of the KMI, and backporting capabilities into"
+        if "ANDROID: selinux_state is part of the KMI" not in hooks_c and patch_hooks_ctx in patch_text:
+            if "/* SECMARK reference count */" in hooks_c:
+                print("[INFO] Kernel security/selinux/hooks.c uses SECMARK comment; adapting hunk context...")
+                patch_text = patch_text.replace(
+                    patch_hooks_ctx,
+                    " /* SECMARK reference count */\n static atomic_t selinux_secmark_refcount = ATOMIC_INIT(0);",
+                )
+                modified = True
+
     if modified:
         with open(patch_path, "w", encoding="utf-8") as f:
             f.write(patch_text)

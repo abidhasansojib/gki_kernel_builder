@@ -19,13 +19,13 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 
 ## ✨ Features
 
-- 🔐 **Root Stack**: **SukiSU-Ultra** with native SUSFS root hiding, KPM support, and automated manager APK bundling.
-- 🛡️ **SUSFS & NoMount**: Built-in SUSFS root hiding and NoMount stealth VFS support.
-- 🐉 **Kali NetHunter**: Monitor mode, frame injection, BadUSB HID keyboard/mouse (`/dev/hidg1`, `/dev/hidg2`), USB Wi-Fi dongles, SDR, CAN bus, and Bluetooth RFCOMM.
+- 🔐 **Root Stack**: **SukiSU-Ultra** with native SUSFS v2.4.0 root hiding, KPM support, and automated manager APK bundling.
+- 🛡️ **SUSFS & NoMount**: Built-in SUSFS v2.4.0 root hiding (`sus_path_uid_filter`, `priority_uid_filter`), NoMount v2.3.1 stealth VFS support, and FUSE-compatible Scoped-Storage Unicode Guard (preserves emojis).
+- 🐉 **Kali NetHunter & USB Arsenal**: Monitor mode, frame injection, BadUSB HID keyboard/mouse (`/dev/hidg1`, `/dev/hidg2` with configurable `bInterval` polling), PiKVM DVD-ROM emulation (booting >2.36GB ISOs via USB Arsenal / DriveDroid), USB Wi-Fi dongles, SDR, CAN bus, and Bluetooth RFCOMM.
 - 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (CUBIC stock default / BBR3 / Westwood+), driver modules, RAM/MGLRU, and real-time activity log.
 - 📦 **NetHunter Wireless Module**: Flashable `Nethunter-Wireless-Modules.zip` with Wi-Fi/SDR drivers, firmware, and WebUI (fully compatible alongside NoMount).
 - 🛡️ **Baseband Guard (BBG)**: Partition protection against unauthorized writes.
-- 📦 **DroidSpaces-OSS**: Lightweight container runtime support.
+- 📦 **DroidSpaces-OSS**: Lightweight container runtime support with SYSVIPC and cgroup v2 `cpu.max` (`CONFIG_CFS_BANDWIDTH=y`) CPU bandwidth limits.
 - 🚀 **Performance & Networking**: BBRv3, CAKE Qdisc, WireGuard, IP Set, CIFS, NTSync, and scheduler/memory optimizations.
 - 🔍 **eBPF & BTF**: In-kernel eBPF kprobes, CO-RE BTF, and FUSE-BPF support.
 - ⚡ **Vendor Module Bypass**: Built-in vendor version check bypass ensuring OEM display, touchscreen, and modem drivers load cleanly.
@@ -56,7 +56,7 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 <summary><b>🛠️ Hardware Gadgets, Network Dongles & SDR (Click to Expand)</b></summary>
 <br>
 
-- 🦆 **BadUSB / Rubber Ducky**: Native USB HID keyboard and mouse emulation (`/dev/hidg1` for keyboard, `/dev/hidg2` for mouse) for NetHunter DuckHunter and HID attack payloads.
+- 🦆 **BadUSB / Rubber Ducky & USB Arsenal**: Native USB HID keyboard and mouse emulation (`/dev/hidg1` for keyboard, `/dev/hidg2` for mouse, with writable ConfigFS `interval` polling rate), multi-gadget ConfigFS support, PiKVM DVD-ROM emulation for booting >2.36GB ISO images, and USB NCM/Ethernet tethering NAT.
 - 📻 **Software Defined Radio (SDR)**: HackRF One, AirSpy, and Mirics (MSI2500), plus RTL-SDR via direct USB access (`/dev/bus/usb/`).
 - 🚗 **Automotive Hacking (CARsenal)**: SocketCAN framework (`can`, `vcan`, `slcan`, PEAK PCAN-USB, Kvaser, EMS USB).
 - 🔌 **USB Serial**: CDC-ACM, FTDI, CH341, CP210X, and PL2303 for router consoles and hardware debugging.
@@ -129,4 +129,5 @@ Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button i
 - 🪝 **NoMount**: Developed by [maxsteeel](https://github.com/maxsteeel/nomount)
 - 🛡️ **Baseband-guard**: Developed by [vc-teahouse](https://github.com/vc-teahouse/Baseband-guard)
 - 📦 **DroidSpaces-OSS**: Developed by [ravindu644](https://github.com/ravindu644/Droidspaces-OSS)
+- 🔌 **USB Arsenal**: Developed by [ravindu644](https://github.com/ravindu644/USB-Arsenal)
 - ⚡ **Kernel Flasher**: Developed by [fatalcoder524](https://github.com/fatalcoder524/KernelFlasher)

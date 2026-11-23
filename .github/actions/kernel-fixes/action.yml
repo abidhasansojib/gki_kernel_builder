@@ -49,13 +49,28 @@ runs:
           fi
         fi
 
-    - name: 'Apply USB Gadget ConfigFS Multi-Gadget Fix'
+    - name: 'Apply USB Gadget ConfigFS Multi-Gadget & USB Arsenal Patches'
       working-directory: ${{ github.workspace }}/kernel/common
       shell: bash
       run: |
         set -euo pipefail
         echo "=== Applying USB Gadget ConfigFS Multi-Gadget Fix ==="
         python3 "${{ github.workspace }}/.github/scripts/patch_usb_gadget.py"
+
+        echo "=== Applying USB Arsenal 6.12 Patches (PiKVM DVD-ROM >2.36GB ISO & HID bInterval) ==="
+        for p in \
+          "${{ github.workspace }}/.github/patches/usb-arsenal/0001-pikvm-msd-dvd-support.patch" \
+          "${{ github.workspace }}/.github/patches/usb-arsenal/0002-usb-gadget-hid-add-a-writable-bInterval-configfs-att.patch"; do
+          if [ -f "$p" ]; then
+            name="$(basename "$p")"
+            if patch -p1 --forward --dry-run -f < "$p" >/dev/null 2>&1; then
+              patch -p1 --forward -f < "$p"
+              echo "[INFO] Applied USB Arsenal patch: $name"
+            else
+              echo "[WARN] USB Arsenal patch already applied or skipped: $name"
+            fi
+          fi
+        done
 
     - name: 'Final Kernel Fixes Summary'
       shell: bash
@@ -68,3 +83,4 @@ runs:
         echo "### Fix Status" >> "$SUMMARY_FILE"
         echo "- Android 16 (6.12.30) compatibility validated" >> "$SUMMARY_FILE"
         echo "- USB Gadget ConfigFS multi-gadget support patched" >> "$SUMMARY_FILE"
+        echo "- USB Arsenal PiKVM DVD-ROM (>2.36GB ISO) & HID bInterval patches applied" >> "$SUMMARY_FILE"

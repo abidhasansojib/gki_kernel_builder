@@ -20,10 +20,10 @@ To achieve comprehensive root hiding while maintaining stability and compatibili
 
 ```mermaid
 flowchart TD
-    A[Stealth Stack Integration] --> B[SUSFS v2.3.0]
-    A --> C[NoMount Metamodule]
+    A[Stealth Stack Integration] --> B[SUSFS v2.4.0]
+    A --> C[NoMount v2.3.1 Metamodule]
     B --> D[Path Redirection: CONFIG_KSU_SUSFS_OPEN_REDIRECT=y]
-    B --> E[Kernel Hiding: kstat, uname, mounts, symbols]
+    B --> E[Kernel Hiding: kstat, uname, mounts, symbols, UID filters]
     C --> F[VFS Inode & Mount Isolation Hooks]
     D --> G[Unified Root-Hiding Architecture]
     E --> G
@@ -31,13 +31,14 @@ flowchart TD
 ```
 
 ### Key Stealth Components:
-1. **SUSFS v2.3.0** (`simonpunk/susfs4ksu`):
+1. **SUSFS v2.4.0** (`simonpunk/susfs4ksu`):
    * Target branch: `gki-android16-6.12`
-   * Provides suspicious path hiding, fake mount IDs (`mnt_id`), kstat spoofing, `uname` spoofing, and symbol hiding from `/proc/kallsyms`.
-2. **NoMount VFS Hooks** (`maxsteeel/nomount`):
-   * Injects low-level VFS mounting stealth hooks directly into kernel filesystem structures.
-3. **Unconditional Open Redirect**:
+   * Provides suspicious path hiding (`sus_path_uid_filter`), priority UID filtering (`priority_uid_filter`), SELinux `inode_setxattr` hiding, fake mount IDs (`mnt_id`), kstat spoofing, `uname` spoofing, and symbol hiding from `/proc/kallsyms`.
+2. **NoMount v2.3.1 VFS Hooks** (`maxsteeel/nomount`):
+   * Injects low-level VFS mounting stealth hooks directly into kernel filesystem structures with direct libc `nm` rule batching and `lkmloader`.
+3. **Unconditional Open Redirect & Scoped-Storage Unicode Guard**:
    * `CONFIG_KSU_SUSFS_OPEN_REDIRECT=y` is always enabled, ensuring path redirection works seamlessly alongside NoMount.
+   * `unicode_scoped_6.12.patch` (`include/linux/ucpath.h`) guards `openat`, `openat2`, `faccessat2`, and `newfstatat` against zero-width/bidi invisible-character path traversal into `/storage/emulated/<user>/Android/{data,obb}` on FUSE mounts while keeping emoji filenames 100% intact.
 
 ---
 
@@ -60,9 +61,11 @@ The kernel integrates full Kali NetHunter capabilities natively into the 6.12 GK
 * **HID Keyboard & BadUSB Attack**:
   * Emulates USB HID keyboard and mouse devices via `CONFIG_USB_CONFIGFS_F_HID=y`, `CONFIG_USB_F_HID=y`, and `/dev/hidg*` endpoints (`/dev/hidg1` keyboard, `/dev/hidg2` mouse) for high-speed DuckyScript keystroke injection.
 * **USB Arsenal & Hardware Hacking**:
+  * Multi-gadget ConfigFS support (`patch_usb_gadget.py`) allowing secondary gadgets (`usb-arsenal`, `gadgetfs`, `Stryker`) to coexist alongside Android's `g1` gadget without `-EEXIST`/`-ENOMEM` collisions.
+  * PiKVM DVD-ROM emulation (`0001-pikvm-msd-dvd-support.patch`) in `f_mass_storage.c` enabling USB Mass Storage (`CONFIG_USB_CONFIGFS_MASS_STORAGE=y`) to boot DVD ISO images larger than 2.36 GB in USB Arsenal and DriveDroid.
+  * Writable ConfigFS `bInterval` attribute (`0002-usb-gadget-hid-add-a-writable-bInterval-configfs-att.patch`) in `f_hid.c` allowing `usb-arsenal hid --interval` to customize keyboard/mouse USB polling rates.
   * Emulates CDC-ACM serial (`CONFIG_USB_CONFIGFS_ACM=y`, `CONFIG_USB_ACM=y`) for Proxmark3 and ChameleonMini RFID cloning.
-  * USB Mass Storage gadget (`CONFIG_USB_CONFIGFS_MASS_STORAGE=y`) for DriveDroid and ISO delivery.
-  * USB Ethernet gadgets (`CONFIG_USB_CONFIGFS_RNDIS=y`, `CONFIG_USB_CONFIGFS_ECM=y`, `CONFIG_USB_CONFIGFS_NCM=y`) for PoisonTap and USB Ethernet MITM.
+  * USB Ethernet gadgets (`CONFIG_USB_CONFIGFS_RNDIS=y`, `CONFIG_USB_CONFIGFS_ECM=y`, `CONFIG_USB_CONFIGFS_NCM=y`) with IPv4/IPv6 NAT masquerading (`CONFIG_IP_NF_NAT=y`, `CONFIG_IP_NF_TARGET_MASQUERADE=y`) for USB Arsenal tethering, PoisonTap, and USB Ethernet MITM.
   * USB UART converters (`FTDI`, `CH341`, `CP210X`, `PL2303`) for router UART & embedded hardware hacking.
 * **Monitor Mode & Packet Injection**: Enabled in-tree via `CONFIG_CFG80211=y` and `CONFIG_MAC80211=y`.
 * **Modular USB WiFi Drivers (`=m`)**:

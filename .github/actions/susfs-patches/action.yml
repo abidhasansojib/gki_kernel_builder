@@ -26,6 +26,9 @@ runs:
         cp "${{ github.workspace }}/susfs4ksu/kernel_patches/include/linux/"* "${{ github.workspace }}/kernel/common/include/linux/"
         cp ${{ github.workspace }}/susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ inputs.version }}.patch ./
 
+        # Mark SUSFS credential helpers as __maybe_unused to avoid -Wunused-function under -Werror
+        python3 "${{ github.workspace }}/.github/scripts/susfs_guard_priority_helpers.py" fs/susfs.c
+
         # Fix 6.12 getname_flags argument mismatch in patch
         if [ -f "50_add_susfs_in_gki-${{ inputs.version }}.patch" ]; then
           sed -i 's/getname_flags(filename, lookup_flags, NULL)/getname_flags(filename, lookup_flags)/g' "50_add_susfs_in_gki-${{ inputs.version }}.patch"

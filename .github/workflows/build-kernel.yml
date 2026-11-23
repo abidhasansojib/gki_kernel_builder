@@ -123,9 +123,9 @@ jobs:
 
           # Read verified pins from config
           COMMITS_FILE=".github/config/commits.json"
-          PIN_NOMOUNT=$(jq -r '.nomount.dev // empty' "$COMMITS_FILE" 2>/dev/null || echo "09257d7bee031f35124ed7a39e6094a4395d5746")
-          PIN_SUSFS=$(jq -r '."susfs"."gki-android16-6.12" // empty' "$COMMITS_FILE" 2>/dev/null || echo "fb58aef70a9c2aca8f0f85fba14017af94c4e789")
-          PIN_ULTRA=$(jq -r '."sukisu_ultra"."builtin" // ."sukisu_ultra"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "f9aa2fec23c3f4a06a935f69dc04cb85b261e7f3")
+          PIN_NOMOUNT=$(jq -r '.nomount.dev // empty' "$COMMITS_FILE" 2>/dev/null || echo "5f33211ea464a8e8b5fe7c22b79787dcc4f494e9")
+          PIN_SUSFS=$(jq -r '."susfs"."gki-android16-6.12" // empty' "$COMMITS_FILE" 2>/dev/null || echo "9b0b13f069673b9b07b713a5c66977de4d62b175")
+          PIN_ULTRA=$(jq -r '."sukisu_ultra"."builtin" // ."sukisu_ultra"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "4bec532dd447e2852aa8932afa768255350c103a")
 
           pick() {
             local pinned="$1" repo="$2" ref="$3"
@@ -710,8 +710,8 @@ jobs:
           echo "- **OS Patch Level:** \`2025-07\`" >> "$RELEASE_BODY_FILE"
           echo "- **Root Implementation:** \`SukiSU-Ultra\`" >> "$RELEASE_BODY_FILE"
           echo "- **Vendor Module Bypass:** Baked In (\`bad_version: return 1;\`)" >> "$RELEASE_BODY_FILE"
-          echo "- **Stealth Integration:** SUSFS v2.3.0 + NoMount VFS Metamodule" >> "$RELEASE_BODY_FILE"
-          echo "- **NetHunter Driver Stack:** 75+ Wireless WiFi drivers (\`=m\`), BadUSB HID (\`/dev/hidg*\`), CAN-Bus & RTL-SDR" >> "$RELEASE_BODY_FILE"
+          echo "- **Stealth Integration:** SUSFS v2.4.0 + NoMount v2.3.1 VFS Metamodule + Scoped-Storage Unicode Guard" >> "$RELEASE_BODY_FILE"
+          echo "- **NetHunter & USB Arsenal Stack:** 75+ Wireless WiFi drivers (\`=m\`), BadUSB HID (\`/dev/hidg*\` with custom \`bInterval\`), PiKVM DVD-ROM (>2.36GB ISO booting), CAN-Bus & RTL-SDR" >> "$RELEASE_BODY_FILE"
           echo "" >> "$RELEASE_BODY_FILE"
           echo "### 📲 Flashing Instructions" >> "$RELEASE_BODY_FILE"
           echo "1. Download the all-in-one **\`*-Bundle.zip\`** matching your chosen root flavor and extract it." >> "$RELEASE_BODY_FILE"

@@ -82,17 +82,26 @@ runs:
           echo "deprecated=$DEPRECATED" >> $GITHUB_OUTPUT
         }
 
-        MAX_RETRIES=3
-        RETRY_DELAY_SHORT=15
-        SYNC_TIMEOUT="15m"
+        MAX_RETRIES=5
+        RETRY_DELAYS=(15 30 60 120 240)
+        SYNC_TIMEOUT="20m"
+        REPO_SYNC_JOBS="${REPO_SYNC_JOBS:-16}"
+        REPO_CHECKOUT_JOBS="${REPO_CHECKOUT_JOBS:-$(nproc)}"
         attempt=1
 
+        # Abort stalled googlesource transfers (<1KB/s for 60s) instead of idling to the 20m wall clock
+        export GIT_CONFIG_COUNT=2
+        export GIT_CONFIG_KEY_0=http.lowSpeedLimit
+        export GIT_CONFIG_VALUE_0=1024
+        export GIT_CONFIG_KEY_1=http.lowSpeedTime
+        export GIT_CONFIG_VALUE_1=60
+
         while [ $attempt -le $MAX_RETRIES ]; do
-          echo "Attempt $attempt/$MAX_RETRIES: initialize and sync kernel repository (sync timeout $SYNC_TIMEOUT)..."
+          echo "Attempt $attempt/$MAX_RETRIES: initialize and sync kernel repository (sync timeout $SYNC_TIMEOUT, stall abort: <1KB/s for 60s)..."
           if init_repo; then
             SYNC_TAG_FLAGS="--no-tags"
             if [ -n "$TAG_FALLBACK" ]; then SYNC_TAG_FLAGS=""; fi
-            if timeout $SYNC_TIMEOUT repo sync -c --current-branch --no-clone-bundle $SYNC_TAG_FLAGS --jobs-checkout=4 -j4; then
+            if timeout $SYNC_TIMEOUT repo sync -c --current-branch --no-clone-bundle $SYNC_TAG_FLAGS --jobs-checkout="${REPO_CHECKOUT_JOBS}" -j"${REPO_SYNC_JOBS}"; then
               echo "Kernel repository initialization and sync succeeded on attempt $attempt."
               break
             else
@@ -109,9 +118,10 @@ runs:
           fi
 
           if [ $attempt -lt $MAX_RETRIES ]; then
-            echo "Cleaning workspace and retrying after ${RETRY_DELAY_SHORT}s..."
+            DELAY="${RETRY_DELAYS[$((attempt-1))]}"
+            echo "Cleaning workspace and retrying after ${DELAY}s..."
             find "$PWD" -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || rm -rf .repo || true
-            sleep $RETRY_DELAY_SHORT
+            sleep "$DELAY"
           else
             echo "All $MAX_RETRIES attempts failed." >&2
             exit $rc

@@ -1,5 +1,5 @@
 name: 'Apply Unicode Fix Patch'
-description: 'Apply unicode bypass fix patch'
+description: 'Apply scoped-storage invisible-character Unicode path filter patch'
 inputs:
   kernel_version:
     description: 'Kernel version (e.g., 6.12)'
@@ -9,12 +9,16 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Apply Unicode Fix Patch
+    - name: Apply Scoped-Storage Unicode Path Filter
       shell: bash
       working-directory: ${{ github.workspace }}/kernel/common
       run: |
         set -euo pipefail
-        echo "Patching unicode for 6.12!"
-        if [ -f "${{ github.workspace }}/kernel_patches/common/unicode_bypass_fix_6.1+.patch" ]; then
+        SCOPED_PATCH="${{ github.workspace }}/.github/patches/unicode-scoped/unicode_scoped_6.12.patch"
+        if [ -f "$SCOPED_PATCH" ]; then
+          echo "Applying scoped-storage Unicode path filter for 6.12 (FUSE-compatible, preserves emojis)..."
+          patch -p1 --forward < "$SCOPED_PATCH"
+          echo "Scoped-storage Unicode path filter applied ($(grep -c 'uc_path_check' include/linux/ucpath.h) helper, 4 syscall hooks)"
+        elif [ -f "${{ github.workspace }}/kernel_patches/common/unicode_bypass_fix_6.1+.patch" ]; then
           patch -p1 --forward < "${{ github.workspace }}/kernel_patches/common/unicode_bypass_fix_6.1+.patch" || echo "Unicode patch already applied or skipped"
         fi

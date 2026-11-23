@@ -37,6 +37,19 @@ runs:
     shell: bash
     working-directory: ${{ github.workspace }}/kernel
     run: |
+      set -euo pipefail
+      # Kleaf evaluates build.config.gki.aarch64 in its own hermetic environment,
+      # so job-level SOURCE_DATE_EPOCH / KBUILD_BUILD_TIMESTAMP must be exported
+      # inside build.config.gki.aarch64 to reach the kernel build.
+      BUILD_CONFIG_FILE="common/build.config.gki.aarch64"
+      if [ -f "$BUILD_CONFIG_FILE" ]; then
+        if ! grep -q 'Reproducible timestamp injected by the CI workflow' "$BUILD_CONFIG_FILE"; then
+          printf '\n# Reproducible timestamp injected by the CI workflow.\nexport SOURCE_DATE_EPOCH=%q\nexport KBUILD_BUILD_TIMESTAMP=%q\n' \
+            "${SOURCE_DATE_EPOCH:-0}" "${KBUILD_BUILD_TIMESTAMP:-@0}" >> "$BUILD_CONFIG_FILE"
+          echo "[INFO] build.config.gki.aarch64: exported SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH:-0}"
+        fi
+      fi
+
       sed -i '/name = "kernel_aarch64",/a\    check_defconfig = "disabled",' common/BUILD.bazel || true
 
       tools/bazel build \
@@ -60,6 +73,41 @@ runs:
         --notrim \
         --disk_cache=/home/runner/.cache/bazel \
         //common:kernel_aarch64_dist 2>/dev/null || true
+
+  - name: 'Verify Final .config and SUSFS Presence in Image'
+    shell: bash
+    working-directory: ${{ github.workspace }}/kernel
+    run: |
+      set -euo pipefail
+      CONFIG_FILE=""
+      for candidate in \
+        bazel-bin/common/kernel_aarch64_config/out_dir/.config \
+        /home/runner/out/.config; do
+        if [ -f "$candidate" ]; then CONFIG_FILE="$candidate"; break; fi
+      done
+      if [ -z "$CONFIG_FILE" ]; then
+        CONFIG_FILE="$(find bazel-bin/common /home/runner/out -maxdepth 4 -name .config -type f 2>/dev/null | head -n1 || true)"
+      fi
+
+      if [ -n "$CONFIG_FILE" ] && [ -f "$CONFIG_FILE" ]; then
+        echo "--- KSU & SUSFS config block from final $CONFIG_FILE ---"
+        grep -E '^#? ?CONFIG_KSU|^#? ?CONFIG_KPM' "$CONFIG_FILE" || true
+        if ! grep -q '^CONFIG_KSU=y' "$CONFIG_FILE"; then
+          echo "ERROR: CONFIG_KSU=y missing from final .config" >&2
+          exit 1
+        fi
+        if ! grep -q '^CONFIG_KSU_SUSFS=y' "$CONFIG_FILE"; then
+          echo "ERROR: CONFIG_KSU_SUSFS=y missing from final .config" >&2
+          exit 1
+        fi
+      fi
+
+      for img in bazel-bin/common/kernel_aarch64/Image /home/runner/out/dist/Image; do
+        if [ -f "$img" ]; then
+          echo "SUSFS strings in $(basename "$img"): $(grep -ac susfs "$img" || true)"
+          break
+        fi
+      done
 
   - name: 'Gather Build Artifacts'
     shell: bash

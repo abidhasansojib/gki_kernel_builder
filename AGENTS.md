@@ -33,12 +33,14 @@ The project exclusively uses **SukiSU-Ultra** as its kernel root implementation 
   * Complete support for both "kpm" and "susfs" under Manager -> "Extension features".
 
 ### 2. Stealth & Root Hiding Stack
-* **SUSFS v2.3.0:**
-  * In-tree kernel patches applied to `fs/`, `kernel/`, and `security/` for kernel-level mount isolation, process masking, and symbol hiding. Pinned to latest verified commit `7d91da2d2ce056d1abf378d9199aaf1072d37ab0`.
+* **SUSFS v2.4.0:**
+  * In-tree kernel patches applied to `fs/`, `kernel/`, and `security/` for kernel-level mount isolation, process masking, `sus_path_uid_filter`, `priority_uid_filter`, SELinux `inode_setxattr` hooks, and symbol hiding. Pinned to verified commit `9b0b13f069673b9b07b713a5c66977de4d62b175`.
   * **Unconditional Open Redirect:** `CONFIG_KSU_SUSFS_OPEN_REDIRECT=y` is always enabled, ensuring path redirection works seamlessly alongside NoMount.
-* **NoMount VFS Redirection Metamodule:**
-  * Pinned to audited commit `d0f57d5c` with SHA-based pre-fetching to withstand upstream `dev` branch rewinds.
-  * Auto-cloned and compiled with Zig compiler in GitHub Actions to produce architecture-native **`ko-loader-arm64`** and **`ko-loader-arm`** binaries inside `bin/`.
+* **NoMount v2.3.1 VFS Redirection Metamodule:**
+  * Pinned to audited commit `5f33211ea464a8e8b5fe7c22b79787dcc4f494e9` with SHA-based pre-fetching to withstand upstream `dev` branch rewinds.
+  * Auto-cloned and compiled with Zig compiler in GitHub Actions to produce architecture-native `nm-arm64`, `nm-arm`, `lkmloader-arm64` (`ko-loader-arm64`), and `lkmloader-arm` (`ko-loader-arm`) binaries inside `bin/` and `lkm/lkmloader`.
+* **Scoped-Storage Unicode Path Filter (`unicode_scoped_6.12.patch`):**
+  * Hooks `openat`, `openat2`, `faccessat2`, and `newfstatat` via `include/linux/ucpath.h` (`uc_path_check()`) to strip zero-width/bidi formatting characters and prevent unauthorized `/storage/emulated/<user>/Android/{data,obb}` access over FUSE mounts while preserving emoji filenames.
 
 ### 3. Automated Root Manager App Fetching
 * **`fetch-root-managers` Action & `managers.yml` Workflow:**
@@ -158,6 +160,22 @@ The project exclusively uses **SukiSU-Ultra** as its kernel root implementation 
 * **Filesystem Access Notification & Permission Subsystem (`FANOTIFY`):** Enabled `CONFIG_FANOTIFY=y` and `CONFIG_FANOTIFY_ACCESS_PERMISSIONS=y` in `misc/action.yml` to unlock userspace `FAN_OPEN_PERM` permission listeners, on-the-fly content rewriting, and security gatekeeper mechanisms.
 * **SukiSU-Ultra Native KPM & SUSFS Extension Support:** Integrated native Kernel Patch Module (KPM) and SUSFS v2.3.0 support into SukiSU-Ultra so both extensions report fully supported and functional under Manager -> "Extension features" -> "kpm" and "susfs". Switched SukiSU-Ultra checkout to the official in-tree `builtin` branch (pinned to audited commit `f9aa2fec`), which natively implements in-tree SUSFS static hooks (`SUSFS_INLINE_HOOK`), `menu "KernelSU - SUSFS"`, `ksu_handle_sys_reboot` command routing (`magic2 == SUSFS_MAGIC`), and `CONFIG_KPM`. Enabled `CONFIG_KPM=y`, `CONFIG_KALLSYMS=y`, and `CONFIG_KALLSYMS_ALL=y` in `kernelsu/action.yml`. Created `.github/scripts/patch_sukisu_susfs.py` and integrated into `.github/actions/susfs/action.yml` to bridge Kconfig symbols, SELinux batch SIDs, priority UID filter (`CONFIG_KSU_SUSFS_PRIORITY_UID_FILTER=y`), and un-static `ksu_selinux_hide_running`/`ksu_selinux_hide_enabled` across both `builtin` and `main` branches with 100% idempotency.
 * **FANOTIFY & SUSFS fdinfo Function Pointer Alignment:** Resolved compilation failure in `fs/notify/fdinfo.c:213` (`error: incompatible function pointer types passing 'void (*)(seq_file*, fsnotify_mark*)' to parameter of type 'void (*)(seq_file*, fsnotify_mark*, file*)'`). When `CONFIG_FANOTIFY=y` is enabled alongside SUSFS mount/kstat hiding (`CONFIG_KSU_SUSFS_SUS_MOUNT` / `CONFIG_KSU_SUSFS_SUS_KSTAT`), SUSFS patches `show_fdinfo` to pass 3 arguments to its `show` callback (`show(m, mark, f)`). While upstream SUSFS adapted `inotify_fdinfo`, it neglected `fanotify_fdinfo`. Added an automated post-patch signature alignment in `.github/actions/susfs-patches/action.yml` ensuring `fanotify_fdinfo` accepts `(struct seq_file *m, struct fsnotify_mark *mark, struct file *file)` when SUSFS hiding is enabled.
+* **SUSFS v2.4.0 (`9b0b13f0`), SukiSU-Ultra (`4bec532d`) & NoMount v2.3.1 (`5f33211e`) Upgrade:**
+  * Upgraded verified dependency pins in `.github/config/commits.json` to SukiSU-Ultra `4bec532dd447e2852aa8932afa768255350c103a`, SUSFS `9b0b13f069673b9b07b713a5c66977de4d62b175` (v2.4.0), and NoMount `5f33211ea464a8e8b5fe7c22b79787dcc4f494e9` (v2.3.1).
+  * Updated `.github/scripts/patch_sukisu_susfs.py` to wire `CMD_SUSFS_SET_SUS_PATH_UID_FILTER` into `ksu_handle_sys_reboot` (`dispatch.c`) and `susfs_parse_sus_path_app_strings()` into `ksu_track_throne_tw_func` (`pkg_observer.c`).
+  * Added `.github/scripts/susfs_guard_priority_helpers.py` into `.github/actions/susfs-patches/action.yml` to mark `susfs_switch_to_ksu_domain` and `susfs_restore_creds` as `__maybe_unused`, preventing `-Wunused-function` failures under `-Werror`.
+  * Enhanced `.github/scripts/adapt_susfs_patch.py` to dynamically align `fs/proc/base.c` (`<linux/dma-buf.h>`) and `security/selinux/hooks.c` (`/* SECMARK reference count */`) hunk context so all 27 files in `50_add_susfs_in_gki-android16-6.12.patch` apply with zero fuzz on `6.12.30`.
+  * Updated `.github/actions/nomount-metamodule/action.yml` to compile NoMount v2.3.1's libc-based `nm.c` without `-nostdlib`/`--entry=_start` (with automatic fallback for legacy commits) and build `maxsteeel/lkmloader` (`TARGET=aarch64`/`TARGET=arm`), staging `lkmloader` in both `bin/` and `lkm/lkmloader`.
+* **USB Arsenal 6.12 Kernel Patches & NAT Integration:**
+  * Added `.github/patches/usb-arsenal/0001-pikvm-msd-dvd-support.patch` (PiKVM DVD-ROM emulation in `f_mass_storage.c` / `storage_common.{c,h}` for booting ISO images > 2.36 GB) and `.github/patches/usb-arsenal/0002-usb-gadget-hid-add-a-writable-bInterval-configfs-att.patch` (writable `interval` attribute in ConfigFS `f_hid` for custom HID polling rates) into `.github/actions/kernel-fixes/action.yml`.
+  * Explicitly enabled `CONFIG_IP_NF_NAT=y` and `CONFIG_IP_NF_TARGET_MASQUERADE=y` in `.github/actions/networking-config/action.yml` for USB Arsenal `tether` NAT routing.
+* **Scoped-Storage Unicode Path Filter (`unicode_scoped_6.12.patch`):**
+  * Replaced the legacy `fs/unicode` blob patch with `.github/patches/unicode-scoped/unicode_scoped_6.12.patch` in `.github/actions/unicode-fix/action.yml`, hooking `openat`, `openat2`, `faccessat2`, and `newfstatat` via `include/linux/ucpath.h` to block zero-width/bidi scoped-storage bypasses on FUSE mounts while preserving emoji filenames.
+* **DroidSpaces Container CPU Bandwidth Limits & CI Hardening:**
+  * Enabled `CONFIG_CFS_BANDWIDTH=y` and retry cleanup in `.github/actions/droidspaces/action.yml` for cgroup v2 `cpu.max` container CPU throttling.
+  * Injected `SOURCE_DATE_EPOCH` and `KBUILD_BUILD_TIMESTAMP` into `common/build.config.gki.aarch64` and added post-build `.config` and `Image` SUSFS verification in `.github/actions/build-kernel/action.yml`.
+  * Upgraded `.github/actions/download-kernel/action.yml` with `http.lowSpeedLimit=1024` / `http.lowSpeedTime=60` stall aborts, 5 graduated retries, `20m` timeout, and `-j16 --jobs-checkout=$(nproc)` concurrency.
+  * Added `common/mm/rmap.c.rej` factory reject filtering to `.github/actions/scan-patch-rejects/action.yml`.
 
 ---
 

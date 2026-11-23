@@ -141,6 +141,11 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user 
         case CMD_SUSFS_ADD_SUS_PATH_LOOP:
             susfs_add_sus_path_loop(arg);
             return 0;
+#ifdef CMD_SUSFS_SET_SUS_PATH_UID_FILTER
+        case CMD_SUSFS_SET_SUS_PATH_UID_FILTER:
+            susfs_set_sus_path_uid_filter(arg);
+            return 0;
+#endif
 #endif // #ifdef CONFIG_KSU_SUSFS_SUS_PATH
 #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
         case CMD_SUSFS_HIDE_SUS_MNTS_FOR_NON_SU_PROCS:
@@ -458,6 +463,22 @@ def patch_dispatch_c(ksu_dir):
         content = f.read()
 
     if "ksu_handle_sys_reboot" in content:
+        if "CMD_SUSFS_SET_SUS_PATH_UID_FILTER" not in content:
+            pattern = r"(case\s+CMD_SUSFS_ADD_SUS_PATH_LOOP:\s*\n\s*susfs_add_sus_path_loop\(arg\);\s*\n\s*return\s+0;)"
+            replacement = (
+                r"\1\n"
+                r"#ifdef CMD_SUSFS_SET_SUS_PATH_UID_FILTER\n"
+                r"        case CMD_SUSFS_SET_SUS_PATH_UID_FILTER:\n"
+                r"            susfs_set_sus_path_uid_filter(arg);\n"
+                r"            return 0;\n"
+                r"#endif"
+            )
+            content_new, count = re.subn(pattern, replacement, content, count=1)
+            if count > 0:
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write(content_new)
+                print(f"[INFO] Patched existing ksu_handle_sys_reboot in {path} with CMD_SUSFS_SET_SUS_PATH_UID_FILTER.")
+                return True
         print(f"[INFO] {path} already contains ksu_handle_sys_reboot.")
         return True
 
@@ -622,30 +643,44 @@ def patch_pkg_observer_c(ksu_dir):
     with open(path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    if "susfs_parse_priority_app_strings" in content:
-        print(f"[INFO] {path} already calls susfs_parse_priority_app_strings().")
-        return True
+    modified = False
+    if "#include <linux/susfs.h>" not in content:
+        inc = "#ifdef CONFIG_KSU_SUSFS\n#include <linux/susfs.h>\n#endif\n"
+        content = inc + content
+        modified = True
 
-    # 1. Include <linux/susfs.h> at top
-    inc = "#ifdef CONFIG_KSU_SUSFS_PRIORITY_UID_FILTER\n#include <linux/susfs.h>\n#endif\n"
-    content = inc + content
+    if "susfs_parse_priority_app_strings" not in content:
+        pattern = r"(track_throne\(false\);)"
+        replacement = (
+            r"\1\n#ifdef CONFIG_KSU_SUSFS_PRIORITY_UID_FILTER\n"
+            r"    susfs_parse_priority_app_strings();\n"
+            r"#endif"
+        )
+        content, count = re.subn(pattern, replacement, content, count=1)
+        if count > 0:
+            modified = True
+        else:
+            print(f"[ERROR] Could not find 'track_throne(false);' in {path}")
+            return False
 
-    # 2. In ksu_track_throne_tw_func: after track_throne(false);
-    pattern = r"(track_throne\(false\);)"
-    replacement = (
-        r"\1\n#ifdef CONFIG_KSU_SUSFS_PRIORITY_UID_FILTER\n"
-        r"    susfs_parse_priority_app_strings();\n"
-        r"#endif"
-    )
-    content_new, count = re.subn(pattern, replacement, content, count=1)
-    if count > 0:
+    if "susfs_parse_sus_path_app_strings" not in content:
+        pattern = r"(susfs_parse_priority_app_strings\(\);\s*\n#endif[^\n]*)"
+        replacement = (
+            r"\1\n#if defined(CONFIG_KSU_SUSFS_SUS_PATH) && defined(CMD_SUSFS_SET_SUS_PATH_UID_FILTER)\n"
+            r"    susfs_parse_sus_path_app_strings();\n"
+            r"#endif"
+        )
+        content, count = re.subn(pattern, replacement, content, count=1)
+        if count > 0:
+            modified = True
+
+    if modified:
         with open(path, "w", encoding="utf-8") as f:
-            f.write(content_new)
-        print(f"[INFO] Successfully patched {path} with susfs_parse_priority_app_strings().")
-        return True
-
-    print(f"[ERROR] Could not find 'track_throne(false);' in {path}")
-    return False
+            f.write(content)
+        print(f"[INFO] Successfully patched {path} for SUSFS UID filter app string parsers.")
+    else:
+        print(f"[INFO] {path} already calls SUSFS UID filter app string parsers.")
+    return True
 
 
 def patch_selinux_hide_c(ksu_dir):

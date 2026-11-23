@@ -33,6 +33,7 @@ runs:
         attempts: 5
         delay: 5
         workdir: ${{ github.workspace }}
+        cleanup: rm -rf Droidspaces-OSS
 
     - name: Apply the SYSVIPC kABI fix
       shell: bash
@@ -66,10 +67,11 @@ runs:
           CONFIG_SYSVIPC=y
           CONFIG_POSIX_MQUEUE=y
 
-          # Namespaces
+          # Namespaces & cgroup v2 CPU bandwidth limits (cpu.max)
           CONFIG_IPC_NS=y
           CONFIG_PID_NS=y
           CONFIG_USER_NS=y
+          CONFIG_CFS_BANDWIDTH=y
 
           # HW access
           CONFIG_DEVTMPFS=y
