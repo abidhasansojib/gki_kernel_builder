@@ -1,119 +1,63 @@
-name: Build pinned NoMount metamodule
-description: Package a flashable NoMount metamodule from the exact kernel integration SHA
+name: Fetch Official NoMount Metamodule Release ZIP
+description: Download the official prebuilt NoMount metamodule ZIP from maxsteeel/nomount releases
 inputs:
-  commit:
-    description: 'Full immutable NoMount commit SHA'
-    required: true
+  output_dir:
+    description: 'Directory to save the downloaded NoMount release ZIP'
+    required: false
+    default: '${{ github.workspace }}/nomount-dist'
+  token:
+    description: 'GitHub token for API authentication'
+    required: false
+    default: '${{ github.token }}'
 outputs:
   module_path:
-    description: 'Path to the flashable metamodule ZIP'
-    value: ${{ steps.package.outputs.module_path }}
-  commit:
-    description: 'Verified NoMount source SHA'
-    value: ${{ steps.package.outputs.commit }}
+    description: 'Path to the downloaded official NoMount metamodule ZIP'
+    value: ${{ steps.fetch.outputs.module_path }}
 
 runs:
   using: composite
   steps:
-    - name: Set up Zig
-      uses: jetsung/setup-zig@v0.0.4
-      with:
-        version: master
-
-    - name: Build and package matching metamodule
-      id: package
+    - name: Fetch Official NoMount Release ZIP
+      id: fetch
       shell: bash
       run: |
         set -euo pipefail
 
-        expected_commit="${{ inputs.commit }}"
-        if ! [[ "$expected_commit" =~ ^[0-9a-f]{40}$ ]]; then
-          echo "NoMount commit must be a full 40-character SHA." >&2
-          exit 2
+        OUT_DIR="${{ inputs.output_dir }}"
+        GH_TOKEN="${{ inputs.token }}"
+        mkdir -p "$OUT_DIR"
+
+        echo "[+] Fetching latest official NoMount release ZIP from maxsteeel/nomount..."
+        url=""
+
+        if command -v gh >/dev/null 2>&1; then
+          url=$(gh api repos/maxsteeel/nomount/releases/latest --jq '.assets[] | select(.name | endswith(".zip")) | .browser_download_url' 2>/dev/null | head -n 1 || true)
+          if [ -z "$url" ]; then
+            url=$(gh api repos/maxsteeel/nomount/releases --jq '.[0].assets[] | select(.name | endswith(".zip")) | .browser_download_url' 2>/dev/null | head -n 1 || true)
+          fi
         fi
 
-        source_dir="${RUNNER_TEMP}/nomount-module-source"
-        module_dir="${RUNNER_TEMP}/nomount-metamodule"
-        module_zip="${RUNNER_TEMP}/NoMount-${expected_commit}.zip"
-        rm -rf "$source_dir" "$module_dir" "$module_zip"
-        git clone --no-checkout https://github.com/maxsteeel/nomount.git "$source_dir"
-        git -C "$source_dir" fetch --depth=1 origin "$expected_commit"
-        git -C "$source_dir" checkout --detach "$expected_commit"
-        actual_commit="$(git -C "$source_dir" rev-parse HEAD)"
-        if [ "$actual_commit" != "$expected_commit" ]; then
-          echo "NoMount module source mismatch: expected $expected_commit, got $actual_commit." >&2
+        if [ -z "$url" ]; then
+          auth_header=(-H "Accept: application/vnd.github+json" -H "User-Agent: curl/8.0")
+          if [ -n "$GH_TOKEN" ]; then
+            auth_header+=(-H "Authorization: Bearer $GH_TOKEN")
+          fi
+          rel_json=$(curl -fsSL --retry 5 --retry-delay 3 "${auth_header[@]}" \
+            "https://api.github.com/repos/maxsteeel/nomount/releases/latest" 2>/dev/null || true)
+          if [ -n "$rel_json" ]; then
+            url=$(echo "$rel_json" | grep -o '"browser_download_url": *"[^"]*\.zip"' | sed -e 's/"browser_download_url": *"//' -e 's/"$//' | head -n 1 || true)
+          fi
+        fi
+
+        if [ -z "$url" ]; then
+          echo "ERROR: Could not find official NoMount release ZIP on maxsteeel/nomount" >&2
           exit 1
         fi
 
-        mkdir -p "$source_dir/bin"
-        (
-          cd "$source_dir/userspace/src"
-          # NoMount v2.3.0+ (commit 611f242+) uses a standard libc main() in nm.c
-          # (<unistd.h>/<string.h>), so do not pass -nostdlib or --entry=_start.
-          # Fall back automatically if building an older _start-based commit.
-          if zig cc -target aarch64-linux -Oz -mcmodel=tiny -static -ffreestanding \
-            -fno-unwind-tables -fno-ident -Wno-invalid-noreturn \
-            -mllvm -enable-machine-outliner=always nm.c -o ../../bin/nm-arm64; then
-            zig cc -target arm-linux -Oz -static -ffreestanding \
-              -fno-unwind-tables -fno-ident -Wno-invalid-noreturn \
-              -ffunction-sections -fdata-sections -Wl,--gc-sections \
-              nm.c -o ../../bin/nm-arm
-          else
-            zig cc -target aarch64-linux -Oz -mcmodel=tiny -static -nostdlib \
-              -ffreestanding -fno-unwind-tables -fno-ident -Wno-invalid-noreturn \
-              -Wl,--entry=_start nm.c -o ../../bin/nm-arm64
-            zig cc -target arm-linux -Oz -static -nostdlib -ffreestanding \
-              -fno-unwind-tables -fno-ident -Wno-invalid-noreturn \
-              -ffunction-sections -fdata-sections -Wl,--gc-sections \
-              -Wl,--entry=_start nm.c -o ../../bin/nm-arm
-          fi
-        )
-
-        echo "=== Building lkmloader / ko-loader ==="
-        ko_loader_dir="${RUNNER_TEMP}/lkmloader-src"
-        rm -rf "$ko_loader_dir"
-        git clone --depth=1 https://github.com/maxsteeel/lkmloader.git "$ko_loader_dir"
-        (
-          cd "$ko_loader_dir"
-          if grep -q 'lkmloader-\$(TARGET)' Makefile 2>/dev/null; then
-            make TARGET=aarch64
-            make TARGET=arm
-            cp -f lkmloader-aarch64 "$source_dir/bin/lkmloader-arm64"
-            cp -f lkmloader-aarch64 "$source_dir/bin/ko-loader-arm64"
-            cp -f lkmloader-arm "$source_dir/bin/lkmloader-arm"
-            cp -f lkmloader-arm "$source_dir/bin/ko-loader-arm"
-          else
-            make TARGET=aarch64-linux-musl
-            bin_name="lkmloader"
-            [ -f "ko-loader" ] && bin_name="ko-loader"
-            cp -f "$bin_name" "$source_dir/bin/lkmloader-arm64"
-            cp -f "$bin_name" "$source_dir/bin/ko-loader-arm64"
-            make clean
-            make TARGET=arm-linux-musleabi
-            bin_name="lkmloader"
-            [ -f "ko-loader" ] && bin_name="ko-loader"
-            cp -f "$bin_name" "$source_dir/bin/lkmloader-arm"
-            cp -f "$bin_name" "$source_dir/bin/ko-loader-arm"
-          fi
-        )
-
-        cp -a "$source_dir/module" "$module_dir"
-        mkdir -p "$module_dir/bin" "$module_dir/lkm"
-        install -m 0755 "$source_dir/bin/nm-arm64" "$module_dir/bin/nm-arm64"
-        install -m 0755 "$source_dir/bin/nm-arm" "$module_dir/bin/nm-arm"
-        install -m 0755 "$source_dir/bin/nm-arm64" "$module_dir/bin/nm"
-        install -m 0755 "$source_dir/bin/lkmloader-arm64" "$module_dir/bin/lkmloader-arm64"
-        install -m 0755 "$source_dir/bin/lkmloader-arm" "$module_dir/bin/lkmloader-arm"
-        install -m 0755 "$source_dir/bin/ko-loader-arm64" "$module_dir/bin/ko-loader-arm64"
-        install -m 0755 "$source_dir/bin/ko-loader-arm" "$module_dir/bin/ko-loader-arm"
-        install -m 0755 "$source_dir/bin/lkmloader-arm64" "$module_dir/lkm/lkmloader"
-        chmod 0755 "$module_dir"/*.sh 2>/dev/null || true
-        sed -i "s/^versionCode=.*/versionCode=1/" "$module_dir/module.prop"
-        printf '%s\n' "$actual_commit" > "$module_dir/NOMOUNT_SOURCE_COMMIT"
-        (
-          cd "$module_dir"
-          zip -qr "$module_zip" .
-        )
-        sha256sum "$module_zip" > "${module_zip}.sha256"
-        echo "module_path=$module_zip" >> "$GITHUB_OUTPUT"
-        echo "commit=$actual_commit" >> "$GITHUB_OUTPUT"
+        fname="${url##*/}"
+        target_path="${OUT_DIR}/${fname}"
+        echo "[+] Downloading official NoMount release: $fname from $url"
+        curl -fsSL --retry 5 --retry-delay 3 -o "$target_path" "$url"
+        sha256sum "$target_path" > "${target_path}.sha256"
+        echo "[+] Saved official NoMount release: $target_path"
+        echo "module_path=$target_path" >> "$GITHUB_OUTPUT"

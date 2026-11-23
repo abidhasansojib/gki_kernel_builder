@@ -17,7 +17,7 @@ COMMITS_JSON = os.path.join(REPO, ".github/config/commits.json")
 
 # Mapping of (json_key, subkey, sha_env_var, approve_env_var)
 PINS = [
-    ("nomount", "dev", "NOMOUNT_SHA", "APPROVE_NOMOUNT"),
+    ("nomount", "release", "NOMOUNT_SHA", "APPROVE_NOMOUNT"),
     ("susfs", "gki-android16-6.12", "SUSFS_SHA", "APPROVE_SUSFS"),
     ("sukisu_nova", "builtin", "SUKISU_NOVA_SHA", "APPROVE_SUKISU_NOVA"),
 ]

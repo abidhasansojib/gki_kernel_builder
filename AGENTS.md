@@ -37,8 +37,8 @@ The project exclusively uses **SukiSU-Nova** (`https://github.com/SukiSU-Nova/Su
   * In-tree kernel patches applied to `fs/`, `kernel/`, and `security/` for kernel-level mount isolation, process masking, `sus_path_uid_filter`, `priority_uid_filter`, SELinux `inode_setxattr` hooks, and symbol hiding. Pinned to verified commit `9b0b13f069673b9b07b713a5c66977de4d62b175`.
   * **Unconditional Open Redirect:** `CONFIG_KSU_SUSFS_OPEN_REDIRECT=y` is always enabled, ensuring path redirection works seamlessly alongside NoMount.
 * **NoMount v2.3.1 VFS Redirection Metamodule:**
-  * Pinned to audited commit `5f33211ea464a8e8b5fe7c22b79787dcc4f494e9` with SHA-based pre-fetching to withstand upstream `dev` branch rewinds.
-  * Auto-cloned and compiled with Zig compiler in GitHub Actions to produce architecture-native `nm-arm64`, `nm-arm`, `lkmloader-arm64` (`ko-loader-arm64`), and `lkmloader-arm` (`ko-loader-arm`) binaries inside `bin/` and `lkm/lkmloader`.
+  * Kernel source pinned to official release tag commit `dcd77d03e9912f397a586d7da81694d1628f170e` (`v2.3.1`) so the built-in kernel driver (`CONFIG_NOMOUNT=y`) matches the official release ABI.
+  * Automatically fetches the official prebuilt, LTO/sstrip-optimized, esbuild-minified release ZIP (`NoMount-v2.3.1-release-785.zip`) from `maxsteeel/nomount/releases/latest` via `nomount-metamodule/action.yml`, eliminating the separate Zig compilation job.
 * **Scoped-Storage Unicode Path Filter (`unicode_scoped_6.12.patch`):**
   * Hooks `openat`, `openat2`, `faccessat2`, and `newfstatat` via `include/linux/ucpath.h` (`uc_path_check()`) to strip zero-width/bidi formatting characters and prevent unauthorized `/storage/emulated/<user>/Android/{data,obb}` access over FUSE mounts while preserving emoji filenames.
 
@@ -182,6 +182,9 @@ The project exclusively uses **SukiSU-Nova** (`https://github.com/SukiSU-Nova/Su
 * **Mainline TCP Congestion Control Alignment with `GKI_KernelSU_SUSFS`:**
   * Disabled out-of-tree BBRv3 patch application in `.github/actions/networking/action.yml` to eliminate CPU softirq wakeups and device thermal heating on MediaTek SoCs.
   * Aligned `.github/actions/networking-config/action.yml` with `GKI_KernelSU_SUSFS` (`CONFIG_TCP_CONG_ADVANCED=y`, `CONFIG_TCP_CONG_BBR=y`, `CONFIG_TCP_CONG_CUBIC=y`, `CONFIG_TCP_CONG_BIC=y`, `CONFIG_TCP_CONG_WESTWOOD=y`, `CONFIG_TCP_CONG_HTCP=y`, `CONFIG_DEFAULT_BBR=y`, `CONFIG_DEFAULT_TCP_CONG="bbr"`), and updated the NetHunter WebUI (`webroot/index.html`) to use mainline `bbr`.
+* **Official Prebuilt NoMount Release ZIP Integration:**
+  * Removed the separate `build-nomount-module` Zig compilation job from `.github/workflows/build-kernel.yml` so `build-kernel` starts immediately after `resolve-sources`.
+  * Updated `.github/actions/nomount-metamodule/action.yml` to fetch `maxsteeel/nomount`'s official prebuilt release ZIP (`NoMount-v2.3.1-release-785.zip`), and updated `resolve-sources` / `.github/config/commits.json` (`nomount.release`: `dcd77d03e9912f397a586d7da81694d1628f170e`) to resolve the matching release tag commit for in-tree `CONFIG_NOMOUNT=y` integration.
 
 ---
 
