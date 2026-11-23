@@ -503,6 +503,16 @@ def patch_selinux_h(ksu_dir):
         content = f.read()
 
     if "susfs_is_current_ksu_domain" in content:
+        if "susfs_is_current_zygote_next_domain" not in content and "susfs_is_current_zygote_domain(void);" in content:
+            content = content.replace(
+                "bool susfs_is_current_zygote_domain(void);",
+                "bool susfs_is_current_zygote_domain(void);\nbool susfs_is_current_zygote_next_domain(void);",
+                1,
+            )
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(content)
+            print(f"[INFO] Added susfs_is_current_zygote_next_domain declaration to {path}.")
+            return True
         print(f"[INFO] {path} already declares SUSFS SELinux helpers.")
         return True
 
@@ -537,6 +547,30 @@ def patch_selinux_c(ksu_dir):
         content = f.read()
 
     if "susfs_set_batch_sid" in content:
+        if "susfs_is_current_zygote_next_domain" not in content:
+            extra = (
+                "\n#ifndef KERNEL_ZYGOTE_NEXT_DOMAIN\n"
+                '#define KERNEL_ZYGOTE_NEXT_DOMAIN "u:r:zygote_next:s0"\n'
+                "#endif\n"
+                "u32 susfs_zygote_next_sid __read_mostly = 0;\n"
+                "bool susfs_is_current_zygote_next_domain(void) {\n"
+                "    return unlikely(current_sid() == susfs_zygote_next_sid);\n"
+                "}\n"
+            )
+            content = content.replace(
+                "void susfs_set_batch_sid(void)",
+                extra.lstrip() + "\nvoid susfs_set_batch_sid(void)",
+                1,
+            )
+            content = content.replace(
+                "susfs_set_sid(KERNEL_ZYGOTE_DOMAIN, &susfs_zygote_sid);",
+                "susfs_set_sid(KERNEL_ZYGOTE_DOMAIN, &susfs_zygote_sid);\n    susfs_set_sid(KERNEL_ZYGOTE_NEXT_DOMAIN, &susfs_zygote_next_sid);",
+                1,
+            )
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(content)
+            print(f"[INFO] Added susfs_is_current_zygote_next_domain definition to {path}.")
+            return True
         print(f"[INFO] {path} already defines SUSFS SELinux helpers.")
         return True
 
