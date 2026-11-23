@@ -23,13 +23,13 @@
 
 ## 🛠️ Comprehensive Feature Implementations
 
-### 1. Root Implementation: SukiSU-Ultra Exclusively
-The project exclusively uses **SukiSU-Ultra** as its kernel root implementation (KernelSU-Next and ReSukiSU removed; no selection menu required):
-* **SukiSU-Ultra (`ultra` / `sukisu-ultra`):**
-  * Cloned from upstream `SukiSU-Ultra` official in-tree `builtin` branch (with automatic fallback/adaptation for `main`).
-  * Native SUSFS v2.3.0 compatibility, `ksu_handle_sys_reboot` command dispatcher (`magic2 == SUSFS_MAGIC`), and symbol linkage.
+### 1. Root Implementation: SukiSU-Nova (formerly SukiSU-Ultra) Exclusively
+The project exclusively uses **SukiSU-Nova** (`https://github.com/SukiSU-Nova/SukiSU-Nova`) as its kernel root implementation (KernelSU-Next and ReSukiSU removed; no selection menu required):
+* **SukiSU-Nova (`nova` / `sukisu-nova`):**
+  * Cloned from upstream `SukiSU-Nova/SukiSU-Nova` official in-tree `builtin` branch (with automatic fallback/adaptation for `main`).
+  * Native SUSFS v2.4.0 compatibility, `ksu_handle_sys_reboot` command dispatcher (`magic2 == SUSFS_MAGIC`), and symbol linkage.
   * Native Kernel Patch Module (KPM) engine (`CONFIG_KPM=y`, `CONFIG_KALLSYMS=y`, `CONFIG_KALLSYMS_ALL=y`) enabling extension features and runtime module loading.
-  * Direct manager APK fetching via `fetch-root-managers`.
+  * Direct `arm64-v8a` manager APK (`SukiSU_Nova_*-arm64-v8a-release.apk`, package `com.sukisu.nova`) fetching via `fetch-root-managers`.
   * Complete support for both "kpm" and "susfs" under Manager -> "Extension features".
 
 ### 2. Stealth & Root Hiding Stack
@@ -176,6 +176,9 @@ The project exclusively uses **SukiSU-Ultra** as its kernel root implementation 
   * Injected `SOURCE_DATE_EPOCH` and `KBUILD_BUILD_TIMESTAMP` into `common/build.config.gki.aarch64` and added post-build `.config` and `Image` SUSFS verification in `.github/actions/build-kernel/action.yml`.
   * Upgraded `.github/actions/download-kernel/action.yml` with `http.lowSpeedLimit=1024` / `http.lowSpeedTime=60` stall aborts, 5 graduated retries, `20m` timeout, and `-j16 --jobs-checkout=$(nproc)` concurrency.
   * Added `common/mm/rmap.c.rej` factory reject filtering to `.github/actions/scan-patch-rejects/action.yml`.
+* **SukiSU-Ultra to SukiSU-Nova (`SukiSU-Nova/SukiSU-Nova` v3.0.0+) Migration:**
+  * Migrated root repository endpoints, workflow matrix, pin promotion (`sukisu_nova`), and documentation from `SukiSU-Ultra/SukiSU-Ultra` to `SukiSU-Nova/SukiSU-Nova` (`com.sukisu.nova`).
+  * Updated `.github/actions/fetch-root-managers/action.yml` to fetch from `SukiSU-Nova/SukiSU-Nova` and filter specifically for `arm64-v8a` (or `universal`) release APKs (`SukiSU_Nova_v3.0.0_35000-arm64-v8a-release.apk`) so multi-arch releases (`armeabi-v7a`, `riscv64`, `x86_64`) do not bloat the ARM64 kernel release bundle.
 
 ---
 

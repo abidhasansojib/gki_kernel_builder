@@ -1,10 +1,10 @@
-name: Setup Root Implementation (SukiSU-Ultra)
-description: Download and configure SukiSU-Ultra root implementation with version tracking
+name: Setup Root Implementation (SukiSU-Nova)
+description: Download and configure SukiSU-Nova root implementation with version tracking
 inputs:
   flavor:
-    description: 'Root flavor (default: SukiSU-Ultra)'
+    description: 'Root flavor (default: SukiSU-Nova)'
     required: false
-    default: 'SukiSU-Ultra'
+    default: 'SukiSU-Nova'
   ksu_branch:
     description: 'Branch or commit (empty = default)'
     required: false
@@ -17,7 +17,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Download SukiSU-Ultra Root Implementation
+    - name: Download SukiSU-Nova Root Implementation
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
       run: |
@@ -34,12 +34,12 @@ runs:
           return 1
         }
 
-        FLAVOR="ultra"
-        REPO="https://github.com/SukiSU-Ultra/SukiSU-Ultra.git"
-        SETUP_URL="https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/builtin/kernel/setup.sh"
+        FLAVOR="nova"
+        REPO="https://github.com/SukiSU-Nova/SukiSU-Nova.git"
+        SETUP_URL="https://raw.githubusercontent.com/SukiSU-Nova/SukiSU-Nova/builtin/kernel/setup.sh"
         DEFAULT_REF="builtin"
-        DIR_NAME="SukiSU-Ultra"
-        MANAGER_NAME="SukiSU-Ultra Manager"
+        DIR_NAME="SukiSU-Nova"
+        MANAGER_NAME="SukiSU-Nova Manager"
 
         KSU_INPUT="${{ inputs.ksu_branch }}"
         if [ -z "$KSU_INPUT" ]; then
@@ -47,7 +47,7 @@ runs:
         fi
         PINNED_COMMIT="${{ inputs.commit }}"
 
-        echo "Root implementation: SukiSU-Ultra ($DIR_NAME)"
+        echo "Root implementation: SukiSU-Nova ($DIR_NAME)"
         echo "Target ref: $KSU_INPUT"
         if [ -n "$PINNED_COMMIT" ]; then
           echo "Target pinned commit: $PINNED_COMMIT"
@@ -62,6 +62,8 @@ runs:
         TARGET_DIR=""
         if [ -d "$DIR_NAME" ]; then
           TARGET_DIR="$DIR_NAME"
+        elif [ -d "SukiSU-Ultra" ]; then
+          TARGET_DIR="SukiSU-Ultra"
         elif [ -d "KernelSU" ]; then
           TARGET_DIR="KernelSU"
         fi
@@ -139,7 +141,7 @@ runs:
           cd "${{ github.workspace }}/kernel"
         fi
 
-        echo "ROOT_IMPLEMENTATION=ultra" >> "$GITHUB_ENV"
+        echo "ROOT_IMPLEMENTATION=nova" >> "$GITHUB_ENV"
         echo "ROOT_MANAGER=$MANAGER_NAME" >> "$GITHUB_ENV"
 
     - name: Extract KSU Version Info
@@ -147,7 +149,7 @@ runs:
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
       run: |
-        for candidate in SukiSU-Ultra KernelSU common/drivers/kernelsu drivers/kernelsu; do
+        for candidate in SukiSU-Nova SukiSU-Ultra KernelSU common/drivers/kernelsu drivers/kernelsu; do
           if [ -d "$candidate/.git" ] || [ -f "$candidate/.git" ]; then
             cd "$candidate"
             BASE_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | sed 's:-.*::' || echo "main")
@@ -170,7 +172,7 @@ runs:
       working-directory: ${{ github.workspace }}/kernel
       run: |
         set -euo pipefail
-        echo "[INFO] SukiSU-Ultra detected: native symbol linkage verified, checking selinux_hide.c..."
+        echo "[INFO] SukiSU-Nova detected: native symbol linkage verified, checking selinux_hide.c..."
 
         for f in $(find . -name "selinux_hide.c" 2>/dev/null); do
           echo "Patching $f for extern linkage..."
@@ -198,6 +200,7 @@ runs:
         # Patch lsm_hook.c candidates to bypass security_add_hooks on Linux 6.12+ / SUSFS.
 
         for candidate in \
+          SukiSU-Nova/kernel/hook/lsm_hook.c \
           SukiSU-Ultra/kernel/hook/lsm_hook.c \
           KernelSU/kernel/hook/lsm_hook.c \
           common/drivers/kernelsu/hook/lsm_hook.c \

@@ -24,7 +24,7 @@ on:
           - update
         default: verified
       ksu_branch:
-        description: "Custom Branch / Tag for SukiSU-Ultra (empty = default)"
+        description: "Custom Branch / Tag for SukiSU-Nova (empty = default)"
         type: string
         required: false
         default: ""
@@ -85,7 +85,7 @@ jobs:
       nomount_commit: ${{ steps.resolve.outputs.nomount_commit }}
       susfs_commit: ${{ steps.resolve.outputs.susfs_commit }}
       root_matrix: ${{ steps.resolve.outputs.root_matrix }}
-      ultra_commit: ${{ steps.resolve.outputs.ultra_commit }}
+      nova_commit: ${{ steps.resolve.outputs.nova_commit }}
     steps:
       - uses: actions/checkout@v7
 
@@ -125,7 +125,7 @@ jobs:
           COMMITS_FILE=".github/config/commits.json"
           PIN_NOMOUNT=$(jq -r '.nomount.dev // empty' "$COMMITS_FILE" 2>/dev/null || echo "5f33211ea464a8e8b5fe7c22b79787dcc4f494e9")
           PIN_SUSFS=$(jq -r '."susfs"."gki-android16-6.12" // empty' "$COMMITS_FILE" 2>/dev/null || echo "9b0b13f069673b9b07b713a5c66977de4d62b175")
-          PIN_ULTRA=$(jq -r '."sukisu_ultra"."builtin" // ."sukisu_ultra"."main" // empty' "$COMMITS_FILE" 2>/dev/null || echo "4bec532dd447e2852aa8932afa768255350c103a")
+          PIN_NOVA=$(jq -r '."sukisu_nova"."builtin" // ."sukisu_ultra"."builtin" // empty' "$COMMITS_FILE" 2>/dev/null || echo "4bec532dd447e2852aa8932afa768255350c103a")
 
           pick() {
             local pinned="$1" repo="$2" ref="$3"
@@ -139,9 +139,9 @@ jobs:
           echo "Resolving dependencies..."
           emit nomount_commit "$(pick "$PIN_NOMOUNT" https://github.com/maxsteeel/nomount.git refs/heads/dev)"
           emit susfs_commit "$(pick "$PIN_SUSFS" https://gitlab.com/simonpunk/susfs4ksu.git refs/heads/gki-android16-6.12)"
-          emit ultra_commit "$(pick "$PIN_ULTRA" https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/builtin)"
+          emit nova_commit "$(pick "$PIN_NOVA" https://github.com/SukiSU-Nova/SukiSU-Nova.git refs/heads/builtin)"
 
-          ULTRA_SHA="$(pick "$PIN_ULTRA" https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/builtin)"
+          NOVA_SHA="$(pick "$PIN_NOVA" https://github.com/SukiSU-Nova/SukiSU-Nova.git refs/heads/builtin)"
 
           mk_entry() {
             printf '{"flavor":"%s","ref":"%s","commit":"%s"}' "$1" "$2" "$3"
@@ -149,7 +149,7 @@ jobs:
 
           CUSTOM_REF="${{ inputs.ksu_branch }}"
           REF="${CUSTOM_REF:-builtin}"
-          ROOT_MATRIX="[$(mk_entry SukiSU-Ultra "$REF" "$ULTRA_SHA")]"
+          ROOT_MATRIX="[$(mk_entry SukiSU-Nova "$REF" "$NOVA_SHA")]"
 
           echo "root_matrix=$ROOT_MATRIX" >> "$GITHUB_OUTPUT"
           echo "Generated Root Matrix: $ROOT_MATRIX"
@@ -646,10 +646,10 @@ jobs:
         env:
           NOMOUNT_SHA: ${{ needs.resolve-sources.outputs.nomount_commit }}
           SUSFS_SHA: ${{ needs.resolve-sources.outputs.susfs_commit }}
-          SUKISU_ULTRA_SHA: ${{ needs.resolve-sources.outputs.ultra_commit }}
+          SUKISU_NOVA_SHA: ${{ needs.resolve-sources.outputs.nova_commit }}
           APPROVE_NOMOUNT: ${{ inputs.use_nomount }}
           APPROVE_SUSFS: 'true'
-          APPROVE_SUKISU_ULTRA: 'true'
+          APPROVE_SUKISU_NOVA: 'true'
         run: |
           set -euo pipefail
           echo "Promoting verified pins on successful build..."
@@ -687,7 +687,7 @@ jobs:
           echo "Release assets prepared:"
           ls -la dist/
 
-          RELEASE_NAME="Release #${{ github.run_number }} (SukiSU-Ultra)"
+          RELEASE_NAME="Release #${{ github.run_number }} (SukiSU-Nova)"
           echo "RELEASE_NAME=${RELEASE_NAME}" >> "$GITHUB_ENV"
 
           # Generate Release Notes
@@ -708,7 +708,7 @@ jobs:
           echo "### 📦 Build & Release Information" >> "$RELEASE_BODY_FILE"
           echo "- **Kernel Version:** \`6.12.30-android16\`" >> "$RELEASE_BODY_FILE"
           echo "- **OS Patch Level:** \`2025-07\`" >> "$RELEASE_BODY_FILE"
-          echo "- **Root Implementation:** \`SukiSU-Ultra\`" >> "$RELEASE_BODY_FILE"
+          echo "- **Root Implementation:** \`SukiSU-Nova\`" >> "$RELEASE_BODY_FILE"
           echo "- **Vendor Module Bypass:** Baked In (\`bad_version: return 1;\`)" >> "$RELEASE_BODY_FILE"
           echo "- **Stealth Integration:** SUSFS v2.4.0 + NoMount v2.3.1 VFS Metamodule + Scoped-Storage Unicode Guard" >> "$RELEASE_BODY_FILE"
           echo "- **NetHunter & USB Arsenal Stack:** 75+ Wireless WiFi drivers (\`=m\`), BadUSB HID (\`/dev/hidg*\` with custom \`bInterval\`), PiKVM DVD-ROM (>2.36GB ISO booting), CAN-Bus & RTL-SDR" >> "$RELEASE_BODY_FILE"

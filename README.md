@@ -19,7 +19,7 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 
 ## ✨ Features
 
-- 🔐 **Root Stack**: **SukiSU-Ultra** with native SUSFS v2.4.0 root hiding, KPM support, and automated manager APK bundling.
+- 🔐 **Root Stack**: **SukiSU-Nova** (formerly SukiSU-Ultra) with native SUSFS v2.4.0 root hiding, KPM support, built-in NyaZygisk, and automated `arm64-v8a` manager APK bundling.
 - 🛡️ **SUSFS & NoMount**: Built-in SUSFS v2.4.0 root hiding (`sus_path_uid_filter`, `priority_uid_filter`), NoMount v2.3.1 stealth VFS support, and FUSE-compatible Scoped-Storage Unicode Guard (preserves emojis).
 - 🐉 **Kali NetHunter & USB Arsenal**: Monitor mode, frame injection, BadUSB HID keyboard/mouse (`/dev/hidg1`, `/dev/hidg2` with configurable `bInterval` polling), PiKVM DVD-ROM emulation (booting >2.36GB ISOs via USB Arsenal / DriveDroid), USB Wi-Fi dongles, SDR, CAN bus, and Bluetooth RFCOMM.
 - 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (CUBIC stock default / BBR3 / Westwood+), driver modules, RAM/MGLRU, and real-time activity log.
@@ -123,7 +123,7 @@ Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button i
 ## 🏆 Credits
 
 - 🏗️ **GKI KernelSU SUSFS**: Based on work by [WildKernels](https://github.com/WildKernels/GKI_KernelSU_SUSFS)
-- 🔐 **SukiSU-Ultra**: Developed by [SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra)
+- 🔐 **SukiSU-Nova**: Developed by [SukiSU-Nova](https://github.com/SukiSU-Nova/SukiSU-Nova)
 - 🛡️ **SUSFS**: Developed by [simonpunk](https://gitlab.com/simonpunk/susfs4ksu.git)
 - 🐉 **Kali NetHunter**: Developed by the [Offensive Security / Kali NetHunter Team](https://www.kali.org/docs/nethunter/)
 - 🪝 **NoMount**: Developed by [maxsteeel](https://github.com/maxsteeel/nomount)

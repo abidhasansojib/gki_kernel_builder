@@ -9,16 +9,16 @@ on:
 
 jobs:
   fetch-managers:
-    name: "Fetch SukiSU-Ultra Manager APK"
+    name: "Fetch SukiSU-Nova Manager APK"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
 
-      - name: Fetch SukiSU-Ultra Manager APK
+      - name: Fetch SukiSU-Nova Manager APK
         uses: ./.github/actions/fetch-root-managers
         with:
-          flavor: SukiSU-Ultra
+          flavor: SukiSU-Nova
           output_dir: ${{ github.workspace }}/root-managers
 
       - name: Upload Manager APKs

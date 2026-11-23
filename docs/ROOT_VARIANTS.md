@@ -6,11 +6,11 @@ This document details the root implementations, stealth modules, coexistence str
 
 ## 1. Supported Root Implementation
 
-The build system utilizes **SukiSU-Ultra** as the standard kernel-level root implementation:
+The build system utilizes **SukiSU-Nova** (formerly SukiSU-Ultra) as the standard kernel-level root implementation:
 
 | Root Implementation | Upstream Repository | Default Branch | Integration Mechanism |
 | :--- | :--- | :--- | :--- |
-| **SukiSU-Ultra** | [SukiSU-Ultra/SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra) | `main` | Kernel-level root solution & KPM engine; native SUSFS compatibility. |
+| **SukiSU-Nova** | [SukiSU-Nova/SukiSU-Nova](https://github.com/SukiSU-Nova/SukiSU-Nova) | `builtin` | Kernel-level root solution, built-in NyaZygisk & KPM engine; native SUSFS v2.4.0 compatibility. |
 
 ---
 

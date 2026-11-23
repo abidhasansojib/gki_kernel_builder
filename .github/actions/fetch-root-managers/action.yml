@@ -1,10 +1,10 @@
 name: 'Fetch Root Manager APKs'
-description: 'Download the latest SukiSU-Ultra root manager APK'
+description: 'Download the latest SukiSU-Nova root manager APK (arm64-v8a)'
 inputs:
   flavor:
-    description: 'Root flavor (default: SukiSU-Ultra)'
+    description: 'Root flavor (default: SukiSU-Nova)'
     required: false
-    default: 'SukiSU-Ultra'
+    default: 'SukiSU-Nova'
   output_dir:
     description: 'Absolute path of directory to place downloaded APKs'
     required: false
@@ -36,10 +36,13 @@ runs:
           echo "[+] Fetching latest release APKs for ${owner}/${repo}..."
           local urls=""
 
-          # 1. Try using GitHub CLI (gh api) with authentication for the latest release (index .[0])
+          # 1. Try using GitHub CLI (gh api) with authentication for the latest release (index .[0]).
+          # Prefer arm64-v8a / universal release APK for our aarch64 GKI kernel.
           if command -v gh >/dev/null 2>&1; then
-            urls=$(gh api repos/${owner}/${repo}/releases --jq ".[0].assets[] | select(.name | endswith(\".apk\") and (contains(\"debug\") | not)) | .browser_download_url" 2>/dev/null || true)
-            # If no non-debug apk was found, fallback to any apk from latest release
+            urls=$(gh api repos/${owner}/${repo}/releases --jq ".[0].assets[] | select(.name | endswith(\".apk\") and (contains(\"debug\") | not) and (contains(\"arm64\") or contains(\"universal\"))) | .browser_download_url" 2>/dev/null || true)
+            if [ -z "$urls" ]; then
+              urls=$(gh api repos/${owner}/${repo}/releases --jq ".[0].assets[] | select(.name | endswith(\".apk\") and (contains(\"debug\") | not)) | .browser_download_url" 2>/dev/null || true)
+            fi
             if [ -z "$urls" ]; then
               urls=$(gh api repos/${owner}/${repo}/releases --jq ".[0].assets[] | select(.name | endswith(\".apk\")) | .browser_download_url" 2>/dev/null || true)
             fi
@@ -60,7 +63,10 @@ runs:
                 "https://api.github.com/repos/${owner}/${repo}/releases" 2>/dev/null | jq '.[0]' 2>/dev/null || true)
             fi
             if [ -n "$rel_json" ]; then
-              urls=$(echo "$rel_json" | grep -o '"browser_download_url": *"[^"]*\.apk"' | sed -e 's/"browser_download_url": *"//' -e 's/"$//' | grep -v -i "debug" || true)
+              urls=$(echo "$rel_json" | grep -o '"browser_download_url": *"[^"]*\.apk"' | sed -e 's/"browser_download_url": *"//' -e 's/"$//' | grep -v -i "debug" | grep -E -i "arm64|universal" || true)
+              if [ -z "$urls" ]; then
+                urls=$(echo "$rel_json" | grep -o '"browser_download_url": *"[^"]*\.apk"' | sed -e 's/"browser_download_url": *"//' -e 's/"$//' | grep -v -i "debug" || true)
+              fi
               if [ -z "$urls" ]; then
                 urls=$(echo "$rel_json" | grep -o '"browser_download_url": *"[^"]*\.apk"' | sed -e 's/"browser_download_url": *"//' -e 's/"$//' || true)
               fi
@@ -77,12 +83,12 @@ runs:
             echo "[+] Downloading latest release APK: $fname from $url"
             curl -fsSL --retry 5 --retry-delay 3 -o "/tmp/manager-dl/${fname}" "$url"
             cp -f "/tmp/manager-dl/${fname}" "${OUT_DIR}/${fname}"
-            echo "[✓] Saved ${OUT_DIR}/${fname}"
+            echo "[+] Saved ${OUT_DIR}/${fname}"
           done
         }
 
-        # Fetch SukiSU-Ultra Manager APK
-        fetch_latest_release_apks "SukiSU-Ultra" "SukiSU-Ultra" "sukisu-ultra"
+        # Fetch SukiSU-Nova Manager APK (arm64-v8a)
+        fetch_latest_release_apks "SukiSU-Nova" "SukiSU-Nova" "sukisu-nova"
 
         rm -rf /tmp/manager-dl
 
