@@ -178,7 +178,7 @@ The project exclusively uses **SukiSU-Nova** (`https://github.com/SukiSU-Nova/Su
   * Added `common/mm/rmap.c.rej` factory reject filtering to `.github/actions/scan-patch-rejects/action.yml`.
 * **SukiSU-Ultra to SukiSU-Nova (`SukiSU-Nova/SukiSU-Nova` v3.0.0+) Migration:**
   * Migrated root repository endpoints, workflow matrix, pin promotion (`sukisu_nova`), and documentation from `SukiSU-Ultra/SukiSU-Ultra` to `SukiSU-Nova/SukiSU-Nova` (`com.sukisu.nova`).
-  * Updated `.github/actions/fetch-root-managers/action.yml` to fetch from `SukiSU-Nova/SukiSU-Nova` and filter specifically for `arm64-v8a` (or `universal`) release APKs (`SukiSU_Nova_v3.0.0_35000-arm64-v8a-release.apk`) so multi-arch releases (`armeabi-v7a`, `riscv64`, `x86_64`) do not bloat the ARM64 kernel release bundle.
+  * Updated `.github/actions/fetch-root-managers/action.yml` to fetch from `SukiSU-Nova/SukiSU-Nova` and filter strictly for `arm64` (`arm64-v8a`) release APKs (`SukiSU_Nova_v3.0.0_35000-arm64-v8a-release.apk`) so other architecture or universal APKs are never bundled.
 
 ---
 

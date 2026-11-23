@@ -37,15 +37,9 @@ runs:
           local urls=""
 
           # 1. Try using GitHub CLI (gh api) with authentication for the latest release (index .[0]).
-          # Prefer arm64-v8a / universal release APK for our aarch64 GKI kernel.
+          # Strictly select arm64 (arm64-v8a) release APK for our aarch64 GKI kernel.
           if command -v gh >/dev/null 2>&1; then
-            urls=$(gh api repos/${owner}/${repo}/releases --jq ".[0].assets[] | select(.name | endswith(\".apk\") and (contains(\"debug\") | not) and (contains(\"arm64\") or contains(\"universal\"))) | .browser_download_url" 2>/dev/null || true)
-            if [ -z "$urls" ]; then
-              urls=$(gh api repos/${owner}/${repo}/releases --jq ".[0].assets[] | select(.name | endswith(\".apk\") and (contains(\"debug\") | not)) | .browser_download_url" 2>/dev/null || true)
-            fi
-            if [ -z "$urls" ]; then
-              urls=$(gh api repos/${owner}/${repo}/releases --jq ".[0].assets[] | select(.name | endswith(\".apk\")) | .browser_download_url" 2>/dev/null || true)
-            fi
+            urls=$(gh api repos/${owner}/${repo}/releases --jq ".[0].assets[] | select(.name | endswith(\".apk\") and (contains(\"debug\") | not) and contains(\"arm64\")) | .browser_download_url" 2>/dev/null || true)
           fi
 
           # 2. Fallback to authenticated curl for the single latest release if gh returned empty
@@ -63,13 +57,7 @@ runs:
                 "https://api.github.com/repos/${owner}/${repo}/releases" 2>/dev/null | jq '.[0]' 2>/dev/null || true)
             fi
             if [ -n "$rel_json" ]; then
-              urls=$(echo "$rel_json" | grep -o '"browser_download_url": *"[^"]*\.apk"' | sed -e 's/"browser_download_url": *"//' -e 's/"$//' | grep -v -i "debug" | grep -E -i "arm64|universal" || true)
-              if [ -z "$urls" ]; then
-                urls=$(echo "$rel_json" | grep -o '"browser_download_url": *"[^"]*\.apk"' | sed -e 's/"browser_download_url": *"//' -e 's/"$//' | grep -v -i "debug" || true)
-              fi
-              if [ -z "$urls" ]; then
-                urls=$(echo "$rel_json" | grep -o '"browser_download_url": *"[^"]*\.apk"' | sed -e 's/"browser_download_url": *"//' -e 's/"$//' || true)
-              fi
+              urls=$(echo "$rel_json" | grep -o '"browser_download_url": *"[^"]*\.apk"' | sed -e 's/"browser_download_url": *"//' -e 's/"$//' | grep -v -i "debug" | grep -i "arm64" || true)
             fi
           fi
 
