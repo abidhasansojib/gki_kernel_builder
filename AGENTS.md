@@ -87,7 +87,7 @@ The project exclusively uses **SukiSU-Nova** (`https://github.com/SukiSU-Nova/Su
   * Sub-2-second folder relocation into background trash followed by low-priority disowned background purge, speeding up CI builds.
 * **Baseband Guard (BBG):** LSM protection module preventing unauthorized writes to radio/modem partitions.
 * **DroidSpaces-OSS:** Lightweight container runtime support with SYSVIPC compatibility.
-* **BBRv3 & CAKE Qdisc:** Modern TCP congestion control and network packet queuing algorithms.
+* **Mainline TCP Congestion Control & CAKE Qdisc:** In-tree BBR (`bbr` default), CUBIC, Westwood+, BIC, HTCP, and CAKE/FQ/FQ_CODEL packet queuing algorithms (matching `GKI_KernelSU_SUSFS` without out-of-tree BBRv3 thermal overhead).
 * **WireGuard & IP Set:** High-speed in-kernel VPN and firewall rule acceleration.
 * **NTSync:** Low-latency NT synchronization primitives for high-performance wine/gaming emulation.
 * **BTF / eBPF & FUSE-BPF:** In-tree BTF metadata generation, in-kernel eBPF kprobe/uprobe events, and standalone userspace `fuse-bpf-arm64` daemon.
@@ -179,6 +179,9 @@ The project exclusively uses **SukiSU-Nova** (`https://github.com/SukiSU-Nova/Su
 * **SukiSU-Ultra to SukiSU-Nova (`SukiSU-Nova/SukiSU-Nova` v3.0.0+) Migration:**
   * Migrated root repository endpoints, workflow matrix, pin promotion (`sukisu_nova`), and documentation from `SukiSU-Ultra/SukiSU-Ultra` to `SukiSU-Nova/SukiSU-Nova` (`com.sukisu.nova`).
   * Updated `.github/actions/fetch-root-managers/action.yml` to fetch from `SukiSU-Nova/SukiSU-Nova` and filter strictly for `arm64` (`arm64-v8a`) release APKs (`SukiSU_Nova_v3.0.0_35000-arm64-v8a-release.apk`) so other architecture or universal APKs are never bundled.
+* **Mainline TCP Congestion Control Alignment with `GKI_KernelSU_SUSFS`:**
+  * Disabled out-of-tree BBRv3 patch application in `.github/actions/networking/action.yml` to eliminate CPU softirq wakeups and device thermal heating on MediaTek SoCs.
+  * Aligned `.github/actions/networking-config/action.yml` with `GKI_KernelSU_SUSFS` (`CONFIG_TCP_CONG_ADVANCED=y`, `CONFIG_TCP_CONG_BBR=y`, `CONFIG_TCP_CONG_CUBIC=y`, `CONFIG_TCP_CONG_BIC=y`, `CONFIG_TCP_CONG_WESTWOOD=y`, `CONFIG_TCP_CONG_HTCP=y`, `CONFIG_DEFAULT_BBR=y`, `CONFIG_DEFAULT_TCP_CONG="bbr"`), and updated the NetHunter WebUI (`webroot/index.html`) to use mainline `bbr`.
 
 ---
 

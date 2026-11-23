@@ -1169,20 +1169,20 @@
 
         <!-- High Performance TCP Options Grid -->
         <div class="m3-options-grid">
+          <div id="opt-tcp-bbr" class="m3-option-card" onclick="applyTcp('bbr')">
+            <div class="m3-option-header">
+              <span class="m3-option-title">BBR</span>
+              <span class="m3-chip" id="chip-tcp-bbr">--</span>
+            </div>
+            <span class="m3-option-desc">Mainline BBRv1 • Low latency & thermal-friendly</span>
+          </div>
+
           <div id="opt-tcp-cubic" class="m3-option-card" onclick="applyTcp('cubic')">
             <div class="m3-option-header">
               <span class="m3-option-title">CUBIC</span>
               <span class="m3-chip" id="chip-tcp-cubic">--</span>
             </div>
             <span class="m3-option-desc">Stock standard • Reliable on fiber Wi-Fi & cellular</span>
-          </div>
-
-          <div id="opt-tcp-bbr3" class="m3-option-card" onclick="applyTcp('bbr3')">
-            <div class="m3-option-header">
-              <span class="m3-option-title">BBRv3</span>
-              <span class="m3-chip" id="chip-tcp-bbr3">--</span>
-            </div>
-            <span class="m3-option-desc">Google model-based • Max speed & lowest ping</span>
           </div>
 
           <div id="opt-tcp-westwood" class="m3-option-card" onclick="applyTcp('westwood')">
@@ -1199,7 +1199,7 @@
             Save Selected at Boot
           </button>
           <button class="m3-btn m3-btn-outlined" style="flex: 1;" onclick="clearTcpBootDefault()">
-            Use Stock Boot (CUBIC)
+            Use Kernel Default (BBR)
           </button>
         </div>
       </div>
@@ -2184,7 +2184,7 @@
         if (chipsContainer) {
           chipsContainer.innerHTML = '<span style="font-size: 11px; color: var(--md-sys-color-outline);">Open in KernelSU / SukiSU WebUI to read kernel TCP stack</span>';
         }
-        ['bbr3', 'cubic', 'westwood'].forEach(a => {
+        ['bbr', 'cubic', 'westwood'].forEach(a => {
           const el = document.getElementById('opt-tcp-' + a);
           if (el) el.classList.remove('selected');
           const chip = document.getElementById('chip-tcp-' + a);
@@ -2254,7 +2254,7 @@
         if (state.tcpBoot) {
           bootEl.innerText = state.tcpBoot.toUpperCase() + " (Saved in /data/adb/service.d)";
         } else {
-          bootEl.innerText = "CUBIC (Kernel Built-in Default)";
+          bootEl.innerText = "BBR (Kernel Built-in Default)";
         }
       }
 
@@ -2273,7 +2273,7 @@
       }
 
       // Check presets availability
-      const hasBbr3 = state.availableTcps.includes('bbr3');
+      const hasBbr = state.availableTcps.includes('bbr');
       const hasCubic = state.availableTcps.includes('cubic');
       const hasWestwood = state.availableTcps.includes('westwood');
 
@@ -2296,8 +2296,8 @@
         }
       };
 
-      updateCard('cubic', 'cubic', hasCubic, 'DEFAULT / STOCK');
-      updateCard('bbr3', 'bbr3', hasBbr3, 'PERFORMANCE');
+      updateCard('bbr', 'bbr', hasBbr, 'DEFAULT / PERFORMANCE');
+      updateCard('cubic', 'cubic', hasCubic, 'STOCK STANDARD');
       updateCard('westwood', 'westwood', hasWestwood, 'LOSS-TOLERANT');
 
       // Packet Scheduler (Qdisc)
@@ -2336,7 +2336,7 @@
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
-      const target = (state.tcp && state.tcp !== 'unknown') ? state.tcp : 'cubic';
+      const target = (state.tcp && state.tcp !== 'unknown') ? state.tcp : 'bbr';
       logProcess("action", "Saved " + target.toUpperCase() + " as persistent boot default");
       await exec(`mkdir -p /data/adb/service.d && printf '#!/system/bin/sh\\nsysctl -w net.ipv4.tcp_congestion_control=${target}\\n' > /data/adb/service.d/00-tcp.sh && chmod 0755 /data/adb/service.d/00-tcp.sh`);
       state.tcpBoot = target;
@@ -2345,14 +2345,14 @@
     }
 
     async function clearTcpBootDefault() {
-      logProcess("action", "Cleared persistent boot default; stock CUBIC will be used");
+      logProcess("action", "Cleared persistent boot default; kernel default BBR will be used");
       if (!hasBridge()) {
         showSnackbar("Root bridge required: open in KernelSU / SukiSU WebUI");
         return;
       }
       await exec("rm -f /data/adb/service.d/00-tcp.sh 2>/dev/null || true");
       state.tcpBoot = "";
-      showSnackbar("Boot default cleared (Kernel will boot stock CUBIC)");
+      showSnackbar("Boot default cleared (Kernel will boot default BBR)");
       await checkTcp();
     }
 
@@ -2422,7 +2422,7 @@
         return;
       }
       showSnackbar("Restoring network settings to defaults...");
-      await exec("sysctl -w net.ipv4.tcp_congestion_control=cubic; sysctl -w net.core.default_qdisc=fq 2>/dev/null || sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 64 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 65 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 64 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 65 2>/dev/null; sysctl -w net.ipv4.ip_forward=0 2>/dev/null; sysctl -w net.ipv6.conf.all.optimistic_dad=1 2>/dev/null; rm -f /data/adb/service.d/00-tcp.sh 2>/dev/null; rm -f /data/adb/service.d/01-ttl.sh 2>/dev/null || true");
+      await exec("sysctl -w net.ipv4.tcp_congestion_control=bbr; sysctl -w net.core.default_qdisc=fq 2>/dev/null || sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 64 2>/dev/null; iptables -t mangle -D POSTROUTING -j TTL --ttl-set 65 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 64 2>/dev/null; ip6tables -t mangle -D POSTROUTING -j HL --hl-set 65 2>/dev/null; sysctl -w net.ipv4.ip_forward=0 2>/dev/null; sysctl -w net.ipv6.conf.all.optimistic_dad=1 2>/dev/null; rm -f /data/adb/service.d/00-tcp.sh 2>/dev/null; rm -f /data/adb/service.d/01-ttl.sh 2>/dev/null || true");
       await checkTcp();
       showSnackbar("Network settings reset to defaults");
     }

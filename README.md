@@ -22,11 +22,11 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 - 🔐 **Root Stack**: **SukiSU-Nova** (formerly SukiSU-Ultra) with native SUSFS v2.4.0 root hiding, KPM support, built-in NyaZygisk, and automated `arm64-v8a` manager APK bundling.
 - 🛡️ **SUSFS & NoMount**: Built-in SUSFS v2.4.0 root hiding (`sus_path_uid_filter`, `priority_uid_filter`), NoMount v2.3.1 stealth VFS support, and FUSE-compatible Scoped-Storage Unicode Guard (preserves emojis).
 - 🐉 **Kali NetHunter & USB Arsenal**: Monitor mode, frame injection, BadUSB HID keyboard/mouse (`/dev/hidg1`, `/dev/hidg2` with configurable `bInterval` polling), PiKVM DVD-ROM emulation (booting >2.36GB ISOs via USB Arsenal / DriveDroid), USB Wi-Fi dongles, SDR, CAN bus, and Bluetooth RFCOMM.
-- 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (CUBIC stock default / BBR3 / Westwood+), driver modules, RAM/MGLRU, and real-time activity log.
+- 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (BBR default / CUBIC / Westwood+ / BIC / HTCP), driver modules, RAM/MGLRU, and real-time activity log.
 - 📦 **NetHunter Wireless Module**: Flashable `Nethunter-Wireless-Modules.zip` with Wi-Fi/SDR drivers, firmware, and WebUI (fully compatible alongside NoMount).
 - 🛡️ **Baseband Guard (BBG)**: Partition protection against unauthorized writes.
 - 📦 **DroidSpaces-OSS**: Lightweight container runtime support with SYSVIPC and cgroup v2 `cpu.max` (`CONFIG_CFS_BANDWIDTH=y`) CPU bandwidth limits.
-- 🚀 **Performance & Networking**: BBRv3, CAKE Qdisc, WireGuard, IP Set, CIFS, NTSync, and scheduler/memory optimizations.
+- 🚀 **Performance & Networking**: Mainline BBR, CUBIC, Westwood+, BIC, HTCP, CAKE Qdisc, WireGuard, IP Set, CIFS, NTSync, and scheduler/memory optimizations.
 - 🔍 **eBPF & BTF**: In-kernel eBPF kprobes, CO-RE BTF, and FUSE-BPF support.
 - ⚡ **Vendor Module Bypass**: Built-in vendor version check bypass ensuring OEM display, touchscreen, and modem drivers load cleanly.
 
@@ -77,7 +77,7 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 
 Included in `Nethunter-Wireless-Modules.zip`. Open it via the **WebUI** button in your root manager (KernelSU / SukiSU):
 
-- **Network & TCP Control**: Switch congestion algorithms (CUBIC stock default, BBR3, Westwood+) with persistent boot profile saving, and toggle IP forwarding / TTL mangling.
+- **Network & TCP Control**: Switch congestion algorithms (BBR default, CUBIC, Westwood+, BIC, HTCP) with persistent boot profile saving, and toggle IP forwarding / TTL mangling.
 - **Drivers & Modules**: View, load, and manage Wi-Fi, SDR, and serial drivers with sequential loading queue and automated dependency resolution.
 - **Memory & MGLRU**: View real-time RAM usage, lock full MGLRU capabilities (`0x0007`), drop caches, and adjust VFS pressure.
 - **Process & Activity Log**: Real-time diagnostic stream with execution tracking, one-tap copy, and subsystem telemetry.
