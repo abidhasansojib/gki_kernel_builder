@@ -14,12 +14,14 @@ Android 16 GKI kernel (`6.12.30-android16`, `2025-07`) with SukiSU-Nova, SUSFS, 
 
 ## Features
 
-- **Root**: SukiSU-Nova with built-in NyaZygisk, KPM (`CONFIG_KPM=y`), and single-key manager verification.
-- **Stealth**: SUSFS v2.4.0, NoMount v2.3.1 VFS redirection, sanitized `/proc/config.gz`, stock `kleaf@build-host` metadata, Scoped-Storage Unicode Guard, and Baseband Guard.
-- **Wireless & USB Gadgets**: Built-in BadUSB HID (`/dev/hidg1`, `/dev/hidg2`), PiKVM DVD-ROM emulation (>2.36 GB ISOs), USB NCM/ECM/RNDIS tethering, and modular (`=m`) USB Wi-Fi, Ethernet, Serial, and Bluetooth drivers with a Material 3 WebUI.
-- **Containers**: DroidSpaces runtime support (`CONFIG_SYSVIPC=y`, `CONFIG_CFS_BANDWIDTH=y`, `CONFIG_CGROUP_PIDS=y`).
-- **Networking & Performance**: Mainline BBR, CAKE Qdisc, WireGuard, IP Set, CIFS/SMB, NTSync, MGLRU (`0x0007`), eBPF/BTF, and FUSE-BPF.
-- **Compatibility**: Built-in vendor module version bypass (`bad_version`).
+- **SukiSU-Nova** — Kernel-based root with built-in Zygisk and KPM support
+- **SUSFS & NoMount** — Root hiding and stealth module mounting
+- **Kali NetHunter** — External USB Wi-Fi (monitor mode & injection), Ethernet, Serial, and Bluetooth drivers with WebUI
+- **USB Arsenal** — Boot ISO images (>2.36 GB), BadUSB keyboard/mouse emulation, and USB tethering
+- **DroidSpaces** — Linux container runtime support
+- **Baseband Guard** — Protects modem and radio partitions
+- **Networking** — WireGuard, BBR, CAKE Qdisc, IPSet, and CIFS/SMB
+- **Performance** — NTSync, MGLRU, eBPF/BTF, and memory/scheduler tuning
 
 ---
 
