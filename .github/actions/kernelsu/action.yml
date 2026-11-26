@@ -201,6 +201,29 @@ runs:
           fi
         done
 
+    - name: 'Trim SukiSU-Nova Trusted Manager Certificate Table'
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        set -euo pipefail
+        TRIMMED=0
+        for candidate in \
+          SukiSU-Nova/kernel/manager/apk_sign.c \
+          SukiSU-Ultra/kernel/manager/apk_sign.c \
+          KernelSU/kernel/manager/apk_sign.c \
+          common/drivers/kernelsu/manager/apk_sign.c \
+          drivers/kernelsu/manager/apk_sign.c; do
+          if [ -f "$candidate" ]; then
+            python3 "${{ github.workspace }}/.github/scripts/trim_sukisu_managers.py" "$candidate"
+            TRIMMED=1
+            break
+          fi
+        done
+        if [ "$TRIMMED" -eq 0 ]; then
+          echo "ERROR: Could not locate apk_sign.c to trim trusted manager certificates" >&2
+          exit 1
+        fi
+
     - name: Enable Kernel Configs
       uses: ./.github/actions/set-kernel-config
       with:

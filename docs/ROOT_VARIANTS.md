@@ -36,8 +36,10 @@ flowchart TD
    * Provides suspicious path hiding (`sus_path_uid_filter`), priority UID filtering (`priority_uid_filter`), SELinux `inode_setxattr` hiding, fake mount IDs (`mnt_id`), kstat spoofing, `uname` spoofing, and symbol hiding from `/proc/kallsyms`.
 2. **NoMount v2.3.1 VFS Hooks** (`maxsteeel/nomount`):
    * Injects low-level VFS mounting stealth hooks directly into kernel filesystem structures with direct libc `nm` rule batching and `lkmloader`.
-3. **Unconditional Open Redirect & Scoped-Storage Unicode Guard**:
+3. **Unconditional Open Redirect, `/proc/config.gz` Sanitization & Scoped-Storage Unicode Guard**:
    * `CONFIG_KSU_SUSFS_OPEN_REDIRECT=y` is always enabled, ensuring path redirection works seamlessly alongside NoMount.
+   * `kernel/Makefile` (`filechk_cat`) strips all `CONFIG_KSU*`, `CONFIG_KPM`, `CONFIG_NOMOUNT`, `CONFIG_BBG`, and `baseband_guard` markers from the embedded `/proc/config.gz` while preserving all DroidSpaces and NetHunter configs.
+   * `apk_sign.c` (`trim_sukisu_managers.py`) trims the kernel's trusted manager table down to only the official SukiSU-Nova signing key (`0x35c`).
    * `unicode_scoped_6.12.patch` (`include/linux/ucpath.h`) guards `openat`, `openat2`, `faccessat2`, and `newfstatat` against zero-width/bidi invisible-character path traversal into `/storage/emulated/<user>/Android/{data,obb}` on FUSE mounts while keeping emoji filenames 100% intact.
 
 ---

@@ -198,6 +198,11 @@ The project exclusively uses **SukiSU-Nova** (`https://github.com/SukiSU-Nova/Su
   * Deleted orphaned legacy files (`.github/scripts/render_release_body.py`, `.github/config/RELEASE_NOTES.md`, `.github/config/android16-6.12.json`, `.github/pins/history/*.json`).
   * Flattened `.github/actions/cache-bazel-setup` into `.github/actions/cache-setup/action.yml`, and consolidated `.github/actions/susfs-setup`, `.github/actions/susfs-config`, and `.github/actions/susfs-patches` into a single `.github/actions/susfs/action.yml`.
   * Cleaned dead legacy code paths across active actions (`Enable SUSFS for KernelSU (tiann)`, `Kbuild` fallback in `kernelsu/action.yml`, legacy `unicode_bypass_fix_6.1+.patch` fallback, Linux <5.19 `kernel/module.c` fallback, and unused `BOOT_SIGN_KEY` / `VARIANT: "Normal"` boilerplate).
+* **Smart `/proc/config.gz` Sanitization, SukiSU-Nova Manager Cert Trimming, SUSFS Context Self-Healing & Official Kleaf Build Metadata:**
+  * Patched `kernel/Makefile` (`filechk_cat`) in `.github/actions/kernel-fixes/action.yml` to strip root and stealth symbols (`CONFIG_KSU*`, `CONFIG_KPM`, `CONFIG_NOMOUNT`, `CONFIG_BBG`, and `,baseband_guard` in `CONFIG_LSM`) from the embedded `/proc/config.gz` while preserving all DroidSpaces (`CONFIG_SYSVIPC=y`, `CONFIG_CGROUP_PIDS=y`) and NetHunter configs, with post-build `extract-ikconfig` verification in `.github/actions/build-kernel/action.yml`.
+  * Added `.github/scripts/trim_sukisu_managers.py` and integrated it into `.github/actions/kernelsu/action.yml` to trim `apk_sign_keys[]` in `apk_sign.c` from 7 multi-fork certificates down to the single official SukiSU-Nova signing key (`0x35c`, `947ae944...`).
+  * Added `.github/scripts/susfs_restore_context.py` into `.github/actions/susfs/action.yml` to automatically self-heal missing `#include <trace/hooks/*.h>` hunk context lines (and create stub headers if needed) before applying `50_add_susfs_in_gki-android16-6.12.patch`.
+  * Exported `KBUILD_BUILD_USER=kleaf` and `KBUILD_BUILD_HOST=build-host` in `.github/workflows/build-kernel.yml` and inside `common/build.config.gki.aarch64` in `.github/actions/build-kernel/action.yml` so `/proc/version` matches official Google Kleaf GKI build metadata (`kleaf@build-host`).
 
 ---
 

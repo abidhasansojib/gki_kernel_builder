@@ -157,6 +157,9 @@ runs:
           python3 "${{ github.workspace }}/.github/scripts/adapt_susfs_patch.py" \
             --patch "50_add_susfs_in_gki-${{ inputs.version }}.patch" \
             --kernel-dir "${{ github.workspace }}/kernel/common"
+          python3 "${{ github.workspace }}/.github/scripts/susfs_restore_context.py" \
+            "50_add_susfs_in_gki-${{ inputs.version }}.patch" \
+            "${{ github.workspace }}/kernel/common"
         fi
 
     - name: Apply Kernel SUSFS Patches

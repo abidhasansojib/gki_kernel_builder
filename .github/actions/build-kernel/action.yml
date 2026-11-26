@@ -37,14 +37,15 @@ runs:
     run: |
       set -euo pipefail
       # Kleaf evaluates build.config.gki.aarch64 in its own hermetic environment,
-      # so job-level SOURCE_DATE_EPOCH / KBUILD_BUILD_TIMESTAMP must be exported
-      # inside build.config.gki.aarch64 to reach the kernel build.
+      # so job-level SOURCE_DATE_EPOCH / KBUILD_BUILD_TIMESTAMP / KBUILD_BUILD_USER /
+      # KBUILD_BUILD_HOST must be exported inside build.config.gki.aarch64 to reach
+      # the kernel build.
       BUILD_CONFIG_FILE="common/build.config.gki.aarch64"
       if [ -f "$BUILD_CONFIG_FILE" ]; then
         if ! grep -q 'Reproducible timestamp injected by the CI workflow' "$BUILD_CONFIG_FILE"; then
-          printf '\n# Reproducible timestamp injected by the CI workflow.\nexport SOURCE_DATE_EPOCH=%q\nexport KBUILD_BUILD_TIMESTAMP=%q\n' \
-            "${SOURCE_DATE_EPOCH:-0}" "${KBUILD_BUILD_TIMESTAMP:-@0}" >> "$BUILD_CONFIG_FILE"
-          echo "[INFO] build.config.gki.aarch64: exported SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH:-0}"
+          printf '\n# Reproducible timestamp injected by the CI workflow.\nexport SOURCE_DATE_EPOCH=%q\nexport KBUILD_BUILD_TIMESTAMP=%q\nexport KBUILD_BUILD_USER=%q\nexport KBUILD_BUILD_HOST=%q\n' \
+            "${SOURCE_DATE_EPOCH:-0}" "${KBUILD_BUILD_TIMESTAMP:-@0}" "${KBUILD_BUILD_USER:-kleaf}" "${KBUILD_BUILD_HOST:-build-host}" >> "$BUILD_CONFIG_FILE"
+          echo "[INFO] build.config.gki.aarch64: exported SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH:-0}, KBUILD_BUILD_USER=${KBUILD_BUILD_USER:-kleaf}, KBUILD_BUILD_HOST=${KBUILD_BUILD_HOST:-build-host}"
         fi
       fi
 
@@ -103,6 +104,19 @@ runs:
       for img in bazel-bin/common/kernel_aarch64/Image /home/runner/out/dist/Image; do
         if [ -f "$img" ]; then
           echo "SUSFS strings in $(basename "$img"): $(grep -ac susfs "$img" || true)"
+          if [ -f "common/scripts/extract-ikconfig" ]; then
+            if sh common/scripts/extract-ikconfig "$img" > /tmp/embedded_ikconfig 2>/dev/null && [ -s /tmp/embedded_ikconfig ]; then
+              LEAKED_COUNT="$(grep -cE 'CONFIG_(KSU|KPM|NOMOUNT|BBG)|baseband_guard' /tmp/embedded_ikconfig || true)"
+              echo "Embedded /proc/config.gz lines: $(wc -l < /tmp/embedded_ikconfig), leaked root/stealth markers: $LEAKED_COUNT"
+              if [ "$LEAKED_COUNT" -ne 0 ]; then
+                echo "ERROR: Embedded /proc/config.gz leaked root/stealth symbols:" >&2
+                grep -nE 'CONFIG_(KSU|KPM|NOMOUNT|BBG)|baseband_guard' /tmp/embedded_ikconfig >&2 || true
+                exit 1
+              fi
+              echo "✅ Verified embedded /proc/config.gz is clean of root/stealth markers"
+            fi
+            rm -f /tmp/embedded_ikconfig
+          fi
           break
         fi
       done

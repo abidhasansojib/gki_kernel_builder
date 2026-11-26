@@ -19,8 +19,8 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 
 ## ✨ Features
 
-- 🔐 **Root Stack**: **SukiSU-Nova** (formerly SukiSU-Ultra) with native SUSFS v2.4.0 root hiding, KPM support, built-in NyaZygisk, and automated `arm64-v8a` manager APK bundling.
-- 🛡️ **SUSFS & NoMount**: Built-in SUSFS v2.4.0 root hiding (`sus_path_uid_filter`, `priority_uid_filter`), NoMount v2.3.1 stealth VFS support, and FUSE-compatible Scoped-Storage Unicode Guard (preserves emojis).
+- 🔐 **Root Stack**: **SukiSU-Nova** (formerly SukiSU-Ultra) with native SUSFS v2.4.0 root hiding, KPM support, built-in NyaZygisk, single-key manager certificate pinning (`apk_sign.c`), and automated `arm64-v8a` manager APK bundling.
+- 🛡️ **SUSFS & NoMount**: Built-in SUSFS v2.4.0 root hiding (`sus_path_uid_filter`, `priority_uid_filter`), NoMount v2.3.1 stealth VFS support, `/proc/config.gz` root/stealth symbol sanitization (preserves DroidSpaces & NetHunter configs), official `kleaf@build-host` `/proc/version` metadata, and FUSE-compatible Scoped-Storage Unicode Guard (preserves emojis).
 - 🐉 **USB Arsenal & Wireless Driver Stack**: Built-in BadUSB HID keyboard/mouse (`/dev/hidg1`, `/dev/hidg2` with configurable `bInterval` polling), PiKVM DVD-ROM emulation (booting >2.36GB ISOs via USB Arsenal / DriveDroid), monitor mode, frame injection, modern USB Wi-Fi dongles, USB Gigabit Ethernet, USB Serial, and Bluetooth RFCOMM.
 - 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (BBR default / CUBIC / Westwood+ / BIC / HTCP), driver modules, RAM/MGLRU, and real-time activity log.
 - 📦 **Wireless & Hardware Module**: Flashable `Nethunter-Wireless-Modules.zip` with modern Wi-Fi/Ethernet/Serial/Bluetooth `.ko` drivers, firmware, and WebUI (fully compatible alongside NoMount and DroidSpaces).
