@@ -50,12 +50,3 @@ Android 16 GKI kernel (`6.12.30-android16`, `2025-07`) with SukiSU-Nova, SUSFS, 
 3. Install `SukiSU_Nova_*-arm64-v8a-release.apk` and reboot.
 4. Configure root hiding in **SukiSU-Nova Manager → Extension features → SuSFS** and enable **Auto-Start**.
 5. *(Optional)* Flash `NoMount-*.zip` and `Nethunter-Wireless-Modules.zip` in SukiSU-Nova Manager.
-
----
-
-## Credits
-
-- [SukiSU-Nova](https://github.com/SukiSU-Nova/SukiSU-Nova)
-- [SUSFS](https://gitlab.com/simonpunk/susfs4ksu)
-- [NoMount](https://github.com/maxsteeel/nomount)
-- [WildKernels](https://github.com/WildKernels/GKI_KernelSU_SUSFS)
