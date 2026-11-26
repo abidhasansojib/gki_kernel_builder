@@ -1283,12 +1283,11 @@
 
         <!-- Category Filters -->
         <div style="display: flex; gap: 6px; overflow-x: auto; padding: 6px 0 8px 0; -webkit-overflow-scrolling: touch;">
-          <button id="filter-mod-all" class="root-term-chip active" onclick="setModuleFilter('all')">All (27)</button>
-          <button id="filter-mod-wifi" class="root-term-chip" onclick="setModuleFilter('wifi')">Wi-Fi (12)</button>
+          <button id="filter-mod-all" class="root-term-chip active" onclick="setModuleFilter('all')">All (26)</button>
+          <button id="filter-mod-wifi" class="root-term-chip" onclick="setModuleFilter('wifi')">Wi-Fi (13)</button>
           <button id="filter-mod-serial" class="root-term-chip" onclick="setModuleFilter('serial')">Serial (5)</button>
           <button id="filter-mod-net" class="root-term-chip" onclick="setModuleFilter('net')">Ethernet (4)</button>
-          <button id="filter-mod-sdr" class="root-term-chip" onclick="setModuleFilter('sdr')">SDR (3)</button>
-          <button id="filter-mod-can" class="root-term-chip" onclick="setModuleFilter('can')">CAN (3)</button>
+          <button id="filter-mod-bt" class="root-term-chip" onclick="setModuleFilter('bt')">Bluetooth (4)</button>
         </div>
 
         <!-- Dynamic Module List Container -->
@@ -2429,42 +2428,39 @@
 
     // 2. Drivers & Firmware Subsystem (Auto-Detected from NetHunter Module)
     const NETHUNTER_MODULES = [
-      // Wi-Fi Drivers
+      // Wi-Fi Drivers (13)
+      { name: "mt76x2u", file: "mt76x2u.ko", cat: "wifi", desc: "MediaTek MT7612U (Alfa AWUS036ACM)", deps: ["cfg80211", "mac80211", "mt76", "mt76-usb", "mt76x02-lib", "mt76x02-usb", "mt76x2-common"] },
+      { name: "mt76x0u", file: "mt76x0u.ko", cat: "wifi", desc: "MediaTek MT7610U (Alfa AWUS036ACHM)", deps: ["cfg80211", "mac80211", "mt76", "mt76-usb", "mt76x02-lib", "mt76x02-usb"] },
       { name: "mt7601u", file: "mt7601u.ko", cat: "wifi", desc: "MediaTek MT7601U USB Wi-Fi", deps: ["cfg80211", "mac80211"] },
-      { name: "rtw88_usb", file: "rtw88_usb.ko", cat: "wifi", desc: "Realtek RTL8821CU / 8822CU", deps: ["cfg80211", "mac80211", "rtw88_core"] },
+      { name: "rtw88_8822bu", file: "rtw88_8822bu.ko", cat: "wifi", desc: "Realtek 8822BU 802.11ac Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_8822b", "rtw88_usb"] },
       { name: "rtw88_8822cu", file: "rtw88_8822cu.ko", cat: "wifi", desc: "Realtek 8822CU 802.11ac Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_8822c", "rtw88_usb"] },
       { name: "rtw88_8821cu", file: "rtw88_8821cu.ko", cat: "wifi", desc: "Realtek 8821CU 802.11ac Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_8821c", "rtw88_usb"] },
+      { name: "rtw88_8723du", file: "rtw88_8723du.ko", cat: "wifi", desc: "Realtek 8723DU USB Wi-Fi", deps: ["cfg80211", "mac80211", "rtw88_core", "rtw88_8723d", "rtw88_usb"] },
       { name: "ath9k_htc", file: "ath9k_htc.ko", cat: "wifi", desc: "Atheros AR9271 (WN722N v1)", deps: ["cfg80211", "mac80211", "rfkill", "ath", "ath9k_hw", "ath9k_common"] },
       { name: "rtl8xxxu", file: "rtl8xxxu.ko", cat: "wifi", desc: "Realtek RTL8188EUS / RTL8192EU", deps: ["cfg80211", "mac80211"] },
       { name: "carl9170", file: "carl9170.ko", cat: "wifi", desc: "Atheros AR9170 USB 802.11n", deps: ["cfg80211", "mac80211", "ath"] },
-      { name: "rt2800usb", file: "rt2800usb.ko", cat: "wifi", desc: "Ralink RT2870 / RT3070", deps: ["cfg80211", "mac80211", "rfkill", "rt2x00lib", "rt2x00usb", "rt2800lib"] },
-      { name: "zd1211rw", file: "zd1211rw.ko", cat: "wifi", desc: "ZyDAS ZD1211 / ZD1211B", deps: ["cfg80211", "mac80211"] },
-      { name: "rtl8187", file: "rtl8187.ko", cat: "wifi", desc: "Realtek RTL8187 (Alfa AWUS036H)", deps: ["cfg80211", "mac80211", "rfkill", "eeprom_93cx6"] },
+      { name: "rt2800usb", file: "rt2800usb.ko", cat: "wifi", desc: "Ralink RT2870 / RT3070 / RT5572", deps: ["cfg80211", "mac80211", "rfkill", "rt2x00lib", "rt2x00usb", "rt2800lib"] },
       { name: "mac80211", file: "mac80211.ko", cat: "wifi", desc: "Packet Injection Engine (WEXT=y)", deps: ["cfg80211"] },
       { name: "cfg80211", file: "cfg80211.ko", cat: "wifi", desc: "Wireless Configuration Core", deps: [] },
 
-      // USB Serial & Interface Adapters
+      // USB Serial & Interface Adapters (5)
       { name: "ch341", file: "ch341.ko", cat: "serial", desc: "CH340 / CH341 USB Serial", deps: ["usbserial"] },
       { name: "cp210x", file: "cp210x.ko", cat: "serial", desc: "Silicon Labs CP210x Serial", deps: ["usbserial"] },
       { name: "ftdi_sio", file: "ftdi_sio.ko", cat: "serial", desc: "FTDI FT232 USB Serial", deps: ["usbserial"] },
       { name: "pl2303", file: "pl2303.ko", cat: "serial", desc: "Prolific PL2303 Serial", deps: ["usbserial"] },
       { name: "cdc_acm", file: "cdc-acm.ko", cat: "serial", desc: "USB CDC ACM Serial Device", deps: [] },
 
-      // USB Ethernet Adapters
+      // USB Ethernet Adapters (4)
       { name: "r8152", file: "r8152.ko", cat: "net", desc: "Realtek RTL8152/8153 Gigabit LAN", deps: ["mii"] },
       { name: "asix", file: "asix.ko", cat: "net", desc: "ASIX AX8817X USB Ethernet", deps: ["mii", "usbnet"] },
       { name: "ax88179_178a", file: "ax88179_178a.ko", cat: "net", desc: "ASIX AX88179 USB 3.0 Gigabit", deps: ["mii", "usbnet"] },
       { name: "cdc_ether", file: "cdc_ether.ko", cat: "net", desc: "CDC Ethernet USB Dongle", deps: ["usbnet"] },
 
-      // Software-Defined Radio (SDR)
-      { name: "hackrf", file: "hackrf.ko", cat: "sdr", desc: "Great Scott Gadgets HackRF SDR", deps: [] },
-      { name: "airspy", file: "airspy.ko", cat: "sdr", desc: "Airspy Software Defined Radio", deps: [] },
-      { name: "msi2500", file: "msi2500.ko", cat: "sdr", desc: "Mirics MSi2500 SDR Receiver", deps: [] },
-
-      // CAN Bus Diagnostics
-      { name: "can", file: "can.ko", cat: "can", desc: "Controller Area Network Core", deps: [] },
-      { name: "can_raw", file: "can-raw.ko", cat: "can", desc: "Raw CAN Protocol Sockets", deps: ["can"] },
-      { name: "vcan", file: "vcan.ko", cat: "can", desc: "Virtual CAN Tunnel Device", deps: ["can", "can-dev"] }
+      // USB Bluetooth Dongles (4)
+      { name: "btusb", file: "btusb.ko", cat: "bt", desc: "External USB Bluetooth Adapter", deps: ["bluetooth", "btbcm", "btrtl"] },
+      { name: "rfcomm", file: "rfcomm.ko", cat: "bt", desc: "Bluetooth RFCOMM Serial TTY", deps: ["bluetooth"] },
+      { name: "bnep", file: "bnep.ko", cat: "bt", desc: "Bluetooth Network Encapsulation", deps: ["bluetooth"] },
+      { name: "hidp", file: "hidp.ko", cat: "bt", desc: "Bluetooth HID Protocol Support", deps: ["bluetooth"] }
     ];
 
     let currentModuleFilter = 'all';
@@ -2833,18 +2829,18 @@
             fi
           }
 
-          # 1. Base network, wireless, serial & CAN infrastructure
-          for b in cfg80211 mac80211 rfkill usbnet mii usbserial can can-dev; do
+          # 1. Base network, wireless, serial & Bluetooth infrastructure
+          for b in cfg80211 mac80211 rfkill usbnet mii usbserial bluetooth btbcm btrtl; do
             load_one "$b"
           done
 
           # 2. Wireless helper & sub-driver stacks
-          for b in ath ath9k_hw ath9k_common eeprom_93cx6 rt2x00lib rt2x00usb rt2800lib rtw88_core rtw88_usb rtw88_8822c rtw88_8821c mt76 mt76-usb mt76x02-lib mt76x02-usb mt76x2-common; do
+          for b in ath ath9k_hw ath9k_common rt2x00lib rt2x00usb rt2800lib rtw88_core rtw88_usb rtw88_8822b rtw88_8822c rtw88_8821c rtw88_8723d mt76 mt76-usb mt76x02-lib mt76x02-usb mt76x2-common; do
             load_one "$b"
           done
 
-          # 3. All NetHunter peripheral drivers (Wi-Fi, Serial, Ethernet, SDR, CAN)
-          for m in mt7601u rtw88_usb rtw88_8822cu rtw88_8821cu ath9k_htc rtl8xxxu carl9170 rt2800usb zd1211rw rtl8187 ch341 cp210x ftdi_sio pl2303 cdc-acm r8152 asix ax88179_178a cdc_ether hackrf airspy msi2500 can can-raw vcan; do
+          # 3. All peripheral drivers (Wi-Fi, Serial, Ethernet, Bluetooth)
+          for m in mt76x2u mt76x0u mt7601u rtw88_8822bu rtw88_8822cu rtw88_8821cu rtw88_8723du ath9k_htc rtl8xxxu carl9170 rt2800usb ch341 cp210x ftdi_sio pl2303 cdc-acm r8152 asix ax88179_178a cdc_ether btusb rfcomm bnep hidp; do
             load_one "$m"
           done
         `;

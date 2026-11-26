@@ -72,6 +72,39 @@ runs:
           fi
         done
 
+    - name: 'Enable Built-in USB Arsenal & HID Gadget Configs'
+      uses: ./.github/actions/set-kernel-config
+      with:
+        config_list: |
+          # --- USB HID & BadUSB Gadgets (/dev/hidg*, /dev/uhid) ---
+          CONFIG_HID=y
+          CONFIG_HID_GENERIC=y
+          CONFIG_USB_HID=y
+          CONFIG_UHID=y
+          CONFIG_USB_CONFIGFS=y
+          CONFIG_USB_CONFIGFS_F_FS=y
+          CONFIG_USB_CONFIGFS_F_HID=y
+          CONFIG_USB_F_HID=y
+
+          # --- USB Arsenal Gadgets (ISO Mass Storage, Ethernet Tethering, Serial/ACM, Smartcard/Audio) ---
+          CONFIG_USB_CONFIGFS_ACM=y
+          CONFIG_USB_CONFIGFS_SERIAL=y
+          CONFIG_USB_CONFIGFS_OBEX=y
+          CONFIG_USB_CONFIGFS_MASS_STORAGE=y
+          CONFIG_USB_F_MASS_STORAGE=y
+          CONFIG_USB_CONFIGFS_RNDIS=y
+          CONFIG_USB_CONFIGFS_ECM=y
+          CONFIG_USB_CONFIGFS_ECM_SUBSET=y
+          CONFIG_USB_CONFIGFS_NCM=y
+          CONFIG_USB_CONFIGFS_EEM=y
+          CONFIG_USB_CONFIGFS_UEVENT=y
+          CONFIG_ANDROID_USB_CONFIGFS_UEVENT=y
+          CONFIG_USB_CONFIGFS_F_AC=y
+          CONFIG_ANDROID_USB_CONFIGFS_F_ACC=y
+          CONFIG_USB_CONFIGFS_F_AUDIO_SRC=y
+          CONFIG_USB_CONFIGFS_F_CCID=y
+          CONFIG_USB_CONFIGFS_F_UAC1=y
+
     - name: 'Final Kernel Fixes Summary'
       shell: bash
       run: |

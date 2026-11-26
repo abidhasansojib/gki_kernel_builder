@@ -617,7 +617,7 @@ jobs:
           echo "- **Root Implementation:** \`SukiSU-Nova\`" >> "$RELEASE_BODY_FILE"
           echo "- **Vendor Module Bypass:** Baked In (\`bad_version: return 1;\`)" >> "$RELEASE_BODY_FILE"
           echo "- **Stealth Integration:** SUSFS v2.4.0 + NoMount v2.3.1 VFS Metamodule + Scoped-Storage Unicode Guard" >> "$RELEASE_BODY_FILE"
-          echo "- **NetHunter & USB Arsenal Stack:** 75+ Wireless WiFi drivers (\`=m\`), BadUSB HID (\`/dev/hidg*\` with custom \`bInterval\`), PiKVM DVD-ROM (>2.36GB ISO booting), CAN-Bus & RTL-SDR" >> "$RELEASE_BODY_FILE"
+          echo "- **USB Arsenal & Wireless Stack:** Built-in BadUSB HID (\`/dev/hidg*\` with custom \`bInterval\`), PiKVM DVD-ROM (>2.36GB ISO booting), plus modular USB Wi-Fi, Ethernet, Serial & Bluetooth drivers (\`=m\`)" >> "$RELEASE_BODY_FILE"
           echo "" >> "$RELEASE_BODY_FILE"
           echo "### 📲 Flashing Instructions" >> "$RELEASE_BODY_FILE"
           echo "1. Download the all-in-one **\`*-Bundle.zip\`** matching your chosen root flavor and extract it." >> "$RELEASE_BODY_FILE"

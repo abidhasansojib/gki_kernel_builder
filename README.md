@@ -21,9 +21,9 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 
 - 🔐 **Root Stack**: **SukiSU-Nova** (formerly SukiSU-Ultra) with native SUSFS v2.4.0 root hiding, KPM support, built-in NyaZygisk, and automated `arm64-v8a` manager APK bundling.
 - 🛡️ **SUSFS & NoMount**: Built-in SUSFS v2.4.0 root hiding (`sus_path_uid_filter`, `priority_uid_filter`), NoMount v2.3.1 stealth VFS support, and FUSE-compatible Scoped-Storage Unicode Guard (preserves emojis).
-- 🐉 **Kali NetHunter & USB Arsenal**: Monitor mode, frame injection, BadUSB HID keyboard/mouse (`/dev/hidg1`, `/dev/hidg2` with configurable `bInterval` polling), PiKVM DVD-ROM emulation (booting >2.36GB ISOs via USB Arsenal / DriveDroid), USB Wi-Fi dongles, SDR, CAN bus, and Bluetooth RFCOMM.
+- 🐉 **USB Arsenal & Wireless Driver Stack**: Built-in BadUSB HID keyboard/mouse (`/dev/hidg1`, `/dev/hidg2` with configurable `bInterval` polling), PiKVM DVD-ROM emulation (booting >2.36GB ISOs via USB Arsenal / DriveDroid), monitor mode, frame injection, modern USB Wi-Fi dongles, USB Gigabit Ethernet, USB Serial, and Bluetooth RFCOMM.
 - 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (BBR default / CUBIC / Westwood+ / BIC / HTCP), driver modules, RAM/MGLRU, and real-time activity log.
-- 📦 **NetHunter Wireless Module**: Flashable `Nethunter-Wireless-Modules.zip` with Wi-Fi/SDR drivers, firmware, and WebUI (fully compatible alongside NoMount).
+- 📦 **Wireless & Hardware Module**: Flashable `Nethunter-Wireless-Modules.zip` with modern Wi-Fi/Ethernet/Serial/Bluetooth `.ko` drivers, firmware, and WebUI (fully compatible alongside NoMount and DroidSpaces).
 - 🛡️ **Baseband Guard (BBG)**: Partition protection against unauthorized writes.
 - 📦 **DroidSpaces-OSS**: Lightweight container runtime support with SYSVIPC and cgroup v2 CPU/process limits (`CONFIG_CFS_BANDWIDTH=y`, `CONFIG_CGROUP_PIDS=y`).
 - 🚀 **Performance & Networking**: Mainline BBR, CUBIC, Westwood+, BIC, HTCP, CAKE Qdisc, WireGuard, IP Set, CIFS, NTSync, and scheduler/memory optimizations.
@@ -47,22 +47,18 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 | **Ralink** | `rt2800usb` | **Alfa AWUS036NH**, **Alfa AWUS036NEH**, Panda PAU05/PAU06/PAU09 (RT5572), RT3070, RT5370 | 2.4GHz & 5GHz 802.11n, Long-range Injection, AP |
 | **Realtek** | `rtw88` | **Edimax EW-7822ULC** (RTL8822BU), **TP-Link Archer T2U Nano / Plus v2** (RTL8821CU), **Comfast CF-924AC v2** (RTL8822CU), ASUS USB-AC53 Nano | Dual-band 2.4/5GHz 802.11ac, Monitor Mode, Injection |
 | **Realtek** | `rtl8xxxu` | **TP-Link TL-WN725N v2/v3** (RTL8188EUS), **TL-WN823N** (RTL8192EU), Edimax EW-7811Un v1/v2, D-Link DWA-131 | 2.4GHz 802.11n, Monitor Mode |
-| **Realtek** | `rtl8187` | **Alfa AWUS036H** (RTL8187L) | Legacy 2.4GHz High-power Injection |
-| **ZyDAS** | `zd1211rw` | **TP-Link TL-WN321G v1/v2**, ZyXEL G-220 (ZD1211/ZD1211B) | 2.4GHz 802.11b/g, Monitor Mode, Injection |
 
 </details>
 
 <details>
-<summary><b>🛠️ Hardware Gadgets, Network Dongles & SDR (Click to Expand)</b></summary>
+<summary><b>🛠️ Hardware Gadgets, USB Ethernet, Serial & Bluetooth (Click to Expand)</b></summary>
 <br>
 
-- 🦆 **BadUSB / Rubber Ducky & USB Arsenal**: Native USB HID keyboard and mouse emulation (`/dev/hidg1` for keyboard, `/dev/hidg2` for mouse, with writable ConfigFS `interval` polling rate), multi-gadget ConfigFS support, PiKVM DVD-ROM emulation for booting >2.36GB ISO images, and USB NCM/Ethernet tethering NAT.
-- 📻 **Software Defined Radio (SDR)**: HackRF One, AirSpy, and Mirics (MSI2500), plus RTL-SDR via direct USB access (`/dev/bus/usb/`).
-- 🚗 **Automotive Hacking (CARsenal)**: SocketCAN framework (`can`, `vcan`, `slcan`, PEAK PCAN-USB, Kvaser, EMS USB).
-- 🔌 **USB Serial**: CDC-ACM, FTDI, CH341, CP210X, and PL2303 for router consoles and hardware debugging.
-- 🌐 **USB Ethernet**: Realtek RTL8152/RTL8153, ASIX AX88179, CDC-ECM, and CDC-NCM.
-- 📶 **Bluetooth**: USB Bluetooth dongles via `btusb` with RFCOMM TTY, BNEP, and HIDP.
-- 📁 **Network File Systems**: NFS client & server and CIFS/SMB.
+- 🦆 **BadUSB / Rubber Ducky & USB Arsenal (Built-in)**: Native USB HID keyboard and mouse emulation (`/dev/hidg1` for keyboard, `/dev/hidg2` for mouse, with writable ConfigFS `interval` polling rate), multi-gadget ConfigFS support, PiKVM DVD-ROM emulation for booting >2.36GB ISO images, and USB NCM/ECM/RNDIS Ethernet tethering NAT.
+- 🌐 **USB Ethernet**: Realtek RTL8152/RTL8153, ASIX AX88179, CDC-ECM, and CDC-NCM (for wired LAN & DroidSpaces `--net=macvlan`).
+- 🔌 **USB Serial (UART)**: CDC-ACM, FTDI, CH341, CP210X, and PL2303 for router consoles, ESP32/Arduino, and hardware debugging.
+- 📶 **Bluetooth**: External USB Bluetooth dongles via `btusb` with RFCOMM TTY, BNEP, and HIDP.
+- 📁 **Network File Systems**: Built-in CIFS/SMB support.
 
 </details>
 

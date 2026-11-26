@@ -67,17 +67,15 @@ The kernel integrates full Kali NetHunter capabilities natively into the 6.12 GK
   * Emulates CDC-ACM serial (`CONFIG_USB_CONFIGFS_ACM=y`, `CONFIG_USB_ACM=y`) for Proxmark3 and ChameleonMini RFID cloning.
   * USB Ethernet gadgets (`CONFIG_USB_CONFIGFS_RNDIS=y`, `CONFIG_USB_CONFIGFS_ECM=y`, `CONFIG_USB_CONFIGFS_NCM=y`) with IPv4/IPv6 NAT masquerading (`CONFIG_IP_NF_NAT=y`, `CONFIG_IP_NF_TARGET_MASQUERADE=y`) for USB Arsenal tethering, PoisonTap, and USB Ethernet MITM.
   * USB UART converters (`FTDI`, `CH341`, `CP210X`, `PL2303`) for router UART & embedded hardware hacking.
-* **Monitor Mode & Packet Injection**: Enabled in-tree via `CONFIG_CFG80211=y` and `CONFIG_MAC80211=y`.
+* **Monitor Mode & Packet Injection**: Enabled via `CONFIG_CFG80211=m` and `CONFIG_MAC80211=m`.
 * **Modular USB WiFi Drivers (`=m`)**:
-  * Realtek: `rtw88` (802.11ac: RTL8822BU/CU, RTL8821CU), `rtl8xxxu` (802.11n: RTL8188EU/FU, RTL8192EU/CU), `rtl8187`
-  * Atheros: `ath9k_htc` (AR9271), `carl9170` (AR9170), `ath6kl`
-  * MediaTek / Ralink: `mt7601u`, `mt76x0u` (MT7610U), `mt76x2u` (MT7612U), `rt2800usb` (RT3070/RT5370/RT5572), `rt2500usb`, `rt73usb`
-  * ZyDAS: `zd1211rw`
-* **Software-Defined Radio (SDR)**: RTL-SDR (`RTL2832U`), HackRF One (`CONFIG_USB_HACKRF=m`), AirSpy (`CONFIG_USB_AIRSPY=m`), Mirics (`CONFIG_USB_MSI2500=m`).
-* **Automotive Hacking (CARsenal)**: SocketCAN (`CONFIG_CAN=m`, `CONFIG_CAN_RAW=m`, `CONFIG_CAN_DEV=m`, `CONFIG_CAN_BCM=m`, `CONFIG_CAN_GW=m`), `vcan`, `slcan`, `PEAK PCAN-USB`, `Kvaser`, `EMS USB`.
-* **Network File Systems**: NFS client/server (`CONFIG_NFS_FS=y`, `CONFIG_NFSD=y`) and CIFS/SMB (`CONFIG_CIFS=y`).
+  * MediaTek / Ralink: `mt7601u`, `mt76x0u` (MT7610U), `mt76x2u` (MT7612U), `rt2800usb` (RT3070/RT5370/RT5572)
+  * Realtek: `rtw88` (802.11ac: RTL8822BU/CU, RTL8821CU, RTL8723DU), `rtl8xxxu` (802.11n: RTL8188EU/FU, RTL8192EU/CU)
+  * Atheros: `ath9k_htc` (AR9271), `carl9170` (AR9170)
+* **USB Ethernet & Bluetooth Dongles (`=m`)**: Realtek `r8152`/`rtl8150`, ASIX `ax88179_178a`/`asix`, `cdc_ether`/`cdc_ncm`, and Bluetooth USB (`btusb`, `rfcomm`, `bnep`, `hidp`).
+* **Network File Systems**: Built-in CIFS/SMB (`CONFIG_CIFS=y`).
 * **Flashable Wireless & Driver Module (`Nethunter-Wireless-Modules.zip`)**:
-  All compiled `.ko` driver modules, official Linux firmware blobs, ueventd hotplug rules, and the interactive WebUI dashboard are packaged into a standalone module with automated multi-pass boot loaders.
+  All compiled `.ko` driver modules, official Linux firmware blobs, ueventd hotplug rules, and the interactive WebUI dashboard are packaged into a standalone module with on-demand driver loading.
 
 ---
 

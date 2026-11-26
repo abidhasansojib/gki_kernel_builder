@@ -1,5 +1,5 @@
 name: 'Setup NetHunter & Wireless Drivers'
-description: 'Enable Kali NetHunter features, HID gadgets, and USB WiFi dongle drivers'
+description: 'Enable modular USB Wi-Fi, Ethernet, Serial, and Bluetooth drivers for DroidSpaces and NetHunter tools'
 inputs:
   version:
     description: 'Kernel config version (e.g., android16-6.12)'
@@ -9,7 +9,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Enable NetHunter Kernel Configs
+    - name: Enable Modular Wireless & Peripheral Kernel Configs
       uses: ./.github/actions/set-kernel-config
       with:
         config_list: |
@@ -25,48 +25,8 @@ runs:
           CONFIG_MAC80211_MESSAGE_TRACING=y
           CONFIG_RFKILL=m
 
-          # --- USB HID Gadgets (BadUSB / Rubber Ducky / Keystroke Injection) ---
-          CONFIG_HID=y
-          CONFIG_HID_GENERIC=y
-          CONFIG_USB_HID=y
-          CONFIG_UHID=y
-          CONFIG_USB_CONFIGFS=y
-          CONFIG_USB_CONFIGFS_F_FS=y
-          CONFIG_USB_CONFIGFS_F_HID=y
-          CONFIG_USB_F_HID=y
-
-          # --- USB Arsenal Gadgets (Mass Storage, Serial, CDC-ACM, USB Ethernet) ---
+          # --- USB Serial Adapters (Router UART / ESP32 / Hardware Consoles) ---
           CONFIG_USB_ACM=m
-          CONFIG_USB_CONFIGFS_ACM=y
-          CONFIG_USB_CONFIGFS_SERIAL=y
-          CONFIG_USB_CONFIGFS_OBEX=y
-          CONFIG_USB_CONFIGFS_MASS_STORAGE=y
-          CONFIG_USB_F_MASS_STORAGE=y
-          CONFIG_USB_CONFIGFS_RNDIS=y
-          CONFIG_USB_CONFIGFS_ECM=y
-          CONFIG_USB_CONFIGFS_ECM_SUBSET=y
-          CONFIG_USB_CONFIGFS_NCM=y
-          CONFIG_USB_CONFIGFS_EEM=y
-          CONFIG_USB_CONFIGFS_UEVENT=y
-          CONFIG_ANDROID_USB_CONFIGFS_UEVENT=y
-          CONFIG_USB_CONFIGFS_F_AC=y
-          CONFIG_ANDROID_USB_CONFIGFS_F_ACC=y
-          CONFIG_USB_CONFIGFS_F_AUDIO_SRC=y
-          CONFIG_USB_CONFIGFS_F_CCID=y
-          CONFIG_USB_CONFIGFS_F_CDEV=y
-          CONFIG_USB_CONFIGFS_F_DIAG=y
-          CONFIG_USB_CONFIGFS_F_GSI=y
-          CONFIG_USB_CONFIGFS_F_LB_SS=y
-          CONFIG_USB_CONFIGFS_F_PRINTER=y
-          CONFIG_USB_CONFIGFS_F_QDSS=y
-          CONFIG_USB_CONFIGFS_F_UAC1=y
-          CONFIG_USB_CONFIGFS_F_UAC1_LEGACY=y
-
-          # --- Industrial I/O & PCI Endpoint ConfigFS ---
-          CONFIG_IIO_CONFIGFS=y
-          CONFIG_PCI_ENDPOINT_CONFIGFS=y
-
-          # --- USB Serial Adapters (Hardware Hacking / Router UART / JTAG) ---
           CONFIG_USB_SERIAL=m
           CONFIG_USB_SERIAL_GENERIC=y
           CONFIG_USB_SERIAL_CH341=m
@@ -74,7 +34,7 @@ runs:
           CONFIG_USB_SERIAL_CP210X=m
           CONFIG_USB_SERIAL_PL2303=m
 
-          # --- USB Wireless Drivers (=m for modular load & GKI compatibility) ---
+          # --- Modern USB Wireless Drivers (=m for on-demand load) ---
           CONFIG_WLAN_VENDOR_REALTEK=y
           CONFIG_RTW88=m
           CONFIG_RTW88_CORE=m
@@ -87,7 +47,6 @@ runs:
           CONFIG_RTW88_8822CU=m
           CONFIG_RTW88_8723DU=m
           CONFIG_RTW88_8821CU=m
-          CONFIG_RTL8187=m
           CONFIG_RTL8XXXU=m
           CONFIG_RTL8XXXU_UNTESTED=y
           CONFIG_RTL_CARDS=m
@@ -98,13 +57,9 @@ runs:
           CONFIG_CARL9170=m
           CONFIG_CARL9170_LEDS=y
           CONFIG_CARL9170_WPC=y
-          CONFIG_ATH6KL=m
-          CONFIG_ATH6KL_USB=m
 
           CONFIG_WLAN_VENDOR_RALINK=y
           CONFIG_RT2X00=m
-          CONFIG_RT2500USB=m
-          CONFIG_RT73USB=m
           CONFIG_RT2800USB=m
           CONFIG_RT2800USB_RT33XX=y
           CONFIG_RT2800USB_RT35XX=y
@@ -123,10 +78,7 @@ runs:
           CONFIG_MT76x2_COMMON=m
           CONFIG_MT76x2U=m
 
-          CONFIG_WLAN_VENDOR_ZYDAS=y
-          CONFIG_ZD1211RW=m
-
-          # --- USB Ethernet & Network Dongles (=m) ---
+          # --- USB Ethernet & Network Dongles (=m for DroidSpaces Macvlan / Wired LAN) ---
           CONFIG_USB_NET_DRIVERS=m
           CONFIG_USB_USBNET=m
           CONFIG_USB_NET_AX8817X=m
@@ -136,7 +88,7 @@ runs:
           CONFIG_USB_RTL8152=m
           CONFIG_USB_RTL8150=m
 
-          # --- LED Trigger Triggers (for USB WiFi & CAN hardware status lights) ---
+          # --- LED Triggers (for USB Wi-Fi & Ethernet hardware status lights) ---
           CONFIG_NEW_LEDS=y
           CONFIG_LEDS_CLASS=y
           CONFIG_LEDS_TRIGGERS=y
@@ -147,7 +99,7 @@ runs:
           CONFIG_LEDS_TRIGGER_DEFAULT_ON=y
           CONFIG_LEDS_TRIGGER_NETDEV=y
 
-          # --- Bluetooth & Bluetooth Arsenal (=m) ---
+          # --- USB Bluetooth Dongles (=m) ---
           CONFIG_BT=m
           CONFIG_BT_RFCOMM=m
           CONFIG_BT_RFCOMM_TTY=y
@@ -158,53 +110,7 @@ runs:
           CONFIG_BT_HCIBTUSB_RTL=y
           CONFIG_BT_HCIUART=m
           CONFIG_BT_HCIUART_H4=y
-          CONFIG_BT_HCIBCM203X=m
-          CONFIG_BT_HCIBPA10X=m
-          CONFIG_BT_HCIBFUSB=m
           CONFIG_BT_HCIVHCI=m
-
-          # --- SDR (Software Defined Radio - RTL-SDR, HackRF, AirSpy, Mirics) ---
-          CONFIG_MEDIA_SUPPORT=y
-          CONFIG_MEDIA_DIGITAL_TV_SUPPORT=y
-          CONFIG_MEDIA_SDR_SUPPORT=y
-          CONFIG_MEDIA_USB_SUPPORT=y
-          CONFIG_DVB_CORE=m
-          CONFIG_DVB_DYNAMIC_MINORS=y
-          CONFIG_DVB_USB_V2=m
-          CONFIG_DVB_ZD1301_DEMOD=m
-          CONFIG_USB_HACKRF=m
-          CONFIG_USB_AIRSPY=m
-          CONFIG_USB_MSI2500=m
-
-          # --- CAN Bus & Automotive Hacking (CARsenal / SocketCAN) ---
-          CONFIG_CAN=m
-          CONFIG_CAN_RAW=m
-          CONFIG_CAN_BCM=m
-          CONFIG_CAN_GW=m
-          CONFIG_CAN_DEV=m
-          CONFIG_CAN_CALC_BITTIMING=y
-          CONFIG_CAN_LEDS=y
-          CONFIG_CAN_VCAN=m
-          CONFIG_CAN_SLCAN=m
-          CONFIG_CAN_EMS_USB=m
-          CONFIG_CAN_KVASER_USB=m
-          CONFIG_CAN_PEAK_USB=m
-          CONFIG_CAN_8DEV_USB=m
-          CONFIG_CAN_GS_USB=m
-
-          # --- Network File Systems (NFS Client/Server) ---
-          CONFIG_NETWORK_FILESYSTEMS=y
-          CONFIG_NFS_FS=y
-          CONFIG_NFS_V2=y
-          CONFIG_NFS_V3=y
-          CONFIG_NFS_V3_ACL=y
-          CONFIG_NFS_V4=y
-          CONFIG_NFSD=y
-          CONFIG_NFSD_V3_ACL=y
-          CONFIG_NFSD_V4=y
-
-          # --- General IPC & Chroot Enhancements ---
-          CONFIG_SYSVIPC=y
 
     - name: Fix modules.bzl for built-in or modular overrides
       shell: bash
@@ -213,10 +119,5 @@ runs:
         echo "=== Synchronizing modules.bzl with kernel config ==="
         for bzl in $(find . -name "modules.bzl" 2>/dev/null); do
           echo "Sanitizing $bzl..."
-          sed -i '/"fs\/netfs\/netfs\.ko",/d' "$bzl" 2>/dev/null || true
-          sed -i '/"fs\/cifs\/cifs\.ko",/d' "$bzl" 2>/dev/null || true
-          sed -i '/"fs\/nfsd\/nfsd\.ko",/d' "$bzl" 2>/dev/null || true
           sed -i '/"lib\/crypto\/libarc4\.ko",/d' "$bzl" 2>/dev/null || true
         done
-
-
