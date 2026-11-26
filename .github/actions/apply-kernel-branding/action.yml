@@ -5,10 +5,6 @@ inputs:
     description: 'Kernel branding name (optional, empty for clean stock string)'
     required: false
     default: ''
-  variant:
-    description: 'Variant of kernel'
-    required: false
-    default: 'Normal'
   kernel_version:
     description: 'Kernel version (e.g., 6.12)'
     required: false

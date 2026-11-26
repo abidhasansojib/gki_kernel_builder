@@ -17,10 +17,6 @@ inputs:
     description: 'Sublevel of kernel version (e.g., 30)'
     required: false
     default: '30'
-  variant:
-    description: 'Build variant (Normal, Bypass)'
-    required: false
-    default: 'Normal'
 
 runs:
   using: "composite"

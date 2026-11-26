@@ -29,24 +29,6 @@ def approved(env_var):
     return os.environ.get(env_var, "").strip().lower() in ("1", "true", "yes")
 
 
-def history_path():
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
-    d = os.path.join(REPO, ".github/pins/history")
-    os.makedirs(d, exist_ok=True)
-    return os.path.join(d, f"{ts}.json")
-
-
-def write_history(old_data, path):
-    record = {
-        "updated_at": datetime.now(timezone.utc).isoformat(),
-        "previous_verified": old_data,
-    }
-    with open(path, "w", encoding="utf-8") as fh:
-        json.dump(record, fh, indent=2)
-        fh.write("\n")
-    print(f"  history written: {os.path.relpath(path, REPO)}")
-
-
 def main():
     if not os.path.exists(COMMITS_JSON):
         print(f"Error: {COMMITS_JSON} not found", file=sys.stderr)
@@ -81,12 +63,10 @@ def main():
         changed = True
 
     if changed:
-        hpath = history_path()
-        write_history(old_data, hpath)
         with open(COMMITS_JSON, "w", encoding="utf-8") as fh:
             json.dump(data, fh, indent=2)
             fh.write("\n")
-        print(f"  commits.json updated successfully.")
+        print("  commits.json updated successfully.")
     else:
         print("  no pin changes to promote.")
 

@@ -62,8 +62,6 @@ runs:
         TARGET_DIR=""
         if [ -d "$DIR_NAME" ]; then
           TARGET_DIR="$DIR_NAME"
-        elif [ -d "SukiSU-Ultra" ]; then
-          TARGET_DIR="SukiSU-Ultra"
         elif [ -d "KernelSU" ]; then
           TARGET_DIR="KernelSU"
         fi
@@ -117,30 +115,6 @@ runs:
             sed -i '/endmenu/i source "drivers/kernelsu/Kconfig"' "$DRIVERS_DIR/Kconfig"
         fi
 
-        # Setup Kbuild version fallbacks if present
-        KBUILD_PATH=""
-        if [ -f "$TARGET_DIR/kernel/Kbuild" ]; then
-          KBUILD_PATH="$TARGET_DIR/kernel/Kbuild"
-          KDIR="$TARGET_DIR/kernel"
-        elif [ -f "$TARGET_DIR/Kbuild" ]; then
-          KBUILD_PATH="$TARGET_DIR/Kbuild"
-          KDIR="$TARGET_DIR"
-        fi
-
-        if [ -n "$KBUILD_PATH" ] && [ -d "$KDIR" ]; then
-          cd "$KDIR"
-          BASE_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | sed 's:-.*::' || echo "main")
-          BASE_COMMIT=$(git merge-base HEAD refs/remotes/origin/$BASE_BRANCH 2>/dev/null || git merge-base HEAD refs/remotes/origin/main 2>/dev/null || echo HEAD)
-          COMMITS_COUNT=$(git rev-list --count $BASE_COMMIT 2>/dev/null || echo "0")
-          BASE_VERSION=30000
-          KSU_VERSION=$((COMMITS_COUNT + BASE_VERSION))
-          sed -i "s/^KSU_VERSION_FALLBACK := 1$/KSU_VERSION_FALLBACK := ${KSU_VERSION}/" Kbuild 2>/dev/null || true
-
-          KSU_GIT_TAG="$(git describe --tags --abbrev=0 $BASE_COMMIT 2>/dev/null || echo "v0.0.1")"
-          sed -i "s/^KSU_VERSION_TAG_FALLBACK := v0.0.1$/KSU_VERSION_TAG_FALLBACK := ${KSU_GIT_TAG}/" Kbuild 2>/dev/null || true
-          cd "${{ github.workspace }}/kernel"
-        fi
-
         echo "ROOT_IMPLEMENTATION=nova" >> "$GITHUB_ENV"
         echo "ROOT_MANAGER=$MANAGER_NAME" >> "$GITHUB_ENV"
 
@@ -149,7 +123,7 @@ runs:
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
       run: |
-        for candidate in SukiSU-Nova SukiSU-Ultra KernelSU common/drivers/kernelsu drivers/kernelsu; do
+        for candidate in SukiSU-Nova KernelSU common/drivers/kernelsu drivers/kernelsu; do
           if [ -d "$candidate/.git" ] || [ -f "$candidate/.git" ]; then
             cd "$candidate"
             BASE_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | sed 's:-.*::' || echo "main")

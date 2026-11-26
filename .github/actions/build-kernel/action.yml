@@ -27,10 +27,8 @@ runs:
         fi
         echo "✅ Vendor module version-check bypass hack successfully applied"
       else
-        echo "WARNING: $TARGET_FILE not found, checking legacy module.c"
-        if [ -f "${{ github.workspace }}/kernel/common/kernel/module.c" ]; then
-          sed -i '/bad_version:/{:a;n;/return 0;/{s/return 0;/return 1;/;b};ba}' "${{ github.workspace }}/kernel/common/kernel/module.c"
-        fi
+        echo "ERROR: $TARGET_FILE not found" >&2
+        exit 1
       fi
 
   - name: 'Build Kernel'

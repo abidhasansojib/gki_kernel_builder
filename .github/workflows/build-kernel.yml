@@ -150,9 +150,8 @@ jobs:
           echo "Resolving dependencies..."
           emit nomount_commit "$(pick_nomount "$PIN_NOMOUNT")"
           emit susfs_commit "$(pick "$PIN_SUSFS" https://gitlab.com/simonpunk/susfs4ksu.git refs/heads/gki-android16-6.12)"
-          emit nova_commit "$(pick "$PIN_NOVA" https://github.com/SukiSU-Nova/SukiSU-Nova.git refs/heads/builtin)"
-
           NOVA_SHA="$(pick "$PIN_NOVA" https://github.com/SukiSU-Nova/SukiSU-Nova.git refs/heads/builtin)"
+          emit nova_commit "$NOVA_SHA"
 
           mk_entry() {
             printf '{"flavor":"%s","ref":"%s","commit":"%s"}' "$1" "$2" "$3"
@@ -181,7 +180,6 @@ jobs:
       KERNEL_VERSION: "6.12"
       SUBLEVEL: "30"
       OS_PATCH_LEVEL: "2025-07"
-      VARIANT: "Normal"
 
     steps:
       - name: Checkout Repository
@@ -200,8 +198,6 @@ jobs:
         with:
           version: "android16-6.12"
           sublevel: "30"
-        env:
-          BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
 
       - name: Download Kernel Repository
         uses: ./.github/actions/download-kernel
@@ -233,7 +229,6 @@ jobs:
           kernel_version: "6.12"
           sublevel: "30"
           os_patch_level: "2025-07"
-          variant: "Normal"
 
       - name: Fetch Official NoMount Release ZIP
         if: ${{ inputs.use_nomount }}
@@ -335,7 +330,6 @@ jobs:
       - name: Apply Kernel Branding
         uses: ./.github/actions/apply-kernel-branding
         with:
-          variant: "Normal"
           kernel_version: "6.12"
           android_version: "android16"
           version: "android16-6.12"
@@ -384,28 +378,11 @@ jobs:
         with:
           file_name: ${{ steps.extract.outputs.file_name }}
 
-      - name: 📦 Upload NetHunter Module Artifact
-        if: ${{ inputs.use_nethunter }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ steps.extract.outputs.file_name }}-NetHunter-Wireless-Modules
-          path: ${{ github.workspace }}/Nethunter-Wireless-Modules.zip
-          if-no-files-found: warn
-          compression-level: 0
-
       - name: 📱 Fetch Matching Root Manager APK
         uses: ./.github/actions/fetch-root-managers
         with:
           flavor: ${{ matrix.flavor }}
           output_dir: ${{ github.workspace }}/root-managers
-
-      - name: Upload Root Manager APK Artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ steps.extract.outputs.file_name }}-${{ matrix.flavor }}-Manager
-          path: ${{ github.workspace }}/root-managers/
-          if-no-files-found: warn
-          compression-level: 0
 
       - name: 📋 Generate Build Summary
         if: ${{ always() }}
@@ -455,32 +432,6 @@ jobs:
           sed -i "s/__BPF_STATUS__/${{ inputs.use_bpf }}/g" "$SUMMARY_FILE"
 
           cat "$SUMMARY_FILE" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload Summary Artifact
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ env.SUMMARY_BASE }}-Summary
-          path: /tmp/build-summary-*.md
-          if-no-files-found: ignore
-          compression-level: 9
-
-      - name: Upload AnyKernel3 Artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ steps.extract.outputs.file_name }}-${{ matrix.flavor }}-AnyKernel3
-          path: AnyKernel3/
-          if-no-files-found: error
-          compression-level: 9
-
-      - name: Upload NoMount Module Artifact
-        if: ${{ inputs.use_nomount }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ steps.extract.outputs.file_name }}-NoMount
-          path: ${{ github.workspace }}/nomount-dist/*.zip
-          if-no-files-found: ignore
-          compression-level: 0
 
       - name: 📦 Package Root-Flavor Release Bundle
         shell: bash
@@ -563,7 +514,7 @@ jobs:
           if ! git diff --quiet .github/config/commits.json; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add .github/config/commits.json .github/pins/history/
+            git add .github/config/commits.json
             git commit -m "chore(pins): promote verified dependency pins [skip ci]"
             git push origin HEAD:${{ github.ref }} || true
           fi
