@@ -573,12 +573,12 @@ jobs:
           echo "- **USB Arsenal & Wireless Stack:** Built-in BadUSB HID (\`/dev/hidg*\` with custom \`bInterval\`), PiKVM DVD-ROM (>2.36GB ISO booting), plus modular USB Wi-Fi, Ethernet, Serial & Bluetooth drivers (\`=m\`)" >> "$RELEASE_BODY_FILE"
           echo "" >> "$RELEASE_BODY_FILE"
           echo "### 📲 Flashing Instructions" >> "$RELEASE_BODY_FILE"
-          echo "1. Download the all-in-one **\`*-Bundle.zip\`** matching your chosen root flavor and extract it." >> "$RELEASE_BODY_FILE"
-          echo "2. Flash **\`*-AnyKernel3.zip\`** using **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** or **SukiSU Manager**. *(Vendor module bypass is built-in; when flashing via SukiSU Manager, selecting **KPM Operation → KPM Patch** activates KPM on boot)*" >> "$RELEASE_BODY_FILE"
-          echo "3. Install the matching **Root Manager APK** (\`*.apk\`) included in the bundle." >> "$RELEASE_BODY_FILE"
+          echo "1. Download the all-in-one **\`*-Bundle.zip\`** and extract it." >> "$RELEASE_BODY_FILE"
+          echo "2. Flash **\`*-AnyKernel3.zip\`** using **[Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher/releases)** or **SukiSU-Nova Manager**. *(Vendor module bypass is built-in; when flashing via SukiSU-Nova Manager, selecting **KPM Operation → KPM Patch** activates KPM on boot)*" >> "$RELEASE_BODY_FILE"
+          echo "3. Install the matching **SukiSU-Nova Manager APK** (\`SukiSU_Nova_*.apk\`) included in the bundle." >> "$RELEASE_BODY_FILE"
           echo "4. Reboot your device." >> "$RELEASE_BODY_FILE"
-          echo "5. Flash **[susfs4ksu-module (by sidex15)](https://github.com/sidex15/susfs4ksu-module/releases)** in your Root Manager for kernel-level root hiding." >> "$RELEASE_BODY_FILE"
-          echo "6. *(Optional)* Flash **\`Nethunter-Wireless-Modules.zip\`** or **\`NoMount-*.zip\`** inside the Root Manager." >> "$RELEASE_BODY_FILE"
+          echo "5. Configure **SUSFS v2.4.0** directly inside **SukiSU-Nova Manager → Extension features → SuSFS** (no external \`susfs4ksu-module\` required)." >> "$RELEASE_BODY_FILE"
+          echo "6. *(Optional)* Flash **\`NoMount-*.zip\`** (for stealth VFS module mounting) and **\`Nethunter-Wireless-Modules.zip\`** (for USB Wi-Fi/Ethernet/Serial/Bluetooth drivers & WebUI) inside SukiSU-Nova Manager." >> "$RELEASE_BODY_FILE"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
