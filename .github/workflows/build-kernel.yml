@@ -48,10 +48,6 @@ on:
         description: "NTSync"
         type: boolean
         default: true
-      use_ptrace:
-        description: "Ptrace Patch"
-        type: boolean
-        default: true
       use_unicode:
         description: "Unicode Fix"
         type: boolean
@@ -66,10 +62,6 @@ on:
         default: true
       use_nethunter:
         description: "Kali NetHunter"
-        type: boolean
-        default: true
-      use_cifs:
-        description: "CIFS"
         type: boolean
         default: true
       use_cache:
@@ -219,15 +211,6 @@ jobs:
           kernel_version: "6.12"
           os_patch_level: "2025-07"
 
-      - name: Build FUSE-BPF Userspace Daemon
-        if: ${{ inputs.use_bpf }}
-        continue-on-error: true
-        uses: ./.github/actions/fuse-bpf
-        with:
-          version: "android16-6.12"
-          kernel_version: "6.12"
-          android_version: "android16"
-
       - name: Set Build Timestamp from Kernel Commit
         shell: bash
         run: |
@@ -285,29 +268,6 @@ jobs:
           sublevel: ${{ steps.extract.outputs.sublevel }}
           root_flavor: ${{ matrix.flavor }}
 
-      - name: Fix selinux_hide static declarations & pointer-bool-conversion on 6.12
-        shell: bash
-        run: |
-          set -euo pipefail
-          for f in $(find "${{ github.workspace }}/kernel" -name selinux_hide.c 2>/dev/null); do
-            echo "[INFO] Fixing extern symbol linkage and Clang warnings in $f..."
-            sed -i 's/^static int security_context_to_sid_with_policy/int security_context_to_sid_with_policy/g' "$f"
-            sed -i 's/^static int security_sid_to_context_with_policy/int security_sid_to_context_with_policy/g' "$f"
-            sed -i 's/^static void security_compute_av_user_with_policy/void security_compute_av_user_with_policy/g' "$f"
-            sed -i 's/^static void __nocfi security_compute_av_user_with_policy/void __nocfi security_compute_av_user_with_policy/g' "$f"
-            if grep -q "extern void security_dump_masked_av_fn" "$f"; then
-              echo "[INFO] $f is extern-function form, patching with &"
-              sed -i 's/if (security_dump_masked_av_fn)/if (\&security_dump_masked_av_fn)/g' "$f"
-              sed -i 's/if (security_dump_masked_av_fn != NULL)/if (\&security_dump_masked_av_fn != NULL)/g' "$f"
-              sed -i 's/if (context_struct_compute_av_fn)/if (\&context_struct_compute_av_fn)/g' "$f"
-              sed -i 's/if (context_struct_compute_av_fn != NULL)/if (\&context_struct_compute_av_fn != NULL)/g' "$f"
-            elif grep -q "if (security_dump_masked_av_fn" "$f"; then
-              echo "[INFO] $f is pointer form, patching with != NULL"
-              sed -i 's/if (security_dump_masked_av_fn)/if (security_dump_masked_av_fn != NULL)/g' "$f"
-              sed -i 's/if (context_struct_compute_av_fn)/if (context_struct_compute_av_fn != NULL)/g' "$f"
-            fi
-          done
-
       - name: Baseband Guard
         if: ${{ inputs.use_bbg }}
         uses: ./.github/actions/bbg
@@ -342,12 +302,6 @@ jobs:
           kernel_version: "6.12"
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
-      - name: Apply Ptrace Patch
-        if: ${{ inputs.use_ptrace }}
-        uses: ./.github/actions/ptrace
-        with:
-          kernel_version: "6.12"
-
       - name: Apply Unicode Fix Patch
         if: ${{ inputs.use_unicode }}
         uses: ./.github/actions/unicode-fix
@@ -360,10 +314,6 @@ jobs:
         with:
           kernel_version: "6.12"
 
-      - name: Setup CIFS
-        if: ${{ inputs.use_cifs }}
-        uses: ./.github/actions/cifs
-
       - name: Setup Misc Configs
         uses: ./.github/actions/misc
 
@@ -374,12 +324,6 @@ jobs:
           version: "android16-6.12"
           kernel_version: "6.12"
           sublevel: ${{ steps.extract.outputs.sublevel }}
-
-      - name: Apply Device-Specific Patches
-        uses: ./.github/actions/apply-device-patches
-        with:
-          version: "android16-6.12"
-          kernel_version: "6.12"
 
       - name: Integrate NoMount
         if: ${{ inputs.use_nomount }}

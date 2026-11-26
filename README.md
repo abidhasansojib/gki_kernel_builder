@@ -25,7 +25,7 @@ Flashing custom kernels carries risks. I am not responsible for bricked devices 
 - 📱 **Kernel Manager WebUI**: Streamlined Material 3 dashboard to control TCP congestion (BBR default / CUBIC / Westwood+ / BIC / HTCP), driver modules, RAM/MGLRU, and real-time activity log.
 - 📦 **NetHunter Wireless Module**: Flashable `Nethunter-Wireless-Modules.zip` with Wi-Fi/SDR drivers, firmware, and WebUI (fully compatible alongside NoMount).
 - 🛡️ **Baseband Guard (BBG)**: Partition protection against unauthorized writes.
-- 📦 **DroidSpaces-OSS**: Lightweight container runtime support with SYSVIPC and cgroup v2 `cpu.max` (`CONFIG_CFS_BANDWIDTH=y`) CPU bandwidth limits.
+- 📦 **DroidSpaces-OSS**: Lightweight container runtime support with SYSVIPC and cgroup v2 CPU/process limits (`CONFIG_CFS_BANDWIDTH=y`, `CONFIG_CGROUP_PIDS=y`).
 - 🚀 **Performance & Networking**: Mainline BBR, CUBIC, Westwood+, BIC, HTCP, CAKE Qdisc, WireGuard, IP Set, CIFS, NTSync, and scheduler/memory optimizations.
 - 🔍 **eBPF & BTF**: In-kernel eBPF kprobes, CO-RE BTF, and FUSE-BPF support.
 - ⚡ **Vendor Module Bypass**: Built-in vendor version check bypass ensuring OEM display, touchscreen, and modem drivers load cleanly.

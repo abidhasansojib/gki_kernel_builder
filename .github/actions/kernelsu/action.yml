@@ -173,7 +173,7 @@ runs:
           fi
         done
 
-    - name: 'Fix KernelSU Static Patch'
+    - name: 'Fix selinux_hide static declarations & pointer-bool-conversion on 6.12'
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
       run: |
@@ -181,13 +181,24 @@ runs:
         echo "[INFO] SukiSU-Nova detected: native symbol linkage verified, checking selinux_hide.c..."
 
         for f in $(find . -name "selinux_hide.c" 2>/dev/null); do
-          echo "Patching $f for extern linkage..."
+          echo "[INFO] Fixing extern symbol linkage and Clang warnings in $f..."
           sed -i 's/^static int security_context_to_sid_with_policy/int security_context_to_sid_with_policy/g' "$f"
           sed -i 's/^static int security_sid_to_context_with_policy/int security_sid_to_context_with_policy/g' "$f"
           sed -i 's/^static void security_compute_av_user_with_policy/void security_compute_av_user_with_policy/g' "$f"
           sed -i 's/^static void __nocfi security_compute_av_user_with_policy/void __nocfi security_compute_av_user_with_policy/g' "$f"
           sed -i 's/^static bool ksu_selinux_hide_running/bool ksu_selinux_hide_running/g' "$f"
           sed -i 's/^static bool ksu_selinux_hide_enabled/bool ksu_selinux_hide_enabled/g' "$f"
+          if grep -q "extern void security_dump_masked_av_fn" "$f"; then
+            echo "[INFO] $f is extern-function form, patching with &"
+            sed -i 's/if (security_dump_masked_av_fn)/if (\&security_dump_masked_av_fn)/g' "$f"
+            sed -i 's/if (security_dump_masked_av_fn != NULL)/if (\&security_dump_masked_av_fn != NULL)/g' "$f"
+            sed -i 's/if (context_struct_compute_av_fn)/if (\&context_struct_compute_av_fn)/g' "$f"
+            sed -i 's/if (context_struct_compute_av_fn != NULL)/if (\&context_struct_compute_av_fn != NULL)/g' "$f"
+          elif grep -q "if (security_dump_masked_av_fn" "$f"; then
+            echo "[INFO] $f is pointer form, patching with != NULL"
+            sed -i 's/if (security_dump_masked_av_fn)/if (security_dump_masked_av_fn != NULL)/g' "$f"
+            sed -i 's/if (context_struct_compute_av_fn)/if (context_struct_compute_av_fn != NULL)/g' "$f"
+          fi
         done
 
     - name: 'Bypass LSM Hook Registration for Linux 6.12+ / SUSFS'

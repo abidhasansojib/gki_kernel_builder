@@ -90,7 +90,7 @@ The project exclusively uses **SukiSU-Nova** (`https://github.com/SukiSU-Nova/Su
 * **Mainline TCP Congestion Control & CAKE Qdisc:** In-tree BBR (`bbr` default), CUBIC, Westwood+, BIC, HTCP, and CAKE/FQ/FQ_CODEL packet queuing algorithms (matching `GKI_KernelSU_SUSFS` without out-of-tree BBRv3 thermal overhead).
 * **WireGuard & IP Set:** High-speed in-kernel VPN and firewall rule acceleration.
 * **NTSync:** Low-latency NT synchronization primitives for high-performance wine/gaming emulation.
-* **BTF / eBPF & FUSE-BPF:** In-tree BTF metadata generation, in-kernel eBPF kprobe/uprobe events, and standalone userspace `fuse-bpf-arm64` daemon.
+* **BTF / eBPF & FUSE-BPF:** In-tree BTF metadata generation, in-kernel eBPF kprobe/uprobe events, and FUSE-BPF (`CONFIG_FUSE_BPF=y`) support.
 
 ---
 
@@ -185,6 +185,11 @@ The project exclusively uses **SukiSU-Nova** (`https://github.com/SukiSU-Nova/Su
 * **Official Prebuilt NoMount Release ZIP Integration:**
   * Removed the separate `build-nomount-module` Zig compilation job from `.github/workflows/build-kernel.yml` so `build-kernel` starts immediately after `resolve-sources`.
   * Updated `.github/actions/nomount-metamodule/action.yml` to fetch `maxsteeel/nomount`'s official prebuilt release ZIP (`NoMount-v2.3.1-release-785.zip`), and updated `resolve-sources` / `.github/config/commits.json` (`nomount.release`: `dcd77d03e9912f397a586d7da81694d1628f170e`) to resolve the matching release tag commit for in-tree `CONFIG_NOMOUNT=y` integration.
+* **Workflow Action Cleanup, CIFS-Networking Consolidation & Config Deduplication:**
+  * Removed dead Linux <5.16 ptrace action (`.github/actions/ptrace`) and `use_ptrace` input, unused `fuse-bpf` userspace selftest compiler action (`.github/actions/fuse-bpf`), and no-op actions (`.github/actions/apply-device-patches`, `.github/actions/susfs-revert-patches`, `.github/actions/kernelsu/patches`).
+  * Flattened `.github/actions/networking-config` and `.github/actions/cifs` directly into `.github/actions/networking/action.yml` (including `modules.bzl` `netfs.ko`/`cifs.ko` sanitization), removed the extra `use_cifs` workflow checkbox, and removed duplicate CIFS configs from `.github/actions/nethunter/action.yml`.
+  * Consolidated `selinux_hide.c` static symbol un-hiding and Clang 6.12 pointer-bool-conversion patching into a single step in `.github/actions/kernelsu/action.yml`, and deduplicated overlapping kernel configs across `droidspaces/action.yml` and `misc/action.yml`.
+  * Added `CONFIG_CGROUP_PIDS=y` to `.github/actions/droidspaces/action.yml` to enable cgroup `pids` controller (`pids.max` / `--pids-limit`) so all Droidspaces v7.2.0 requirements checks pass (`[✓] Process limit support`).
 
 ---
 
@@ -203,9 +208,9 @@ The project exclusively uses **SukiSU-Nova** (`https://github.com/SukiSU-Nova/Su
    * Keep `AGENTS.md` continuously updated with all chat decisions, completed milestones, technical fixes, and workflow structural changes.
 6. **Workflow & Repository Architecture Constraints:**
    * **Primary Build Workflow:** `.github/workflows/build-kernel.yml` (direct build with vendor bypass and artifact packaging).
-   * **Root Implementation:** Exclusively **SukiSU-Ultra** (no menu selection required; KernelSU-Next and ReSukiSU fully removed).
+   * **Root Implementation:** Exclusively **SukiSU-Nova** (no menu selection required; KernelSU-Next and ReSukiSU fully removed).
    * **Commit Modes:** `verified` (audited pins in `commits.json`), `latest` (branch tips), and `update` (builds latest then auto-promotes pins on success).
-   * **Feature Toggles:** Granular boolean checkboxes for `NoMount`, `Baseband Guard`, `Networking`, `DroidSpaces`, `NTSync`, `Ptrace Patch`, `Unicode Fix`, `BPF Stack`, `Performance`, `Kali NetHunter`, `CIFS`, and `Cache`.
+   * **Feature Toggles:** Granular boolean checkboxes for `NoMount`, `Baseband Guard`, `Networking` (includes CIFS/SMB), `DroidSpaces`, `NTSync`, `Unicode Fix`, `BPF Stack`, `Performance`, `Kali NetHunter`, and `Cache`.
    * **Vendor Module Bypass:** Built-in by default as a single bypassed kernel image (`Image`) without requiring a separate bypass checkbox.
    * **NetHunter Module Metadata:** Name must always be `Nethunter Wireless,HID Driver & Modules`, ID `nethunter_wireless_modules`, ZIP `Nethunter-Wireless-Modules.zip`, and author `abidhasansojib`.
    * **Heredocs in Composite Actions:** Always write inline scripts via clean heredocs (`cat << 'EOF' > file`) with 8-space YAML indentation and trailing `sed -i 's/^[[:space:]]*//' file`. Never use base64 encoding.

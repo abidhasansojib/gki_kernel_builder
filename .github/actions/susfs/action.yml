@@ -85,10 +85,3 @@ runs:
         version: ${{ inputs.version }}
         sublevel: ${{ inputs.sublevel }}
         os_patch_level: ${{ inputs.os_patch_level }}
-
-    - name: Revert SUSFS Fake Patches
-      uses: ./.github/actions/susfs-revert-patches
-      with:
-        version: ${{ inputs.version }}
-        sublevel: ${{ inputs.sublevel }}
-        os_patch_level: ${{ inputs.os_patch_level }}
